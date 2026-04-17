@@ -1,0 +1,9 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/finetech/.vs
+/finetech/finetech/bin/Debug/net9.0
+/finetech/finetech/obj
+/finetech/finetech/WeatherForecast.cs
+/finetech/finetech/fintech.http
