@@ -12,14 +12,12 @@ namespace fintech.Application.Services
         private readonly IJwtService _jwtService;
         private readonly ITokenHasher _tokenHasher;
         private readonly ICookieService _cookieService;
-        private readonly ILogger _logger;
 
         public RefreshTokenService(IRefreshTokenRepository refreshTokenRepository, 
             IConfiguration configuration, 
             IJwtService jwtService, 
             ITokenHasher tokenHasher, 
-            ICookieService cookieService,
-            ILogger<RefreshTokenService> logger
+            ICookieService cookieService
             )
         {
             _refreshTokenRepository = refreshTokenRepository;
@@ -27,7 +25,6 @@ namespace fintech.Application.Services
             _jwtService = jwtService;
             _tokenHasher = tokenHasher;
             _cookieService = cookieService;
-            _logger = logger;
         }
 
         public async Task<string> AddNewRefreshToken(Guid userId)
@@ -48,8 +45,6 @@ namespace fintech.Application.Services
             };
             await _refreshTokenRepository.AddAsync(refreshToken);
             await _refreshTokenRepository.SaveChangesAsync();
-
-            _logger.LogInformation("Refresh token : {Token}", token);
             
             return token;
         }
@@ -71,7 +66,6 @@ namespace fintech.Application.Services
                 await RevokeAllTokensForUser(existingToken.UserId);
                 throw new UnauthorizedException("Token reuse detected.");
             }
-
 
             var newRefreshToken = _jwtService.GenerateRefreshToken();
             var newHashedToken = _tokenHasher.HashToken(newRefreshToken);

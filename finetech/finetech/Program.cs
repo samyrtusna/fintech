@@ -55,16 +55,12 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
 });
 
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.Scan(scan => scan
+    .FromAssemblyOf<AuthService>()
+    .AddClasses()
+    .AsMatchingInterface()
+    .WithScopedLifetime());
 
-builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
-builder.Services.AddScoped<ITokenHasher, TokenHasher>();
-builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
-builder.Services.AddScoped<ICookieService, CookieService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 

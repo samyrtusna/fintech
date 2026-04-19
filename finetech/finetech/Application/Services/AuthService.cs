@@ -5,8 +5,6 @@ using fintech.Application.Exceptions;
 using fintech.Application.Interfaces.Repositories;
 using fintech.Application.Interfaces.Services;
 using fintech.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace fintech.Application.Services
 {
