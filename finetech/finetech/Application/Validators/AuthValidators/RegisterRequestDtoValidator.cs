@@ -21,7 +21,7 @@ namespace fintech.Application.Validators.AuthValidators
                 .NotEmpty().WithMessage("Base currency is required.")
                 .Length(3).WithMessage("Base currency must be a 3-letter code.")
                 .Must(c => c == c.ToUpper()).WithMessage("Base currency must be uppercase.")
-                .Matches("^[A-Z]{3}$").WithMessage("Currency must be a valid ISO code (e.g., USD, EUR"); 
+                .Matches("^[A-Z]{3}$").WithMessage("Base currency must be a valid ISO code (e.g., USD, EUR)"); 
         }
     }
 }

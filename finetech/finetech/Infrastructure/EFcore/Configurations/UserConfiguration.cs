@@ -18,6 +18,7 @@ namespace fintech.Infrastructure.EFcore.Configurations
             builder.Property(u => u.PasswordHash)
                 .IsRequired();
             builder.Property(u => u.Role)
+                .HasConversion<string>()
                 .IsRequired()
                 .HasMaxLength(20);
             builder.Property(u => u.BaseCurrency)

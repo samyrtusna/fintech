@@ -5,37 +5,23 @@ using fintech.Domain.Entities;
 
 namespace fintech.Application.Services
 {
-    public class RefreshTokenService : IRefreshTokenService
+    public class RefreshTokenService(IRefreshTokenRepository refreshTokenRepository,
+        IConfiguration configuration,
+        IJwtService jwtService,
+        ITokenHasher tokenHasher,
+        ICookieService cookieService
+            ) : IRefreshTokenService
     {
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
-        private readonly IConfiguration _configuration;
-        private readonly IJwtService _jwtService;
-        private readonly ITokenHasher _tokenHasher;
-        private readonly ICookieService _cookieService;
 
-        public RefreshTokenService(IRefreshTokenRepository refreshTokenRepository, 
-            IConfiguration configuration, 
-            IJwtService jwtService, 
-            ITokenHasher tokenHasher, 
-            ICookieService cookieService
-            )
-        {
-            _refreshTokenRepository = refreshTokenRepository;
-            _configuration = configuration;
-            _jwtService = jwtService;
-            _tokenHasher = tokenHasher;
-            _cookieService = cookieService;
-        }
-
-        public async Task<string> AddNewRefreshToken(Guid userId)
+        public async Task<string> CreateRefreshTokenAsync(Guid userId) 
         {
             if (userId == Guid.Empty)
             {
                 throw new ArgumentException("User ID cannot be empty.", nameof(userId));
             }
-            var token = _jwtService.GenerateRefreshToken();
-            var hashedToken = _tokenHasher.HashToken(token);
-            var expiresAt = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("Jwt:RefreshTokenExpiration"));
+            var token = jwtService.GenerateRefreshToken();
+            var hashedToken = tokenHasher.HashToken(token);
+            var expiresAt = DateTime.UtcNow.AddDays(configuration.GetValue<int>("Jwt:RefreshTokenExpiration"));
             var refreshToken = new RefreshToken
             {
                 UserId = userId,
@@ -43,57 +29,57 @@ namespace fintech.Application.Services
                 ExpiresAt = expiresAt,
                 IsRevoked = false
             };
-            await _refreshTokenRepository.AddAsync(refreshToken);
-            await _refreshTokenRepository.SaveChangesAsync();
+            await refreshTokenRepository.AddAsync(refreshToken);
+            await refreshTokenRepository.SaveChangesAsync();
             
             return token;
         }
 
-        public async Task<string> RefreshAsync()
+        public async Task<string> RefreshTokenAsync()
         {
-            var token = _cookieService.RetrieveTokenFromCookie();
-            var hashedToken = _tokenHasher.HashToken(token);
-            var existingToken = await _refreshTokenRepository.GetByTokenAsync(hashedToken) ?? throw new UnauthorizedException("Invalid refresh token.");
+            var token = cookieService.RetrieveTokenFromCookie();
+            var hashedToken = tokenHasher.HashToken(token);
+            var existingToken = await refreshTokenRepository.GetByTokenAsync(hashedToken) ?? throw new UnauthorizedException("Invalid refresh token.");
           
             if (existingToken.ExpiresAt <= DateTime.UtcNow)
             {
                 existingToken.IsRevoked = true;
-                await _refreshTokenRepository.SaveChangesAsync();
+                await refreshTokenRepository.SaveChangesAsync();
                 throw new UnauthorizedException("Refresh token has expired.");
             }
             if (existingToken.IsRevoked)
             {
-                await RevokeAllTokensForUser(existingToken.UserId);
+                await RevokeAllTokensAsync(existingToken.UserId);
                 throw new UnauthorizedException("Token reuse detected.");
             }
 
-            var newRefreshToken = _jwtService.GenerateRefreshToken();
-            var newHashedToken = _tokenHasher.HashToken(newRefreshToken);
+            var newRefreshToken = jwtService.GenerateRefreshToken();
+            var newHashedToken = tokenHasher.HashToken(newRefreshToken);
 
             var newRefreshTokenEntity = new RefreshToken
             {
                 UserId = existingToken.UserId,
                 Token = newHashedToken,
-                ExpiresAt = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("JwtSettings:RefreshTokenExpirationDays")),
+                ExpiresAt = DateTime.UtcNow.AddDays(configuration.GetValue<int>("JwtSettings:RefreshTokenExpirationDays")),
                 IsRevoked = false
             };
-            await _refreshTokenRepository.AddAsync(newRefreshTokenEntity);
+            await refreshTokenRepository.AddAsync(newRefreshTokenEntity);
             existingToken.IsRevoked = true;
             existingToken.ReplacedByToken = newHashedToken;
-            await _refreshTokenRepository.SaveChangesAsync();
+            await refreshTokenRepository.SaveChangesAsync();
 
-            _cookieService.SetTokenToCookie(newRefreshToken);
+            cookieService.SetTokenToCookie(newRefreshToken);
             var user = existingToken.User;
-            var accessToken = _jwtService.GenerateAccessToken(user);
+            var accessToken = jwtService.GenerateAccessToken(user);
             return accessToken;
         }
 
-        public async Task RevokeToken(string token)
-        {
+        public async Task RevokeRefreshTokenAsync(string token)
+        { 
             ArgumentNullException.ThrowIfNull(token);
 
-            var hashedToken = _tokenHasher.HashToken(token);
-            var existingToken = await _refreshTokenRepository.GetByTokenAsync(hashedToken)?? throw new UnauthorizedException("Invalid refresh token.");
+            var hashedToken = tokenHasher.HashToken(token);
+            var existingToken = await refreshTokenRepository.GetByTokenAsync(hashedToken)?? throw new UnauthorizedException("Invalid refresh token.");
 
             if (existingToken.ExpiresAt <= DateTime.UtcNow)
             {
@@ -105,25 +91,25 @@ namespace fintech.Application.Services
             }
 
             existingToken.IsRevoked = true;
-            _refreshTokenRepository.Update(existingToken);
-            await _refreshTokenRepository.SaveChangesAsync();
+            refreshTokenRepository.Update(existingToken);
+            await refreshTokenRepository.SaveChangesAsync();
             
-            _cookieService.ClearTokenCookie();
+            cookieService.ClearTokenCookie();
         }
 
-        public async Task RevokeAllTokensForUser(Guid userId)
+        public async Task RevokeAllTokensAsync(Guid userId) 
         {
             if(userId == Guid.Empty)
             {
                 throw new ArgumentException("User ID cannot be empty.", nameof(userId));
             }
-            var tokens = await _refreshTokenRepository.GetAllByUserIdAsync(userId);
+            var tokens = await refreshTokenRepository.GetAllByUserIdAsync(userId);
             foreach (var token in tokens)
             {
                 token.IsRevoked = true;
-                _refreshTokenRepository.Update(token);
+                refreshTokenRepository.Update(token);
             }
-            await _refreshTokenRepository.SaveChangesAsync();
+            await refreshTokenRepository.SaveChangesAsync();
         }
        
     }

@@ -6,17 +6,12 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace fintech.Infrastructure.Repositories
 {
-    public class UserRepository : GenericRepository<User>, IUserRepository 
+    public class UserRepository(AppDbContext context) : GenericRepository<User>(context), IUserRepository 
     { 
-        private readonly AppDbContext _context;
-        public UserRepository(AppDbContext context) : base(context)
-        {
-            _context = context;
-        }
 
         public async Task<User?> GetByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
     }
 }

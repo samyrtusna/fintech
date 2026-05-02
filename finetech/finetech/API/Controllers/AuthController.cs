@@ -9,44 +9,36 @@ namespace fintech.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : BaseController
+    public class AuthController(IAuthService authService, IRefreshTokenService refreshTokenService) : BaseController
     {
-        private readonly IAuthService _authService;
-        private readonly IRefreshTokenService _refreshTokenService;
-
-        public AuthController(IAuthService authService, IRefreshTokenService refreshTokenService)
-        {
-            _authService = authService;
-            _refreshTokenService = refreshTokenService;
-        }
 
         [HttpPost("register")]
-        public async Task<ActionResult<ApiResponsesDto<string>>> Register(RegisterRequestDto dto)
+        public async Task<ActionResult<ApiResponsesDto<string>>> RegisterAsync(RegisterRequestDto dto)
         {
-            var response = await _authService.RegisterAsync(dto);
+            var response = await authService.RegisterAsync(dto);
             return Ok(response);
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<ApiResponsesDto<string>>> Login(LoginRequestDto dto)
+        public async Task<ActionResult<ApiResponsesDto<string>>> LoginAsync(LoginRequestDto dto)
         {
-            var response = await _authService.LoginAsync(dto);
+            var response = await authService.LoginAsync(dto);
             return Ok(response);
         }
 
         [Authorize (Policy = "UserPolicy")]
         [HttpPost("logout")]
-        public async Task<ActionResult<ApiResponsesDto<ConfirmationResponseDto>>> Logout()
+        public async Task<ActionResult<ApiResponsesDto<ConfirmationResponseDto>>> LogoutAsync()
         {
-            var response = await _authService.LogoutAsync();
+            var response = await authService.LogoutAsync();
             return Ok(response);
         }
-
+         
         [Authorize (Policy = "UserPolicy")]
         [HttpPost("refresh-token")]
-        public async Task<ActionResult<ApiResponsesDto<string>>> RefreshToken()
+        public async Task<ActionResult<ApiResponsesDto<string>>> RefreshTokenAsync()
         {
-            var response = await _refreshTokenService.RefreshAsync();
+            var response = await refreshTokenService.RefreshTokenAsync();
             return Ok(response);
         }
     }

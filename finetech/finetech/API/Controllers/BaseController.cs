@@ -9,12 +9,12 @@ namespace fintech.API.Controllers
     [ApiController]
     public class BaseController : ControllerBase
     {
-        protected int UserId
+        protected Guid UserId
         {
             get
             {
                 var claimValue = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-                if(!int.TryParse(claimValue, out int id))
+                if(!Guid.TryParse(claimValue, out Guid id))
                 {
                     throw new BadRequestException("Invalid user ID in token.");
                 }

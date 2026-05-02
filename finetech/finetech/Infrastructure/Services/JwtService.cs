@@ -9,36 +9,27 @@ using System.Text;
 
 namespace fintech.Infrastructure.Services
 {
-    public class JwtService : IJwtService
+    public class JwtService(IConfiguration configuration) : IJwtService
     {
-        private readonly IConfiguration _configuration;
-        private readonly IHttpContextAccessor _contextAccessor;
-
-        public JwtService(IConfiguration configuration, IHttpContextAccessor contextAccessor)
-        {
-            _configuration = configuration;
-            _contextAccessor = contextAccessor;
-        }
-
         public string GenerateAccessToken(User user)
         {
             ArgumentNullException.ThrowIfNull(user);
             var claims = new[]
-            {
+            { 
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.Role, user.Role.ToString())
             };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!)) ?? throw new InvalidOperationException("JWT secret key is not configured.");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!)) ?? throw new InvalidOperationException("JWT secret key is not configured.");
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: configuration["Jwt:Issuer"],
+                audience: configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:AccessTokenExpiration")),
+                expires: DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:AccessTokenExpiration")),
                 signingCredentials: creds
             );
             return new JwtSecurityTokenHandler().WriteToken(token);

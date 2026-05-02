@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using fintech.Infrastructure.EFcore.ContextDb;
@@ -11,9 +12,11 @@ using fintech.Infrastructure.EFcore.ContextDb;
 namespace finetech.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260420221329_Category_Entities")]
+    partial class Category_Entities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,15 +27,12 @@ namespace finetech.Migrations
 
             modelBuilder.Entity("fintech.Domain.Entities.Category", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsSystem")
                         .HasColumnType("boolean");
@@ -50,10 +50,10 @@ namespace finetech.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<Guid?>("UserId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.HasKey("id");
 
                     b.HasIndex("ParentCategoryId");
 
@@ -61,60 +61,6 @@ namespace finetech.Migrations
                         .IsUnique();
 
                     b.ToTable("Categories");
-                });
-
-            modelBuilder.Entity("fintech.Domain.Entities.FinancialTransaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("BaseAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<decimal>("ExchangeRate")
-                        .HasColumnType("decimal(18,6)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsEssential")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("TransactionDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("FinancialTransactions");
                 });
 
             modelBuilder.Entity("fintech.Domain.Entities.RefreshToken", b =>
@@ -193,7 +139,7 @@ namespace finetech.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("fintech.Domain.Entities.UserCategorySetting", b =>
+            modelBuilder.Entity("fintech.Domain.Entities.UserCategorySettings", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -228,25 +174,6 @@ namespace finetech.Migrations
                     b.Navigation("ParentCategory");
                 });
 
-            modelBuilder.Entity("fintech.Domain.Entities.FinancialTransaction", b =>
-                {
-                    b.HasOne("fintech.Domain.Entities.Category", "Category")
-                        .WithMany("Transactions")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("fintech.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("fintech.Domain.Entities.RefreshToken", b =>
                 {
                     b.HasOne("fintech.Domain.Entities.User", "User")
@@ -258,7 +185,7 @@ namespace finetech.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("fintech.Domain.Entities.UserCategorySetting", b =>
+            modelBuilder.Entity("fintech.Domain.Entities.UserCategorySettings", b =>
                 {
                     b.HasOne("fintech.Domain.Entities.Category", "Category")
                         .WithMany()
@@ -267,11 +194,6 @@ namespace finetech.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("fintech.Domain.Entities.Category", b =>
-                {
-                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("fintech.Domain.Entities.User", b =>

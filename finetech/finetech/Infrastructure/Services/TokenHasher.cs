@@ -10,9 +10,9 @@ namespace fintech.Infrastructure.Services
         {
             using var sha256 = SHA256.Create();
             var bytes = Encoding.UTF8.GetBytes(token);
-            var hash = sha256.ComputeHash(bytes) ;
+            var hash = sha256?.ComputeHash(bytes) ;
 
-            return Convert.ToBase64String(hash);
+            return Convert.ToBase64String(hash!);
         }
     }
 }
