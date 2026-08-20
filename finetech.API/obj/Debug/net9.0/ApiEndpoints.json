@@ -179,7 +179,7 @@
       },
       {
         "Name": "dto",
-        "Type": "fintech.API.Application.DTOs.CategoryDtos.UserCategorySettingsRequestDto",
+        "Type": "fintech.API.Application.DTOs.UserCategorySettingDtos.UserCategorySettingsRequestDto",
         "IsRequired": true
       }
     ],
@@ -243,38 +243,16 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "fintech.API.API.Controllers.ExchangeRateController",
-    "Method": "CreateExchangeRateAsync",
-    "RelativePath": "api/ExchangeRate",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "dto",
-        "Type": "fintech.API.Application.DTOs.ExchangeRateDtos.CreateExchangeRateRequestDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "fintech.API.API.Controllers.ExchangeRateController",
-    "Method": "GetExchangeRateAsync",
-    "RelativePath": "api/ExchangeRate/{id}",
+    "ContainingType": "fintech.API.API.Controllers.ExchangeRateApiController",
+    "Method": "GetExchangeRateSymbolsAsync",
+    "RelativePath": "api/ExchangeRateApi/symbols",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Guid",
-        "IsRequired": true
-      }
-    ],
+    "Parameters": [],
     "ReturnTypes": [
       {
-        "Type": "fintech.API.Application.DTOs.ExchangeRateDtos.ExchangeRateResponseDto",
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -282,8 +260,7 @@
         ],
         "StatusCode": 200
       }
-    ],
-    "EndpointName": "GetExchangeRate"
+    ]
   },
   {
     "ContainingType": "fintech.API.API.Controllers.FinancialTransactionController",
@@ -390,6 +367,11 @@
       },
       {
         "Name": "Month",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Day",
         "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "IsRequired": false
       },

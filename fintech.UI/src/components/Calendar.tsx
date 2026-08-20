@@ -15,7 +15,7 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 type PropsType = {
   handledate: (d: Date) => void;
-  selectedDate: Date;
+  selectedDate: Date | null;
 };
 export default function Calendar(props: PropsType) {
   const { handledate, selectedDate } = props;
@@ -70,11 +70,12 @@ export default function Calendar(props: PropsType) {
       <div className="grid grid-cols-7 gap-0.5">
         {days.map((day, idx) => {
           const isCurrentMonth = isSameMonth(day, currentMonth);
-          const isSelected = isSameDay(day, selectedDate);
+          const isSelected = isSameDay(day, selectedDate!);
           const isCurrentDay = isToday(day);
 
           return (
             <button
+              type="button"
               key={idx}
               onClick={() => handledate(day)}
               className={`

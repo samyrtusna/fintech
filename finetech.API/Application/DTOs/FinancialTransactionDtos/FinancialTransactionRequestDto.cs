@@ -6,7 +6,7 @@
         public decimal Amount { get; set; }
         public string Currency { get; set; } = null!;
         public string? Description { get; set; } 
-        public bool? IsEssential { get; set; } 
+        public bool? IsEssential { get; set; }  
         public DateTime? TransactionDate { get; set; }
     }    
 }

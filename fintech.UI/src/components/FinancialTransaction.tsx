@@ -1,4 +1,5 @@
 import { useState } from "react";
+import financialTrascationService from "../API/Services/financialTrascationService";
 import {
   type FinancialTransactionProps,
   type UpdateStateType,
@@ -18,11 +19,9 @@ import {
   Wallet,
   WalletCards,
 } from "lucide-react";
-import { useAppDispatch } from "../state/stateHooks";
-import {
-  deleteTransaction,
-  updateTransaction,
-} from "../state/slices/financialTransactionSlice";
+import FormatAmount from "../helpers/amountFormatter";
+import Button from "./Button";
+import FormatDate from "../helpers/formatDate";
 
 function FinancialTransaction(props: FinancialTransactionProps) {
   const { transaction, baseCurrency, handleBack } = props;
@@ -35,8 +34,6 @@ function FinancialTransaction(props: FinancialTransactionProps) {
     isEssential: transaction.isEssential!,
   });
 
-  const dispatch = useAppDispatch();
-
   const handleUpdate = async () => {
     handleBack();
     if (
@@ -44,21 +41,21 @@ function FinancialTransaction(props: FinancialTransactionProps) {
       updateState.description !== transaction.description
     ) {
       const requestBody = {
-        id: transaction.id,
-        bodyObject: {
-          description: updateState.description,
-        },
+        description: updateState.description,
       };
-      return await dispatch(updateTransaction(requestBody));
+      return await financialTrascationService.updateAsync(
+        transaction.id,
+        requestBody,
+      );
     }
     if (updateState.isEssential !== transaction.isEssential) {
       const requestBody = {
-        id: transaction.id,
-        bodyObject: {
-          isEssential: updateState.isEssential,
-        },
+        isEssential: updateState.isEssential,
       };
-      return await dispatch(updateTransaction(requestBody));
+      return await financialTrascationService.updateAsync(
+        transaction.id,
+        requestBody,
+      );
     }
     if (
       updateState.description.length > 0 &&
@@ -66,51 +63,59 @@ function FinancialTransaction(props: FinancialTransactionProps) {
       updateState.isEssential !== transaction.isEssential
     ) {
       const requestBody = {
-        id: transaction.id,
-        bodyObject: {
-          description: updateState.description,
-          isEssential: updateState.isEssential,
-        },
+        description: updateState.description,
+        isEssential: updateState.isEssential,
       };
-      return await dispatch(updateTransaction(requestBody));
+
+      return await financialTrascationService.updateAsync(
+        transaction.id,
+        requestBody,
+      );
     }
   };
 
   const handleDelete = async () => {
     handleBack();
-    dispatch(deleteTransaction(transaction.id));
+    await financialTrascationService.deleteAsync(transaction.id);
   };
-
+  //TODO Add Button
   return (
-    <div className="absolute top-15 md:top-30 bottom-0 md:bottom-25 lg:left-1/2 lg:-translate-x-1/2 z-20 w-full lg:w-10/12 px-10 bg-bg-sec ">
-      <div className="flex justify-between items-center my-2">
+    <div className="absolute top-5 lg:left-1/2 lg:-translate-x-1/2 z-20 w-full lg:w-10/12 p-10 bg-bg-secondary rounded-sm ">
+      <div className="flex justify-between items-center w-full my-2">
         <button
           onClick={handleBack}
-          className="cursor-pointer"
+          className=" flex justify-center items-center h-10 aspect-square mx-2 rounded-full hover:bg-bg-muted"
         >
-          <ArrowLeft className="stroke-gray-500" />
+          <ArrowLeft className="stroke-gray-500 cursor-pointer" />
         </button>
-        <div className="hidden md:flex">
+        <div className="hidden w-1/4 md:flex">
           {transactionDay === today && (
-            <button
-              onClick={handleDelete}
-              className="hidden md:block mx-2 py-0.5 px-4 border-2 border-red-600
-           font-semibold hover:font-bold text-red-600 rounded-full cursor-pointer"
-            >
-              Delete
-            </button>
+            <div className="w-1/2 p-1">
+              <Button
+                label="Delete"
+                type="button"
+                background="bg-btn-danger"
+                hoverBg="hover:bg-btn-danger-hover"
+                textColor="text-btn-danger-text"
+                handleClick={handleDelete}
+              />
+            </div>
           )}
-          <button
-            onClick={handleUpdate}
-            className="hidden md:block py-0.5 px-3 border-2 border-bt-g-h text-bt-g-h font-semibold hover:font-bold rounded-full cursor-pointer"
-          >
-            Update
-          </button>
+          <div className="w-1/2 p-1">
+            <Button
+              label="Update"
+              type="button"
+              background="bg-btn-primary"
+              hoverBg="hover:bg-btn-primary-hover"
+              textColor="text-btn-primary-text"
+              handleClick={handleUpdate}
+            />
+          </div>
         </div>
       </div>
-      <div className="md:flex w-full rounded-xl shadow-xl">
-        <div className="flex flex-col justify-center items-center py-3 md:w-5/12 bg-bg">
-          <div className="flex justify-center items-center w-15 h-15 m-3 p-3 rounded-xl bg-bg-sec">
+      <div className="md:flex w-full bg-bg-surface rounded-md shadow-card">
+        <div className="flex flex-col justify-center items-center py-3 md:w-5/12 rounded-t-md md:rounded-t-none md:rounded-l-md bg-bg-muted">
+          <div className="flex justify-center w-15 m-3">
             {transaction.type === "Income" ? (
               <BadgeDollarSign className="size-8 stroke-1 stroke-blue-500" />
             ) : transaction.type === "Expense" ? (
@@ -128,21 +133,21 @@ function FinancialTransaction(props: FinancialTransactionProps) {
               <PiggyBank className="size-8 stroke-1 stroke-blue-500" />
             ) : null}
           </div>
-          <div className="text-sm font-bold py-1 px-2 bg-bg-sec rounded-xl">
-            {transaction.type}
-          </div>
-          <div className="flex py-2 items-end">
-            <h2 className="text-4xl font-bold">{transaction.baseAmount}</h2>
+          <div className="font-bold px-2">{transaction.type}</div>
+          <div className="flex py-5 items-end">
+            <h2 className="text-4xl font-bold">
+              {FormatAmount(transaction.baseAmount)}
+            </h2>
             <h2 className="pl-2">{baseCurrency}</h2>
           </div>
-          <div className="flex flex-col items-center text-gray-500">
+          <div className="flex flex-col items-center">
             <input
               type="text"
               placeholder={transaction.description}
               onChange={(e) =>
                 setUpdateState({ ...updateState, description: e.target.value })
               }
-              className="text-center"
+              className="text-center placeholder:text-text-primary"
             />
           </div>
           <div className="opacity-0 md:opacity-100 w-1/6 md:mt-10 border-t"></div>
@@ -154,48 +159,52 @@ function FinancialTransaction(props: FinancialTransactionProps) {
                 <Beer />
               </div>
               <div className="ml-3">
-                <h2 className="text-sm text-gray-400 font-semibold">
+                <h2 className="text-sm text-text-secondary font-semibold">
                   Category
                 </h2>
                 <h2 className="font-bold">{transaction.categoryName}</h2>
               </div>
             </div>
             <div className="flex items-center w-full md:w-40 md:shrink-0 my-2 md:my-0">
-              <div className="flex h-full aspect-square rounded-xl bg-bg justify-center items-center">
+              <div className="flex h-full aspect-square justify-center items-center">
                 <Calendar />
               </div>
               <div className="ml-3">
-                <h2 className="text-sm text-gray-400 font-semibold">Date</h2>
+                <h2 className="text-sm text-text-secondary font-semibold">
+                  Date
+                </h2>
                 <h2 className="font-bold">
                   {transaction.transactionDate &&
-                    new Date(transaction.transactionDate).toLocaleDateString()}
+                    FormatDate(transaction.transactionDate)}
                 </h2>
               </div>
             </div>
           </div>
           <div className="md:flex md:justify-between w-full md:my-5">
             <div className="flex items-center w-full md:w-40 md:shrink-0 my-2 md:my-0">
-              <div className="flex h-full aspect-square rounded-xl bg-bg justify-center items-center">
+              <div className="flex h-full aspect-square justify-center items-center">
                 <Wallet />
               </div>
               <div className="ml-3">
-                <h2 className="text-sm text-gray-400 font-semibold">Amount</h2>
+                <h2 className="text-sm text-text-secondary font-semibold">
+                  Amount
+                </h2>
                 <div className="flex items-baseline">
                   <h2 className="font-bold text-lg mr-1 ">
-                    {transaction.amount}
+                    {FormatAmount(transaction.amount)}
                   </h2>
-                  <span className="text-xs font-light text-bt-g-h">
+                  <span className="text-xs font-light text-text-secondary">
                     {transaction.currency}
-                  </span>{" "}
+                  </span>
                 </div>
               </div>
             </div>
             <div className="flex items-center w-full md:w-40 md:shrink-0 my-2 md:my-0">
-              <div className="flex h-full aspect-square rounded-xl bg-bg justify-center items-center">
+              <div className="flex h-full aspect-square justify-center items-center">
                 <Sigma />
               </div>
               <div className="ml-3">
-                <h2 className="text-sm text-gray-400 font-semibold">
+                <h2 className="text-sm text-text-secondary font-semibold">
                   Exchange_Rate
                 </h2>
                 <h2 className="font-bold">{transaction.exchangeRate}</h2>
@@ -204,11 +213,11 @@ function FinancialTransaction(props: FinancialTransactionProps) {
           </div>
           <div className="md:flex md:justify-between w-full md:my-5">
             <div className="flex items-center w-full md:w-40 md:shrink-0 my-2 md:my-0">
-              <div className="flex h-full aspect-square rounded-xl bg-bg justify-center items-center">
+              <div className="flex h-full aspect-square justify-center items-center">
                 <ShieldCheck />
               </div>
               <div className="ml-3">
-                <h2 className="text-sm text-gray-400 font-semibold">
+                <h2 className="text-sm text-text-secondary font-semibold">
                   Importance
                 </h2>
                 <select
@@ -228,21 +237,29 @@ function FinancialTransaction(props: FinancialTransactionProps) {
               </div>
             </div>
           </div>
-          <div className="w-full mt-10 border-t border-t-gray-300"></div>
-          <button
-            onClick={handleUpdate}
-            className="w-full mt-2 py-1 px-3 bg-bt-g-h text-bt-g-text font-semibold rounded-full cursor-pointer md:hidden"
-          >
-            Update
-          </button>
-          {transactionDay === today && (
-            <button
-              onClick={handleDelete}
-              className="w-full my-2 py-1 px-3 bg-bt-d-h text-bt-g-text font-semibold rounded-full cursor-pointer md:hidden"
-            >
-              Delete
-            </button>
-          )}
+          <div className="w-full mt-10 border-t border-t-border-subtle"></div>
+          <div className="md:hidden">
+            <Button
+              label="Update"
+              type="submit"
+              background="bg-btn-primary"
+              hoverBg="hover:bg-btn-primary-hover"
+              textColor="text-btn-primary-text"
+              disabled={false}
+            />
+          </div>
+          <div className="py-1 md:hidden">
+            {transactionDay === today && (
+              <Button
+                label="Delete"
+                type="button"
+                background="bg-btn-danger"
+                hoverBg="hover:bg-btn-danger-hover"
+                textColor="text-btn-danger-text"
+                disabled={false}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

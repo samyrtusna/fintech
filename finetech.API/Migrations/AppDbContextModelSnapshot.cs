@@ -60,152 +60,7 @@ namespace finetech.Migrations
                     b.HasIndex("Name", "UserId")
                         .IsUnique();
 
-                    b.ToTable("Categories", (string)null);
-                });
-
-            modelBuilder.Entity("fintech.API.Domain.Entities.ExchangeRate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FromCurrency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18,6)");
-
-                    b.Property<string>("ToCurrency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FromCurrency", "ToCurrency", "Date")
-                        .IsUnique();
-
-                    b.ToTable("ExchangeRates", (string)null);
-                });
-
-            modelBuilder.Entity("fintech.API.Domain.Entities.FinancialIndicator", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("PeriodEnd")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("PeriodStart")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PeriodType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<Guid>("SnapshotId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Value")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SnapshotId");
-
-                    b.ToTable("FinancialIndicators", (string)null);
-                });
-
-            modelBuilder.Entity("fintech.API.Domain.Entities.FinancialIntelligenceSnapshot", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("AvgTransactionAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("CashFlow")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("NetBalance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("NetSavings")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("PeriodEnd")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("PeriodStart")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PeriodType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("TopSpendingCategory")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<decimal>("TopSpendingCategoryAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalContractedDebts")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalEssentialExpenses")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalExpenses")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalIncomes")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalInvestments")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalNetCashFlow")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalPaidInterests")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalRepayedDebts")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("TransactionsCount")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FinancialIntelligenceSnapshots", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("fintech.API.Domain.Entities.FinancialTransaction", b =>
@@ -264,7 +119,27 @@ namespace finetech.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("FinancialTransactions", (string)null);
+                    b.ToTable("FinancialTransactions");
+                });
+
+            modelBuilder.Entity("fintech.API.Domain.Entities.Options", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Options");
                 });
 
             modelBuilder.Entity("fintech.API.Domain.Entities.RefreshToken", b =>
@@ -296,7 +171,7 @@ namespace finetech.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("fintech.API.Domain.Entities.User", b =>
@@ -340,7 +215,7 @@ namespace finetech.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("fintech.API.Domain.Entities.UserCategorySetting", b =>
@@ -365,7 +240,7 @@ namespace finetech.Migrations
                     b.HasIndex("UserId", "CategoryId")
                         .IsUnique();
 
-                    b.ToTable("UserCategoriesSettings", (string)null);
+                    b.ToTable("UserCategoriesSettings");
                 });
 
             modelBuilder.Entity("fintech.API.Domain.Entities.Category", b =>
@@ -376,17 +251,6 @@ namespace finetech.Migrations
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("ParentCategory");
-                });
-
-            modelBuilder.Entity("fintech.API.Domain.Entities.FinancialIndicator", b =>
-                {
-                    b.HasOne("fintech.API.Domain.Entities.FinancialIntelligenceSnapshot", "SnapShot")
-                        .WithMany("FinancialIndicators")
-                        .HasForeignKey("SnapshotId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SnapShot");
                 });
 
             modelBuilder.Entity("fintech.API.Domain.Entities.FinancialTransaction", b =>
@@ -433,11 +297,6 @@ namespace finetech.Migrations
             modelBuilder.Entity("fintech.API.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Transactions");
-                });
-
-            modelBuilder.Entity("fintech.API.Domain.Entities.FinancialIntelligenceSnapshot", b =>
-                {
-                    b.Navigation("FinancialIndicators");
                 });
 
             modelBuilder.Entity("fintech.API.Domain.Entities.User", b =>

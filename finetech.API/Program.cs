@@ -1,9 +1,10 @@
 using fintech.API.API.Middlewares;
+using fintech.API.Application.Interfaces.Services;
 using fintech.API.Application.Services;
 using fintech.API.Application.Validators.AuthDtosValidators;
-using fintech.API.Infrastructure.BackgroundServices.Workers;
 using fintech.API.Infrastructure.DataSeeders;
 using fintech.API.Infrastructure.EFcore.ContextDb;
+using fintech.API.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,8 +22,12 @@ builder.Services.AddControllers().AddJsonOptions(options =>
         new System.Text.Json.Serialization.JsonStringEnumConverter()
         );
 });
+
+builder.Services.AddSingleton<IEncryptionService, AesEncryptionService>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddHttpClient();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -33,12 +38,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestDtoValidator>(); 
 
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddHostedService<FinancialAggregatesDailyWorker>();
-builder.Services.AddHostedService<FinancialAggregatesMonthlyWorker>();
-builder.Services.AddHostedService<FinancialAggregatesYearlyWorker>();
 
 builder.Services.AddAuthentication(options =>
 {

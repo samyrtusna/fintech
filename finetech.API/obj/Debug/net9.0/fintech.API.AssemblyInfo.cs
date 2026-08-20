@@ -11,10 +11,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("b8bc5c67-d0b1-49e2-8524-52a41fd30c5b")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("fintech.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5e43fae6ff752f80991dfaa71c9f9d969a76f011")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+998533e975736c2c8c8d2d74ec0813d60a91f9a2")]
 [assembly: System.Reflection.AssemblyProductAttribute("fintech.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("fintech.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

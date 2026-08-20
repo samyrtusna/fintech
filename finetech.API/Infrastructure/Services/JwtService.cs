@@ -20,7 +20,8 @@ namespace fintech.API.Infrastructure.Services
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.Role.ToString()),
-                new Claim(ClaimTypes.UserData, user.BaseCurrency)
+                new Claim(ClaimTypes.UserData, user.BaseCurrency),
+                new Claim(ClaimTypes.UserData, user.CreatedAt.ToString("o"))
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!)) ?? throw new InvalidOperationException("JWT secret key is not configured.");
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

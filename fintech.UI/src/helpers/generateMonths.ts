@@ -1,10 +1,17 @@
+import store from "../state/store";
 import type { MonthItem } from "../types/financialTransactionTypes";
+import { DecodeToken } from "./tokenDecoder";
 
 export default function generateMonths(): MonthItem[] {
   const result: MonthItem[] = [];
 
-  const startYear = 2026;
-  const startMonth = 1;
+  const state = store.getState();
+  const token = state.authUser?.accessToken;
+  const tokenClaims = DecodeToken(token!);
+  const createdAt = new Date(tokenClaims.createdAt);
+
+  const startYear = createdAt.getFullYear();
+  const startMonth = createdAt.getMonth() + 1;
   const now = new Date();
 
   let year = startYear;

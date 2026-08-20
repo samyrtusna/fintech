@@ -1,17 +1,15 @@
-﻿using AutoMapper;
-using fintech.API.Application.DTOs.ApiResponsesDtos;
+﻿using fintech.API.Application.DTOs.ApiResponsesDtos;
 using fintech.API.Application.DTOs.AuthDtos;
 using fintech.API.Application.Interfaces.Repositories;
 using fintech.API.Application.Interfaces.Services;
 using fintech.API.Application.Exceptions;
-using fintech.API.Domain.Entities;
+using fintech.API.Application.Mappings;
 
 namespace fintech.API.Application.Services
 {
     public class AuthService(IUserRepository userRepository,
         IJwtService jwtService,
         IRefreshTokenService refreshTokenService,
-        IMapper mapper,
         IPasswordHasher passwordHasher,
         ICookieService cookieService) : IAuthService
     {
@@ -25,7 +23,7 @@ namespace fintech.API.Application.Services
                 throw new DuplicateValueException($"A user with email {dto.Email} already exists.");
             }
 
-            var newUser = mapper.Map<User>(dto);
+            var newUser = dto.MapToEntity();
             newUser.PasswordHash = passwordHasher.HashPassword(dto.Password);
 
             await userRepository.AddAsync(newUser);

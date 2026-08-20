@@ -1,13 +1,21 @@
-import axios from "axios";
+import type { GetSymbolsResponse } from "../../types/exchangeRateApiTypes";
+import http from "./http";
 
-const exchangeRateKey: string = import.meta.env.VITE_EXCHANGE_RATE_KEY;
-const exchangeRateUrl: string = import.meta.env.VITE_EXCHANGE_RATE_URL;
-
-const getCurrencies = async () => {
-  const response = await axios.get(`${exchangeRateUrl}/symbols`, {
-    params: { access_key: exchangeRateKey },
-  });
-  return response.data;
+const getCurrencies = async (): Promise<GetSymbolsResponse> => {
+  try {
+    return await http.get<GetSymbolsResponse, undefined>(
+      "exchangeRateAPI/symbols",
+    );
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to get currency symbols: ${error.message}`, {
+        cause: error,
+      });
+    }
+    throw new Error("Failed to get currency symbols: unknown error", {
+      cause: error,
+    });
+  }
 };
 
 export default { getCurrencies };

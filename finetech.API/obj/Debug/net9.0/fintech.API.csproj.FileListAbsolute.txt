@@ -153,8 +153,6 @@ C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\bin\Debug\net9.0\fint
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\bin\Debug\net9.0\fintech.API.runtimeconfig.json
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\bin\Debug\net9.0\fintech.API.dll
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\bin\Debug\net9.0\fintech.API.pdb
-C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\bin\Debug\net9.0\AutoMapper.dll
-C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\bin\Debug\net9.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\bin\Debug\net9.0\BCrypt.Net-Next.dll
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\bin\Debug\net9.0\FluentValidation.dll
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\bin\Debug\net9.0\FluentValidation.AspNetCore.dll

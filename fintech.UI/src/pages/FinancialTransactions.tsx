@@ -6,21 +6,27 @@ import { toast } from "sonner";
 import {
   type GetTransactionResponse,
   type MonthItem,
+  type TransactionsFilter,
 } from "../types/financialTransactionTypes";
 import { useAppDispatch, useAppSelector } from "../state/stateHooks";
-import { fetchTransactions } from "../state/slices/financialTransactionSlice";
-import Spinner from "../components/Spinner";
 import useClickOutside from "../hooks/useClickOutside";
 import FinancialTransaction from "../components/FinancialTransaction";
 import { DecodeToken } from "../helpers/tokenDecoder";
+import FormatAmount from "../helpers/amountFormatter";
+import Calendar from "../components/Calendar";
+import financialTrascationService from "../API/Services/financialTrascationService";
+import { setFinancialTransactions } from "../state/slices/financialTransactionSlice";
 
 type PeriodType = "Month" | "Day";
 
 function FinancialTransactions() {
   const months = generateMonths();
 
-  const [selectedMonth, setSelectedMonth] = useState<MonthItem>(months[0]);
-  const [monthDropdown, setMonthDropdown] = useState<boolean>(false);
+  const [selectedMonth, setSelectedMonth] = useState<MonthItem | null>(
+    months[0],
+  );
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [dateDropdown, setDateDropdown] = useState<boolean>(false);
   const [period, setPeriod] = useState<PeriodType>("Month");
   const [periodDropdown, setPeriodDropdown] = useState<boolean>(false);
   const [activeTransaction, setActiveTransaction] =
@@ -32,7 +38,7 @@ function FinancialTransactions() {
     setPeriodDropdown(false),
   );
   const monthRef = useClickOutside<HTMLDivElement>(() =>
-    setMonthDropdown(false),
+    setDateDropdown(false),
   );
 
   const token = useAppSelector((state) => state.authUser.accessToken);
@@ -41,9 +47,10 @@ function FinancialTransactions() {
 
   const baseCurrency = DecodeToken(token!).baseCurrency;
 
-  const filter = {
-    year: selectedMonth.year,
-    month: selectedMonth.month,
+  const filter: TransactionsFilter = {
+    year: selectedMonth ? selectedMonth.year : selectedDay!.getFullYear(),
+    month: selectedMonth ? selectedMonth.month : selectedDay!.getMonth() + 1,
+    day: selectedDay?.getDate(),
     page,
     pageSize,
   };
@@ -56,50 +63,61 @@ function FinancialTransactions() {
             transactionsState.transactions.pageSize,
         );
 
-  useEffect(() => {
-    dispatch(fetchTransactions(filter));
-  }, [dispatch, selectedMonth, page]);
-
-  const tableHead = ["Type", "Category", "Amount", "Currency", "IsEssential"];
-
-  const togglePeriod = () => {
-    setPeriod((prev) => (prev === "Month" ? "Day" : "Month"));
-    setPeriodDropdown(!periodDropdown);
+  const fetchTransactions = async () => {
+    try {
+      const fetchedTransactions =
+        await financialTrascationService.getByFilterAsync(filter);
+      dispatch(setFinancialTransactions(fetchedTransactions));
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to fetch transactions",
+      );
+    }
   };
 
-  if (transactionsState.isLoadingTransactions) {
-    return (
-      <div className="flex h-dvh w-dvw justify-center items-center">
-        <Spinner />
-      </div>
-    );
-  }
+  useEffect(() => {
+    fetchTransactions();
+  }, [selectedMonth, selectedDay, period, page]);
 
-  if (transactionsState.error) {
-    toast.error(transactionsState.error);
-  }
+  const tableHead = ["Type", "Category", "Amount", "Currency", "Essential"];
+
+  const togglePeriod = () => {
+    const newPeriod = period === "Month" ? "Day" : "Month";
+
+    setPeriod(newPeriod);
+
+    if (newPeriod === "Month") {
+      setSelectedMonth(months[0]);
+      setSelectedDay(null);
+    } else {
+      setSelectedDay(new Date());
+      setSelectedMonth(null);
+    }
+    setPage(1);
+    setPeriodDropdown(false);
+  };
 
   return (
     <div className="relative">
       <div
         className={`relative min-h-dvh w-full ${activeTransaction && "blur-3xl"}`}
       >
-        <div className="hidden md:block absolute w-11/12 bg-bg-sec -top-14 bottom-2 left-1/2 -translate-x-1/2 rounded-t-2xl -z-10"></div>
-        <div className="flex w-full justify-center mt-5 bg-transparent">
+        <div className="hidden md:block absolute w-11/12 bg-bg-surface -top-14 bottom-2 left-1/2 -translate-x-1/2 -z-10"></div>
+        <div className="flex w-full justify-center mt-5">
           <div
             ref={periodRef}
             className="relative"
           >
             <button
               onClick={() => setPeriodDropdown(!periodDropdown)}
-              className={`py-1 px-2 w-20 border border-gray-200 cursor-pointer ${periodDropdown ? "rounded-tl-md" : "rounded-l-md"}`}
+              className={`py-1 px-2 w-20 bg-bg-secondary hover:bg-bg-muted cursor-pointer ${periodDropdown ? "rounded-tl-sm" : "rounded-l-sm"}`}
             >
               {period}
             </button>
             <div className={!periodDropdown ? "hidden" : "absolute top-8 z-20"}>
               <button
                 onClick={togglePeriod}
-                className="w-20 py-1 px-2  border border-gray-200 rounded-b-md cursor-pointer"
+                className="w-20 py-1 px-2  bg-bg-secondary hover:bg-bg-muted rounded-b-sm cursor-pointer"
               >
                 {period === ("Month" as PeriodType) ? "Day" : "Month"}
               </button>
@@ -109,89 +127,120 @@ function FinancialTransactions() {
             ref={monthRef}
             className="relative"
           >
-            <button
-              onClick={() => setMonthDropdown(!monthDropdown)}
-              className={`w-30 py-1 px-2 border border-gray-200 cursor-pointer bg-bg ${monthDropdown ? "rounded-tr-md" : "rounded-r-md"}`}
-            >
-              {selectedMonth.label}
-            </button>
-            <div
-              className={
-                !monthDropdown ? "hidden" : "absolute top-8 flex flex-col z-20"
-              }
-            >
-              {months
-                .filter((month) => month.key !== selectedMonth.key)
-                .map((month, index, arr) => (
-                  <button
-                    key={month.key}
-                    onClick={() => {
-                      setSelectedMonth(month);
-                      setPage(1);
-                      setMonthDropdown(!monthDropdown);
-                    }}
-                    className={`w-30 py-1 px-2 border border-gray-200 cursor-pointer bg-bg
+            {period === "Month" ? (
+              <div>
+                <button
+                  onClick={() => setDateDropdown(!dateDropdown)}
+                  className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
+                >
+                  {selectedMonth?.label}
+                </button>
+                <div
+                  className={
+                    !dateDropdown
+                      ? "hidden"
+                      : "absolute top-8 flex flex-col z-20"
+                  }
+                >
+                  {months
+                    .filter((month) => month.key !== selectedMonth?.key)
+                    .map((month, index, arr) => (
+                      <button
+                        key={month.key}
+                        onClick={() => {
+                          setSelectedMonth(month);
+                          setSelectedDay(null);
+                          setPage(1);
+                          setDateDropdown(!dateDropdown);
+                        }}
+                        className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer
                   ${index === arr.length - 1 ? "rounded-b-md" : ""}`}
-                  >
-                    {month.label}
-                  </button>
-                ))}
-            </div>
+                      >
+                        {month.label}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <button
+                  onClick={() => setDateDropdown(!dateDropdown)}
+                  className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
+                >
+                  {selectedDay?.toLocaleDateString("en-GB")}
+                </button>
+                <div
+                  className={
+                    !dateDropdown
+                      ? "hidden"
+                      : "absolute top-8 flex flex-col z-20"
+                  }
+                >
+                  <Calendar
+                    selectedDate={selectedDay}
+                    handledate={(date) => {
+                      setSelectedDay(date);
+                      setSelectedMonth(null);
+                      setPage(1);
+                      setDateDropdown(false);
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <div className="mt-10 w-full flex justify-center">
-          <div className="relative w-full md:w-fit flex justify-center">
-            <table className="border-collapse w-full md:w-fit table-fixed shadow-2xl">
+          <div className="relative w-full md:w-fit flex justify-center bg-bg-secondary">
+            <table className="border-collapse w-full md:w-fit table-fixed shadow-card">
               <thead>
-                <tr className="hidden md:table-row bg-gray-300">
+                <tr className="hidden md:table-row bg-bg-muted">
                   {tableHead.map((head) => (
                     <th
                       key={head}
-                      className="md:w-30 py-4"
+                      className={`${head === "Category" ? "w-50" : "w-30"} py-4`}
                     >
                       {head}
                     </th>
                   ))}
                 </tr>
-                <tr className="md:hidden bg-gray-300">
-                  <th>Type</th>
+                <tr className="md:hidden bg-bg-muted">
+                  <th className="py-4">Type</th>
                   <th>Category</th>
                   <th>Amount</th>
                 </tr>
               </thead>
               <tbody>
-                {transactionsState.transactions?.items.map(
-                  (transaction, index, arr) => (
-                    <tr
-                      key={transaction.id}
-                      onClick={() => setActiveTransaction(transaction)}
-                      className={`border-t border-t-gray-200 bg-bg cursor-pointer ${index === arr.length - 1 ? "border-b border-b-gray-200" : ""}`}
-                    >
-                      <td className="md:w-30 flex justify-start py-3 pl-4">
-                        {transaction.type}
-                      </td>
-                      <td className="md:w-30 py-3 pl-4">
-                        {transaction.categoryName}
-                      </td>
-                      <td className="md:w-30 flex justify-end py-3 px-4">
-                        {transaction.baseAmount}
-                      </td>
-                      <td className="hidden md:table-cell w-30 py-3 pl-10">
-                        {transaction.currency}
-                      </td>
-                      <td className="hidden md:table-cell w-30 py-3 pl-10">
-                        {transaction.isEssential ? "True" : "False"}
-                      </td>
-                    </tr>
-                  ),
-                )}
+                {transactionsState.transactions?.items.map((transaction) => (
+                  <tr
+                    key={transaction.id}
+                    onClick={() => setActiveTransaction(transaction)}
+                    className={
+                      "border-b border-b-border-subtle  cursor-pointer hover:bg-bg-muted"
+                    }
+                  >
+                    <td className="flex justify-start py-3 pl-4">
+                      {transaction.type}
+                    </td>
+                    <td className="md:py-3 pl-4">{transaction.categoryName}</td>
+                    <td className="flex justify-end py-3 pr-6">
+                      {FormatAmount(transaction.baseAmount)}
+                    </td>
+                    <td className="hidden md:table-cell w-30 py-3 pl-10">
+                      {baseCurrency}
+                    </td>
+                    <td className="hidden md:table-cell w-30 py-3 pl-10">
+                      {transaction.isEssential ? "True" : "False"}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
-            <div className="absolute -top-9 md:-top-12 right-0 md:-right-12 h-8 md:h-12 aspect-square group">
+            <div className="absolute -top-9 md:-top-12 right-0 md:-right-12 h-8 md:h-12 aspect-square group bg-bg-secondary hover:bg-bg-muted">
               <Link to="newFinancialTransaction">
-                <Plus className="stroke-1 stroke-gray-500 w-full h-full rounded-md shadow-lg hover:stroke-gray-700" />
+                <Plus className="stroke-1 stroke-text-primary w-full h-full rounded-sm shadow-card hover:stroke-gray-700" />
               </Link>
-              <span className="absolute opacity-0 group-hover:opacity-100 -top-5 -right-40 px-2 py-1 bg-gray-300 border border-gray-200 rounded-lg">
+              <span className="absolute opacity-0 group-hover:opacity-100 -top-5 -right-40 px-2 py-1 bg-bg-secondary rounded-sm">
                 Add new Transaction
               </span>
             </div>
@@ -203,7 +252,7 @@ function FinancialTransactions() {
             onClick={() => setPage((prev) => prev - 1)}
             className="px-3 py-1 disabled:opacity-0 cursor-pointer"
           >
-            <ChevronLeft className="stroke-gray-500" />
+            <ChevronLeft className="stroke-text-secondary" />
           </button>
 
           <span>
@@ -215,7 +264,7 @@ function FinancialTransactions() {
             onClick={() => setPage((prev) => prev + 1)}
             className="px-3 py-1 disabled:opacity-0 cursor-pointer"
           >
-            <ChevronRight className="stroke-gray-500" />
+            <ChevronRight className="stroke-text-secondary" />
           </button>
         </div>
       </div>

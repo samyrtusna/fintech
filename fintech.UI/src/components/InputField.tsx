@@ -10,7 +10,7 @@ function InputField(props: InputFieldProps) {
         name={name}
         type={type}
         placeholder={placeholder}
-        className="w-full py-1 pl-3 rounded-mob-bt-r border border-box-br-c"
+        className="w-full py-1 pl-3 rounded-sm border border-width-thin border-border-subtle"
       />
       <div className="min-h-5 pl-3">
         <ErrorMessage

@@ -1,6 +1,7 @@
 import type { AxiosError, AxiosRequestConfig } from "axios";
 import AxiosService from "../axiosInstance";
-import { logout, refreshToken } from "../../../state/slices/authSlice";
+import { logout, setAccessToken } from "../../../state/slices/authSlice";
+import authService from "../../Services/authService";
 import store from "../../../state/store";
 
 interface CustomAxiosRequestConfig extends AxiosRequestConfig {
@@ -20,7 +21,8 @@ export function responseInterceptor() {
         originalRequest._retry = true;
 
         try {
-          await store.dispatch(refreshToken()).unwrap();
+          const accessToken = await authService.refreshToken();
+          store.dispatch(setAccessToken(accessToken));
           return AxiosService(originalRequest);
         } catch (refreshTokenError) {
           console.error("Failed to refresh token", refreshTokenError);

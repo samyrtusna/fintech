@@ -13,10 +13,8 @@ namespace fintech.API.Infrastructure.EFcore.ContextDb
         public DbSet<User> Users { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Category> Categories { get; set; }
-        public DbSet <UserCategorySetting> UserCategoriesSettings { get; set; }
-        public DbSet <FinancialTransaction> FinancialTransactions { get; set; }  
-        public DbSet<ExchangeRate> ExchangeRates { get; set; }
-        public DbSet<FinancialIntelligenceSnapshot> FinancialIntelligenceSnapshots { get; set; }
-        public DbSet<FinancialIndicator> FinancialIndicators { get; set; }
+        public DbSet<UserCategorySetting> UserCategoriesSettings { get; set; }
+        public DbSet<FinancialTransaction> FinancialTransactions { get; set; }
+        public DbSet<Options> Options { get; set; }
     }
 }

@@ -20,7 +20,11 @@ export const DecodeToken = (token: string): DecodedTokenType => {
     baseCurrency:
       decoded[
         "http://schemas.microsoft.com/ws/2008/06/identity/claims/userdata"
-      ],
+      ][0],
+    createdAt:
+      decoded[
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/userdata"
+      ][1],
     expire: decoded.exp ? decoded.exp : undefined,
   };
   return tokenClaims;

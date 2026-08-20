@@ -18,6 +18,7 @@ namespace fintech.API.Domain.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsDeleted { get; set; } = false;  
         public User User { get; set; } = null!;  
-        public Category Category { get; set; } = null!;   
+        public Category Category { get; set; } = null!;
+        //TODO: Add BaseCurrency property to store the user's base currency at the time of transaction for historical accuracy.
     }
 }

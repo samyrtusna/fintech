@@ -22,12 +22,18 @@ export interface NewTransactionRequest extends UpdateTransactionRequest {
   transactionDate?: Date;
 }
 
-export interface GetTransactionResponse extends NewTransactionRequest {
+export interface GetTransactionResponse {
   id: string;
   type: FinancialTypes;
   exchangeRate: number;
   baseAmount: number;
   categoryName: string;
+  categoryId: string;
+  amount: number;
+  currency: string;
+  transactionDate?: string;
+  description?: string;
+  isEssential?: boolean;
 }
 
 export interface PaginatedTransactions {
@@ -38,10 +44,13 @@ export interface PaginatedTransactions {
 }
 
 export interface TransactionsFilter {
-  year?: number;
-  month?: number;
+  year: number;
+  month: number;
+  day?: number;
   categoryId?: string;
   isEssential?: boolean;
+  page: number;
+  pageSize: number;
 }
 
 export interface UpdateTransactionPayload {
@@ -51,17 +60,6 @@ export interface UpdateTransactionPayload {
 
 export interface TransactionState {
   transactions: PaginatedTransactions | null;
-  selectedTransaction: GetTransactionResponse | null;
-  currentFilter: TransactionsFilter | null;
-
-  isLoadingTransactions: boolean;
-  isLoadingTransaction: boolean;
-  isAdding: boolean;
-  isUpdating: boolean;
-  isDeleting: boolean;
-
-  error: string | null;
-  operationError: string | null;
 }
 
 export interface MonthItem {

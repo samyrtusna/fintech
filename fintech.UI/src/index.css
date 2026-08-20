@@ -1,188 +1,121 @@
 @import "tailwindcss";
 
+/* Base setup & performance optimization */
 @layer base {
   * {
-    @apply transition-all duration-700 ease-in-out;
+    @apply transition-colors duration-300 ease-in-out;
+  }
+
+  body {
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    font-family:
+      ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   }
 }
 
+/* Tailwind v4 Custom Tokens Mapping */
 @theme {
-  /* background-color */
-  --color-bg: oklch(var(--background));
-  --color-bg-sec: oklch(var(--bg-section));
-  --color-bg-icon: oklch(var(--bg-icon));
-  /* button-color */
-  --color-t-active: oklch(var(--text-active));
-  --color-t-disabled: oklch(var(--text-disabled));
-  --color-bt-g: oklch(var(--bt-general));
-  --color-bt-g-h: oklch(48.8% 0.243 264.376);
-  --color-bt-g-text: oklch(98.4% 0.003 247.858);
-  --color-bt-d: oklch(var(--bt-danger));
-  --color-bt-d-h: oklch(50.5% 0.213 27.518);
-  --color-bt-ds: oklch(var(--bt-disabled));
-  --color-bt-ds-h: oklch(var(--bt-disabled-hover));
-  /* box-color */
-  --color-box-br-c: oklch(70.7% 0.022 261.325);
-  /* radius */
-  --radius-bt-r: 0.4rem;
-  --radius-box-r: 0.6rem;
-  --radius-mob-bt-r: 1.5rem;
-  /* shadow */
-  --shadow-bt-sh: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-box-sh:
-    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  /* border */
-  --border-box-br-w: 0.5rem;
+  /* Backgrounds */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-muted: var(--bg-muted);
+
+  /* Text Colors */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+
+  /* Standard Button */
+  --color-btn-primary: var(--btn-primary);
+  --color-btn-primary-hover: var(--btn-primary-hover);
+  --color-btn-primary-text: var(--btn-primary-text);
+
+  /* Danger Button */
+  --color-btn-danger: var(--btn-danger);
+  --color-btn-danger-hover: var(--btn-danger-hover);
+  --color-btn-danger-text: var(--btn-danger-text);
+
+  /* Disabled Button */
+  --color-btn-disabled: var(--btn-disabled);
+  --color-btn-disabled-hover: var(--btn-disabled-hover);
+  --color-btn-disabled-text: var(--btn-disabled-text);
+
+  /* Border */
+  --color-border-subtle: var(--border-subtle);
+  --border-width-thin: 1px;
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+
+  /* Elevation / Shadows */
+  --shadow-subtle:
+    0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --shadow-card:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.05);
 }
 
-:root {
-  font-family:
-    ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
-  color: oklch(var(--text-c));
-  background-color: oklch(var(--background));
-}
-
+/* Light Theme Variables */
+:root,
 .light {
-  /* background-color */
-  --background: 98.5% 0.002 247.839;
-  --bg-section: 96.7% 0.003 264.542;
-  --bg-icon: 96.7% 0.003 264.542;
-  /* button-color */
-  --text-active: 27.9% 0.041 260.031;
-  --text-disabled: 70.4% 0.04 256.788;
-  --bt-general: 54.6% 0.245 262.881;
-  --bt-danger: 57.7% 0.245 27.325;
-  --bt-disabled: 70.7% 0.022 261.325;
-  --bt-disabled-hover: 55.1% 0.027 264.364;
-  /* text-color */
-  --text-c: 13% 0.028 261.692;
+  /* 4 Background Colors */
+  --bg-primary: oklch(0.98 0.01 240); /* Soft white tint */
+  --bg-surface: oklch(0.93 0.03 240); /* Lightest tint (#BDD8E9 derived) */
+  --bg-secondary: oklch(0.88 0.04 240); /* #BDD8E9 */
+  --bg-muted: oklch(0.82 0.05 235); /* #7BBDE8 soft variant */
+
+  /* 2 Text Colors */
+  --text-primary: oklch(0.22 0.06 250); /* #001D39 Deep Midnight */
+  --text-secondary: oklch(0.53 0.08 250); /* #49769F Muted Blue */
+
+  /* Standard Button */
+  --btn-primary: oklch(0.35 0.09 250); /* #0A4174 */
+  --btn-primary-hover: oklch(0.22 0.06 250); /* #001D39 */
+  --btn-primary-text: oklch(0.99 0 0); /* White */
+
+  /* Danger Button */
+  --btn-danger: oklch(0.58 0.22 25); /* Balanced Crimson */
+  --btn-danger-hover: oklch(0.48 0.22 25); /* Deep Crimson */
+  --btn-danger-text: oklch(0.99 0 0); /* White */
+
+  /* Disabled Button */
+  --btn-disabled: oklch(0.88 0.02 240); /* Low contrast blue-gray */
+  --btn-disabled-hover: oklch(0.88 0.02 240);
+  --btn-disabled-text: oklch(0.65 0.03 240);
+
+  /* Thin Border */
+  --border-subtle: oklch(0.82 0.04 235 / 0.5);
 }
 
+/* Dark Theme Variables */
 .dark {
-  /* background-color */
-  --background: 21% 0.034 264.665;
-  --bg-section: 27.8% 0.033 256.848;
-  --bg-icon: 44.6% 0.03 256.802;
-  /* button-color */
-  --text-active: 98.4% 0.003 247.858;
-  --text-disabled: 44.6% 0.043 257.281;
-  --bt-general: 37.9% 0.146 265.522;
-  --bt-danger: 39.6% 0.141 25.723;
-  --bt-disabled: 55.1% 0.027 264.364;
-  --bt-disabled-hover: 70.7% 0.022 261.325;
-  /* text-color */
-  --text-c: 98.5% 0.002 247.839;
+  /* 4 Background Colors */
+  --bg-primary: oklch(0.22 0.06 250); /* #001D39 Deepest */
+  --bg-surface: oklch(0.28 0.07 250); /* Dark Slate Blue */
+  --bg-secondary: oklch(0.35 0.09 250); /* #0A4174 */
+  --bg-muted: oklch(0.42 0.08 245); /* #49769F dark variant */
+
+  /* 2 Text Colors */
+  --text-primary: oklch(0.93 0.03 240); /* #BDD8E9 Soft Light */
+  --text-secondary: oklch(0.76 0.1 240); /* #7BBDE8 Bright Accent */
+
+  /* Standard Button */
+  --btn-primary: oklch(0.76 0.1 240); /* #7BBDE8 Vibrant Blue */
+  --btn-primary-hover: oklch(0.88 0.04 240); /* #BDD8E9 Lighter */
+  --btn-primary-text: oklch(0.22 0.06 250); /* #001D39 Dark Text */
+
+  /* Danger Button */
+  --btn-danger: oklch(0.55 0.2 22); /* Coral Red */
+  --btn-danger-hover: oklch(0.63 0.2 22); /* Brighter Crimson */
+  --btn-danger-text: oklch(0.99 0 0); /* White */
+
+  /* Disabled Button */
+  --btn-disabled: oklch(0.3 0.04 250); /* Dark Muted Gray-Blue */
+  --btn-disabled-hover: oklch(0.3 0.04 250);
+  --btn-disabled-text: oklch(0.5 0.04 250);
+
+  /* Thin Border */
+  --border-subtle: oklch(0.42 0.08 245 / 0.4);
 }
-
-/* :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-} */

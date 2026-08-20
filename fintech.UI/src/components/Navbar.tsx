@@ -43,11 +43,11 @@ function Navbar() {
   }
   return (
     <>
-      <div className="flex justify-between items-center min-w-dvw h-12 px-3 bg-bg md:hidden">
+      <div className="flex justify-between items-center min-w-dvw h-12 px-3 bg-bg-surface md:hidden">
         {!accessToken ? (
           <Link
             to="login"
-            className="h-8 w-8 rounded-xl bg-bg-icon "
+            className="h-8 w-8 rounded-xl bg-bg-muted "
           >
             <IconComponent icon={CircleUser} />
           </Link>
@@ -56,7 +56,7 @@ function Navbar() {
             to="#"
             className="h-full flex items-center"
           >
-            <div className="w-8 h-8 p-1 bg-bg-icon rounded-xl font-bold">
+            <div className="w-8 h-8 p-1 bg-bg-muted rounded-xl font-bold">
               {initials}
             </div>
           </Link>
@@ -65,7 +65,7 @@ function Navbar() {
           <Link
             key={link.to}
             to={link.to}
-            className="h-8 w-8 rounded-xl bg-bg-icon "
+            className="h-8 w-8 rounded-xl bg-bg-muted "
           >
             <IconComponent icon={link.icon} />
           </Link>
@@ -73,7 +73,7 @@ function Navbar() {
 
         <button
           onClick={toggleTheme}
-          className="h-8 w-8 rounded-xl bg-bg-icon "
+          className="h-8 w-8 rounded-xl bg-bg-muted "
         >
           <IconComponent icon={theme === "dark" ? Sun : MoonStar} />
         </button>
@@ -83,7 +83,7 @@ function Navbar() {
       <div className="hidden relative md:flex w-dvw my-8 justify-center items-center">
         {/* Navlink border color is hardcoded */}
 
-        <div className="flex h-12 w-fit px-5 items-center bg-bg border border-gray-200 rounded-full shadow-xl">
+        <div className="flex h-12 w-fit px-5 items-center bg-bg-secondary  rounded-full shadow-card">
           {textLinks.map((link) => (
             <NavLink
               key={link.label}
@@ -96,9 +96,9 @@ function Navbar() {
             </NavLink>
           ))}
         </div>
-        <div className="absolute flex items-center h-12 px-4 border border-gray-200 rounded-full shadow-xl bg-bg top-0 right-10">
+        <div className="absolute flex items-center h-12 px-4 rounded-full shadow-card bg-bg-secondary top-0 right-10">
           <button
-            className="cursor-pointer"
+            className="cursor-pointer hover:scale-110 hover:font-bold"
             onClick={toggleTheme}
           >
             <IconComponent icon={theme === "dark" ? Sun : MoonStar} />
@@ -108,7 +108,7 @@ function Navbar() {
           className={`${accessToken ? "absolute" : "hidden"} top-0 left-10 h-12 w-12`}
         >
           <Link to="#">
-            <div className="w-full h-full bg-bg-icon rounded-full shadow-xl font-bold flex justify-center items-center">
+            <div className="w-full h-full bg-bg-secondary rounded-full shadow-card font-bold flex justify-center items-center">
               {initials}
             </div>
           </Link>

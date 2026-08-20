@@ -13,7 +13,7 @@ namespace fintech.API.Application.DTOs.FinancialTransactionDtos
         public decimal BaseAmount { get; set; }
         public string Description { get; set; } = string.Empty;
         public bool IsEssential { get; set; }
-        public DateTime TransactionDate { get; set; }
+        public DateOnly TransactionDate { get; set; }
         public string CategoryName { get; set; } = null!;  
     }
 }

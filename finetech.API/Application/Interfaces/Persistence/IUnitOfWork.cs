@@ -2,12 +2,10 @@
 
 namespace fintech.API.Application.Interfaces.Persistence
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork 
     {
         ICategoryRepository Categories { get; }
-        IFinancialIntelligenceSnapshotRepository FinancialIntelligenceSnapshots { get; }
         IFinancialTransactionRepository FinancialTransactions { get; }
-        IFinancialIndicatorRepository FinancialIndicators { get; } 
         IRefreshTokenRepository RefreshTokens { get; }
         IUserCategorySettingRepository UserCategorySettings { get; }
         IUserRepository Users { get; }

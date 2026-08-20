@@ -1,17 +1,18 @@
+import authService from "../API/Services/authService";
 import { Formik, Form, type FormikHelpers } from "formik";
 import { ArrowLeft, Eye, EyeClosed } from "lucide-react";
 import Logo from "../components/Logo";
 import InputField from "../components/InputField";
-import SubmitButton from "../components/SubmitButton";
 import { useState } from "react";
 import { registerSchema } from "../formik/registerSchema";
 import { useAppDispatch, useAppSelector } from "../state/stateHooks";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import type { RegisterRequest } from "../types/authTypes";
-import { registerUser } from "../state/slices/authSlice";
 import IconComponent from "../components/IconComponent";
 import Spinner from "../components/Spinner";
+import Button from "../components/Button";
+import { setAccessToken } from "../state/slices/authSlice";
 
 function Register() {
   const initialValues: RegisterRequest = {
@@ -19,7 +20,8 @@ function Register() {
     email: "",
     password: "",
   };
-  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const authState = useAppSelector((state) => state.authUser);
 
   const dispatch = useAppDispatch();
@@ -32,32 +34,34 @@ function Register() {
     if (authState.accessToken) {
       toast.info(`User "${values.email}" is already logged in`);
       navigate("/");
-    } else {
-      const response = await dispatch(registerUser(values));
-      if (response.meta.requestStatus === "fulfilled") {
-        props.setSubmitting(false);
-        props.resetForm();
-        navigate("/");
-      }
+    }
+    try {
+      setIsLoading(true);
+      const accessToken = await authService.signup(values);
+      dispatch(setAccessToken(accessToken));
+      props.resetForm();
+      navigate("/");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Signup Failed");
+    } finally {
+      props.setSubmitting(false);
+      setIsLoading(false);
     }
   };
-  if (authState.loading) {
+  if (isLoading) {
     return (
       <div className="flex h-dvh w-dvw justify-center items-center">
         <Spinner />
       </div>
     );
   }
-  if (authState.error) {
-    toast.error(authState.error);
-  }
   return (
     <div className="flex bg-bg h-dvh  md:justify-center md:items-center">
-      <div className="w-full h-fit max-h-dvh py-2 px-2 bg-bg-sec rounded-box-r md:w-1/2  md:shadow-box-sh lg:w-1/3">
+      <div className="w-full h-fit max-h-dvh py-2 px-2 bg-bg-surface rounded-sm md:w-1/2  md:shadow-card lg:w-1/3">
         {/* the div background color is hardcoded */}
         <Link
           to="/"
-          className="flex justify-center items-center h-10 aspect-square mx-2 rounded-full hover:bg-amber-500"
+          className="flex justify-center items-center h-10 aspect-square mx-2 rounded-full hover:bg-bg-muted"
         >
           <IconComponent icon={ArrowLeft} />
         </Link>
@@ -107,7 +111,7 @@ function Register() {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/3 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                          className="absolute right-3 top-1/3 -translate-y-1/2 text-text-secondary hover:text-gray-700 cursor-pointer"
                           aria-label={
                             showPassword ? "Hide password" : "Show password"
                           }
@@ -120,9 +124,17 @@ function Register() {
                         </button>
                       </div>
 
-                      <SubmitButton
-                        formik={formik}
+                      <Button
                         label="Sign Up"
+                        type="submit"
+                        background="bg-btn-primary"
+                        hoverBg="hover:bg-btn-primary-hover"
+                        textColor="text-btn-primary-text"
+                        disabled={
+                          !formik.dirty ||
+                          !formik.isValid ||
+                          formik.isSubmitting
+                        }
                       />
                     </Form>
                     <div className="flex justify-center items-start text-xs">

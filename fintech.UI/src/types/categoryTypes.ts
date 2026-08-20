@@ -17,3 +17,7 @@ export interface GetCategoryResponse {
 export interface UpdateCategoryRequest {
   name: string;
 }
+
+export interface CategoryState {
+  categories: GetCategoryResponse[];
+}

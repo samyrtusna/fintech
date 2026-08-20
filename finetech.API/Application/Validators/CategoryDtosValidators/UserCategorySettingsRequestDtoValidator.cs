@@ -1,4 +1,4 @@
-﻿using fintech.API.Application.DTOs.CategoryDtos;
+﻿using fintech.API.Application.DTOs.UserCategorySettingDtos;
 using FluentValidation;
 
 namespace fintech.API.Application.Validators.CategoryDtosValidators
