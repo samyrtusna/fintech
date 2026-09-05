@@ -1,11 +1,64 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+﻿# ============================================================
+# Visual Studio / .NET
+# ============================================================
 
-/finetech/.vs
-/finetech/finetech/bin/Debug/net9.0
-/finetech/finetech/obj
-/finetech/finetech/WeatherForecast.cs
-/finetech/finetech/fintech.http
-/documentation
-/.vs
+.vs/
+**/bin/
+**/obj/
+
+# User-specific Visual Studio files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+secrets.json
+
+# Build output
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+[Bb]inaries/
+
+# Test results
+TestResults/
+*.trx
+
+# ============================================================
+# .NET / ASP.NET
+# ============================================================
+
+# ASP.NET generated files
+wwwroot/lib/
+
+# HTTPS development certificate
+*.pfx
+
+
+# ============================================================
+# Node / React / Vite
+# ============================================================
+
+node_modules/
+dist/
+.vite/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# ============================================================
+# Documentation
+# ============================================================
+
+/documentation/
+/snippets/
+
+# ============================================================
+# OS
+# ============================================================
+
+.DS_Store
+Thumbs.db
