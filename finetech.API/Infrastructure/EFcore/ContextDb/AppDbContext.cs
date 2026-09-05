@@ -16,5 +16,6 @@ namespace fintech.API.Infrastructure.EFcore.ContextDb
         public DbSet<UserCategorySetting> UserCategoriesSettings { get; set; }
         public DbSet<FinancialTransaction> FinancialTransactions { get; set; }
         public DbSet<Options> Options { get; set; }
+        public DbSet<FinancialAggregates> FinancialAggregates { get; set; }
     }
 }

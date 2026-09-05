@@ -31,7 +31,7 @@ export interface GetTransactionResponse {
   categoryId: string;
   amount: number;
   currency: string;
-  transactionDate?: string;
+  transactionDate: string;
   description?: string;
   isEssential?: boolean;
 }

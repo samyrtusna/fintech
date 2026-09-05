@@ -10,14 +10,15 @@ import { useAppDispatch, useAppSelector } from "../state/stateHooks";
 import type { GetCategoryResponse } from "../types/categoryTypes";
 import financialTrascationService from "../API/Services/financialTrascationService";
 import exchangeRateService from "../API/Services/exchangeRateService";
-import Calendar from "./Calendar";
+import Calendar from "../components/Calendar";
 import { useFormik, type FormikHelpers } from "formik";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import Button from "./Button";
+import Button from "../components/Button";
 import categoryService from "../API/Services/categoryService";
 import { setCategories } from "../state/slices/categorySlice";
-import Spinner from "./Spinner";
+import Spinner from "../components/Spinner";
+import { format } from "date-fns";
 
 function NewFinancialTransaction() {
   //
@@ -235,7 +236,7 @@ function NewFinancialTransaction() {
                 onClick={toggleShowCalendar}
                 className="w-45 p-2  bg-bg-surface rounded-sm shadow-card cursor-pointer"
               >
-                {formik.values.transactionDate?.toLocaleDateString("en-GB")}
+                {format(formik.values.transactionDate!, "dd-MM-yyyy")}
               </button>
 
               {showCalendar && (

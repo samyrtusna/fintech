@@ -17,8 +17,8 @@ namespace fintech.API.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<FinancialTransaction>> GetByCategoryAsync(Guid categoryId) 
-        { 
+        public async Task<IEnumerable<FinancialTransaction>> GetByCategoryAsync(Guid categoryId)
+        {
             return await context.FinancialTransactions
                 .Where(t => t.CategoryId == categoryId && !t.IsDeleted)
                 .Include(t => t.Category)
@@ -26,41 +26,41 @@ namespace fintech.API.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<FinancialTransaction>> GetByDayAsync(Guid userId,DateTime date, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<FinancialTransaction>> GetByDayAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions
-                .Where(t => t.UserId == userId && 
-                !t.IsDeleted && 
-                t.TransactionDate.Year == date.Year && 
-                t.TransactionDate.Month == date.Month && 
-                t.TransactionDate.Day == date.Day  )
+                .Where(t => t.UserId == userId &&
+                !t.IsDeleted &&
+                t.TransactionDate.Year == date.Year &&
+                t.TransactionDate.Month == date.Month &&
+                t.TransactionDate.Day == date.Day)
                 .Include(t => t.Category)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<TopSpendingCategoryDto?> GetTopSpendingCategoryPerDayAsync(Guid userId,  DateTime date, CancellationToken cancellationToken = default)
+        public async Task<TopSpendingCategoryDto?> GetTopSpendingCategoryPerDayAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions
-                .Where(t => t.UserId == userId && 
-                !t.IsDeleted && 
-                t.TransactionDate.Year == date.Year && 
-                t.TransactionDate.Month == date.Month && 
+                .Where(t => t.UserId == userId &&
+                !t.IsDeleted &&
+                t.TransactionDate.Year == date.Year &&
+                t.TransactionDate.Month == date.Month &&
                 t.TransactionDate.Day == date.Day &&
                 t.Type == FinancialType.Expense)
                 .AsNoTracking()
                 .GroupBy(t => t.Category.Name)
                 .Select(g => new TopSpendingCategoryDto { Category = g.Key, TotalAmount = g.Sum(t => t.Amount) })
                 .OrderByDescending(g => g.TotalAmount)
-                .FirstOrDefaultAsync(cancellationToken); 
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<TopSpendingCategoryDto?> GetTopSpendingCategoryPerMonthAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions
-                .Where(t => t.UserId == userId && 
-                !t.IsDeleted && 
-                t.TransactionDate.Year == date.Year && 
+                .Where(t => t.UserId == userId &&
+                !t.IsDeleted &&
+                t.TransactionDate.Year == date.Year &&
                 t.TransactionDate.Month == date.Month &&
                 t.Type == FinancialType.Expense)
                 .AsNoTracking()
@@ -73,8 +73,8 @@ namespace fintech.API.Infrastructure.Repositories
         public async Task<TopSpendingCategoryDto?> GetTopSpendingCategoryPerYearAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions
-                .Where(t => t.UserId == userId && 
-                !t.IsDeleted && 
+                .Where(t => t.UserId == userId &&
+                !t.IsDeleted &&
                 t.TransactionDate.Year == date.Year &&
                 t.Type == FinancialType.Expense)
                 .AsNoTracking()
@@ -83,6 +83,6 @@ namespace fintech.API.Infrastructure.Repositories
                 .OrderByDescending(g => g.TotalAmount)
                 .FirstOrDefaultAsync(cancellationToken);
         }
-    }       
+    }
 }
   

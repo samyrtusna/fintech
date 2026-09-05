@@ -1,21 +1,20 @@
 import { useEffect, useState } from "react";
 import generateMonths from "../helpers/generateMonths";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
-  type GetTransactionResponse,
   type MonthItem,
   type TransactionsFilter,
 } from "../types/financialTransactionTypes";
 import { useAppDispatch, useAppSelector } from "../state/stateHooks";
 import useClickOutside from "../hooks/useClickOutside";
-import FinancialTransaction from "../components/FinancialTransaction";
 import { DecodeToken } from "../helpers/tokenDecoder";
 import FormatAmount from "../helpers/amountFormatter";
 import Calendar from "../components/Calendar";
 import financialTrascationService from "../API/Services/financialTrascationService";
 import { setFinancialTransactions } from "../state/slices/financialTransactionSlice";
+import { format } from "date-fns";
 
 type PeriodType = "Month" | "Day";
 
@@ -29,9 +28,9 @@ function FinancialTransactions() {
   const [dateDropdown, setDateDropdown] = useState<boolean>(false);
   const [period, setPeriod] = useState<PeriodType>("Month");
   const [periodDropdown, setPeriodDropdown] = useState<boolean>(false);
-  const [activeTransaction, setActiveTransaction] =
-    useState<GetTransactionResponse | null>(null);
   const [page, setPage] = useState(1);
+
+  const navigate = useNavigate();
   const pageSize = 10;
 
   const periodRef = useClickOutside<HTMLDivElement>(() =>
@@ -47,14 +46,6 @@ function FinancialTransactions() {
 
   const baseCurrency = DecodeToken(token!).baseCurrency;
 
-  const filter: TransactionsFilter = {
-    year: selectedMonth ? selectedMonth.year : selectedDay!.getFullYear(),
-    month: selectedMonth ? selectedMonth.month : selectedDay!.getMonth() + 1,
-    day: selectedDay?.getDate(),
-    page,
-    pageSize,
-  };
-
   const totalPages =
     transactionsState.transactions == null
       ? 0
@@ -63,21 +54,37 @@ function FinancialTransactions() {
             transactionsState.transactions.pageSize,
         );
 
-  const fetchTransactions = async () => {
-    try {
-      const fetchedTransactions =
-        await financialTrascationService.getByFilterAsync(filter);
-      dispatch(setFinancialTransactions(fetchedTransactions));
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to fetch transactions",
-      );
-    }
-  };
-
   useEffect(() => {
+    const filter: TransactionsFilter = {
+      year:
+        period === "Month" ? selectedMonth!.year : selectedDay!.getFullYear(),
+
+      month:
+        period === "Month" ? selectedMonth!.month : selectedDay!.getMonth() + 1,
+
+      day: period === "Day" ? selectedDay!.getDate() : undefined,
+
+      page,
+      pageSize,
+    };
+
+    const fetchTransactions = async () => {
+      try {
+        const fetchedTransactions =
+          await financialTrascationService.getByFilterAsync(filter);
+
+        dispatch(setFinancialTransactions(fetchedTransactions));
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch transactions",
+        );
+      }
+    };
+
     fetchTransactions();
-  }, [selectedMonth, selectedDay, period, page]);
+  }, [period, selectedMonth, selectedDay, page, dispatch]);
 
   const tableHead = ["Type", "Category", "Amount", "Currency", "Essential"];
 
@@ -99,10 +106,8 @@ function FinancialTransactions() {
 
   return (
     <div className="relative">
-      <div
-        className={`relative min-h-dvh w-full ${activeTransaction && "blur-3xl"}`}
-      >
-        <div className="hidden md:block absolute w-11/12 bg-bg-surface -top-14 bottom-2 left-1/2 -translate-x-1/2 -z-10"></div>
+      <div className="relative min-h-dvh w-full">
+        <div className="hidden md:block absolute w-11/12 bg-bg-secondary -top-14 bottom-2 left-1/2 -translate-x-1/2 -z-10"></div>
         <div className="flex w-full justify-center mt-5">
           <div
             ref={periodRef}
@@ -154,7 +159,7 @@ function FinancialTransactions() {
                           setDateDropdown(!dateDropdown);
                         }}
                         className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer
-                  ${index === arr.length - 1 ? "rounded-b-md" : ""}`}
+                  ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}
                       >
                         {month.label}
                       </button>
@@ -167,7 +172,7 @@ function FinancialTransactions() {
                   onClick={() => setDateDropdown(!dateDropdown)}
                   className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
                 >
-                  {selectedDay?.toLocaleDateString("en-GB")}
+                  {format(selectedDay!, "dd-MM-yyyy")}
                 </button>
                 <div
                   className={
@@ -214,7 +219,9 @@ function FinancialTransactions() {
                 {transactionsState.transactions?.items.map((transaction) => (
                   <tr
                     key={transaction.id}
-                    onClick={() => setActiveTransaction(transaction)}
+                    onClick={() =>
+                      navigate(`financialTransaction/${transaction.id}`)
+                    }
                     className={
                       "border-b border-b-border-subtle  cursor-pointer hover:bg-bg-muted"
                     }
@@ -268,13 +275,6 @@ function FinancialTransactions() {
           </button>
         </div>
       </div>
-      {activeTransaction && (
-        <FinancialTransaction
-          transaction={activeTransaction}
-          baseCurrency={baseCurrency}
-          handleBack={() => setActiveTransaction(null)}
-        />
-      )}
     </div>
   );
 }

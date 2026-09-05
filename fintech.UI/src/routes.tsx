@@ -1,7 +1,8 @@
 import { Routes as Switch, Route } from "react-router-dom";
-import NewFinancialTransaction from "./components/NewFinancialTransaction";
+import NewFinancialTransaction from "./pages/NewFinancialTransaction";
 import AppLayout from "./layout/AppLayout";
 import FinancialTransactions from "./pages/FinancialTransactions";
+import FinancialTransaction from "./pages/FinancialTransaction";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./providers/protectedRoute";
@@ -24,6 +25,10 @@ const Routes = () => {
         <Route
           path="financialTransactions/newFinancialTransaction"
           element={<NewFinancialTransaction />}
+        />
+        <Route
+          path="financialTransactions/financialTransaction/:id"
+          element={<FinancialTransaction />}
         />
       </Route>
       <Route
