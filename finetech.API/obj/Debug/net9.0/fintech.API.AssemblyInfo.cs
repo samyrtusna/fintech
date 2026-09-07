@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("fintech.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4aee93980437ec244b16635b618e84ee9f6303b8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aeb87c88f0cc4b6b907992c8e52a7d4c9db08755")]
 [assembly: System.Reflection.AssemblyProductAttribute("fintech.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("fintech.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

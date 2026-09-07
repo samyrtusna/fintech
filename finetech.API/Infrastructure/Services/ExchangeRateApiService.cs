@@ -2,6 +2,7 @@
 using fintech.API.Application.Exceptions;
 using fintech.API.Application.Interfaces.Repositories;
 using fintech.API.Application.Interfaces.Services;
+using fintech.API.Domain.Entities;
 
 namespace fintech.API.Infrastructure.Services
 {
@@ -65,6 +66,16 @@ namespace fintech.API.Infrastructure.Services
             string errorDetails = await response.Content.ReadAsStringAsync();
             throw new HttpRequestException($"Failed to retrieve exchange rate ({response.StatusCode}): {errorDetails}");
         }
+
+        //public async Task<string> StoreEncryptedApiKey (string apiKey)
+        //{
+        //    string encryptedApiKey = _encryptionService.Encrypt(apiKey);
+        //    var newApiKeyEntity = new Options { Key = "ExchangeRateApiKey", Value = encryptedApiKey };
+        //    await _optionsRepository.AddAsync(newApiKeyEntity);
+        //    await _optionsRepository.SaveChangesAsync();
+
+        //    return encryptedApiKey;
+        //}
 
         private async Task<string> GetApiKeyAsync()
         {

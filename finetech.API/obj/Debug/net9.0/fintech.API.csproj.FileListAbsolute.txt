@@ -283,10 +283,11 @@ C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\stat
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\staticwebassets.development.json
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\staticwebassets.build.endpoints.json
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\swae.build.ex.cache
-C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\fintech..B348450E.Up2Date
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\fintech.API.dll
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\refint\fintech.API.dll
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\fintech.API.pdb
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\fintech.API.genruntimeconfig.cache
 C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\ref\fintech.API.dll
+C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\fintech.API.sourcelink.json
+C:\Users\HP\Documents\coding\Projects\fintech\finetech.API\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
