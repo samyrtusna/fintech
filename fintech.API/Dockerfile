@@ -29,4 +29,6 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
+ENV ASPNETCORE_HTTP_PORTS=10000
+
 ENTRYPOINT ["dotnet", "fintech.API.dll"]
