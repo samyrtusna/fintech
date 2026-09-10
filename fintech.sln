@@ -8,7 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fintech.API", "finetech.API\fintech.API.csproj", "{7F955A02-DA19-B210-C319-E94F20C347C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fintech.API", "fintech.API\fintech.API.csproj", "{7F955A02-DA19-B210-C319-E94F20C347C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
