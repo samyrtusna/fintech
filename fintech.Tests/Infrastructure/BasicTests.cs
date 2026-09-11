@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,7 +11,7 @@ namespace fintech.Tests.Infrastructure
         {
             var result = 1 + 1;
 
-            result.Should().Be(2);
+            Assert.Equal(2, result);
         }
     }
 }
