@@ -3,15 +3,15 @@ name: Backend CI
 on:
   push:
     branches:
-      - master
+      - main
 
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   build:
-    name: Build Backend
+    name: Build and Test Backend
     runs-on: ubuntu-latest
 
     steps:
@@ -28,3 +28,6 @@ jobs:
 
       - name: Build solution
         run: dotnet build fintech.sln --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test fintech.sln --configuration Release --no-build
