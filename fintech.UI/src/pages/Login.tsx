@@ -133,7 +133,7 @@ function Login() {
                       <p>Dont have an account?</p>
                       {/* Link color is hardcoded */}
                       <a
-                        href="register"
+                        href="/register"
                         className="text-blue-700 pl-4"
                       >
                         Register here

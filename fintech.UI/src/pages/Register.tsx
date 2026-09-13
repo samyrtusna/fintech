@@ -141,7 +141,7 @@ function Register() {
                       <p>Already a Member?</p>
                       {/* Link color is hardcoded */}
                       <a
-                        href="login"
+                        href="/login"
                         className="text-blue-700 pl-4"
                       >
                         Sign In here

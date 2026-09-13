@@ -46,7 +46,7 @@ function Navbar() {
       <div className="flex justify-between items-center min-w-dvw h-12 px-3 bg-bg-surface md:hidden">
         {!accessToken ? (
           <Link
-            to="login"
+            to="/login"
             className="h-8 w-8 rounded-xl bg-bg-muted "
           >
             <IconComponent icon={CircleUser} />

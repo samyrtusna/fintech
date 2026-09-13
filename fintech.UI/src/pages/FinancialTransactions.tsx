@@ -136,7 +136,7 @@ function FinancialTransactions() {
               <div>
                 <button
                   onClick={() => setDateDropdown(!dateDropdown)}
-                  className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
+                  className={`w-50 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
                 >
                   {selectedMonth?.label}
                 </button>

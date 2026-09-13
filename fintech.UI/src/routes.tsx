@@ -15,7 +15,7 @@ const Routes = () => {
         element={<AppLayout />}
       >
         <Route
-          path="financialTransactions"
+          path="/financialTransactions"
           element={
             <ProtectedRoute>
               <FinancialTransactions />
@@ -23,20 +23,20 @@ const Routes = () => {
           }
         />
         <Route
-          path="financialTransactions/newFinancialTransaction"
+          path="/financialTransactions/newFinancialTransaction"
           element={<NewFinancialTransaction />}
         />
         <Route
-          path="financialTransactions/financialTransaction/:id"
+          path="/financialTransactions/financialTransaction/:id"
           element={<FinancialTransaction />}
         />
       </Route>
       <Route
-        path="login"
+        path="/login"
         element={<Login />}
       />
       <Route
-        path="register"
+        path="/register"
         element={<Register />}
       />
     </Switch>
