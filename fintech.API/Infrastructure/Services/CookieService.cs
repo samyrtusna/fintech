@@ -16,7 +16,7 @@ namespace fintech.API.Infrastructure.Services
                 Secure = true,
                 SameSite = SameSiteMode.None,
                 Path= "/",
-                Expires = DateTime.UtcNow.AddDays(configuration.GetValue<int>("JwtSettings:RefreshTokenExpirationDays"))
+                Expires = DateTime.UtcNow.AddDays(configuration.GetValue<int>("Jwt:RefreshTokenExpiration"))
             };
             httpContext.Response.Cookies.Append("refreshToken", token, refreshTokenCookieOptions);
         }

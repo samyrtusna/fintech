@@ -60,7 +60,7 @@ namespace fintech.API.Application.Services
             {
                 UserId = existingToken.UserId,
                 Token = newHashedToken,
-                ExpiresAt = DateTime.UtcNow.AddDays(configuration.GetValue<int>("JwtSettings:RefreshTokenExpirationDays")),
+                ExpiresAt = DateTime.UtcNow.AddDays(configuration.GetValue<int>("Jwt:RefreshTokenExpiration")),
                 IsRevoked = false
             };
             await refreshTokenRepository.AddAsync(newRefreshTokenEntity);
