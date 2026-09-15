@@ -21,7 +21,7 @@ const signup = async (credentials: RegisterRequest): Promise<string> => {
 const login = async (Credentials: LoginRequest): Promise<string> => {
   try {
     const response = await http.post<string, LoginRequest, undefined>(
-      "auth/login/",
+      "auth/login",
       Credentials,
     );
     return response;
@@ -37,7 +37,7 @@ const login = async (Credentials: LoginRequest): Promise<string> => {
 const logout = async (): Promise<string> => {
   try {
     const response = await http.post<string, undefined, undefined>(
-      "auth/logout/",
+      "auth/logout",
     );
     return response;
   } catch (error: unknown) {
@@ -52,7 +52,7 @@ const logout = async (): Promise<string> => {
 const refreshToken = async (): Promise<string> => {
   try {
     const response = await http.post<string, undefined, undefined>(
-      "auth/refresh-token/",
+      "auth/refresh-token",
     );
     return response;
   } catch (error: unknown) {

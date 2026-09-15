@@ -104,10 +104,14 @@ function FinancialTransactions() {
     setPeriodDropdown(false);
   };
 
+  useEffect(() => {
+    console.log("dateDropdown:", dateDropdown);
+  }, [dateDropdown]);
+
   return (
     <div className="relative">
       <div className="relative min-h-dvh w-full">
-        <div className="hidden md:block absolute w-11/12 bg-bg-secondary -top-14 bottom-2 left-1/2 -translate-x-1/2 -z-10"></div>
+        {/* <div className="hidden md:block absolute w-11/12 bg-bg-secondary -top-14 bottom-2 left-1/2 -translate-x-1/2 -z-10"></div> */}
         <div className="flex w-full justify-center mt-5">
           <div
             ref={periodRef}
@@ -135,36 +139,35 @@ function FinancialTransactions() {
             {period === "Month" ? (
               <div>
                 <button
-                  onClick={() => setDateDropdown(!dateDropdown)}
+                  onClick={() => {
+                    console.log("Date dropdown clicked");
+                    setDateDropdown((prev) => !prev);
+                  }}
                   className={`w-50 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
                 >
                   {selectedMonth?.label}
                 </button>
-                <div
-                  className={
-                    !dateDropdown
-                      ? "hidden"
-                      : "absolute top-8 flex flex-col z-20"
-                  }
-                >
-                  {months
-                    .filter((month) => month.key !== selectedMonth?.key)
-                    .map((month, index, arr) => (
-                      <button
-                        key={month.key}
-                        onClick={() => {
-                          setSelectedMonth(month);
-                          setSelectedDay(null);
-                          setPage(1);
-                          setDateDropdown(!dateDropdown);
-                        }}
-                        className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer
+                {dateDropdown && (
+                  <div className="absolute top-8 flex flex-col z-50">
+                    {months
+                      .filter((month) => month.key !== selectedMonth?.key)
+                      .map((month, index, arr) => (
+                        <button
+                          key={month.key}
+                          onClick={() => {
+                            setSelectedMonth(month);
+                            setSelectedDay(null);
+                            setPage(1);
+                            setDateDropdown(!dateDropdown);
+                          }}
+                          className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer
                   ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}
-                      >
-                        {month.label}
-                      </button>
-                    ))}
-                </div>
+                        >
+                          {month.label}
+                        </button>
+                      ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div>
