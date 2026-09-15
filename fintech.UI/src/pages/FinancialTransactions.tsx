@@ -155,7 +155,7 @@ function FinancialTransactions() {
                             setPage(1);
                             setDateDropdown(!dateDropdown);
                           }}
-                          className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer
+                          className={`py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer
                   ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}
                         >
                           {month.label}

@@ -97,18 +97,19 @@ function FinancialTransaction() {
             <ArrowLeft className="stroke-gray-500 cursor-pointer" />
           </button>
           <div className="hidden w-1/4 md:flex">
-            {transactionDay === today && (
-              <div className="w-1/2 p-1">
-                <Button
-                  label="Delete"
-                  type="button"
-                  background="bg-btn-danger"
-                  hoverBg="hover:bg-btn-danger-hover"
-                  textColor="text-btn-danger-text"
-                  handleClick={handleDelete}
-                />
-              </div>
-            )}
+            <div
+              className={`w-1/2 p-1 ${transactionDay === today ? "opacity-100" : "opacity-0"}`}
+            >
+              <Button
+                label="Delete"
+                type="button"
+                background="bg-btn-danger"
+                hoverBg="hover:bg-btn-danger-hover"
+                textColor="text-btn-danger-text"
+                handleClick={handleDelete}
+              />
+            </div>
+
             <div className="w-1/2 p-1">
               <Button
                 label="Update"
