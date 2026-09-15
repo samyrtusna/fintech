@@ -132,12 +132,12 @@ function Login() {
                     <div className="flex justify-center text-xs px-2">
                       <p>Dont have an account?</p>
                       {/* Link color is hardcoded */}
-                      <a
-                        href="/register"
+                      <Link
+                        to="/register"
                         className="text-blue-700 pl-4"
                       >
                         Register here
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 );

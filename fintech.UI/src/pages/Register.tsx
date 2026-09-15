@@ -140,12 +140,12 @@ function Register() {
                     <div className="flex justify-center items-start text-xs">
                       <p>Already a Member?</p>
                       {/* Link color is hardcoded */}
-                      <a
-                        href="/login"
+                      <Link
+                        to="/login"
                         className="text-blue-700 pl-4"
                       >
                         Sign In here
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 );
