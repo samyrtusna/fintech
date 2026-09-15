@@ -104,14 +104,10 @@ function FinancialTransactions() {
     setPeriodDropdown(false);
   };
 
-  useEffect(() => {
-    console.log("dateDropdown:", dateDropdown);
-  }, [dateDropdown]);
-
   return (
     <div className="relative">
       <div className="relative min-h-dvh w-full">
-        {/* <div className="hidden md:block absolute w-11/12 bg-bg-secondary -top-14 bottom-2 left-1/2 -translate-x-1/2 -z-10"></div> */}
+        <div className="hidden md:block absolute w-11/12 bg-bg-secondary -top-14 bottom-2 left-1/2 -translate-x-1/2 -z-10"></div>
         <div className="flex w-full justify-center mt-5">
           <div
             ref={periodRef}
@@ -140,7 +136,6 @@ function FinancialTransactions() {
               <div>
                 <button
                   onClick={() => {
-                    console.log("Date dropdown clicked");
                     setDateDropdown((prev) => !prev);
                   }}
                   className={`w-50 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
@@ -148,20 +143,22 @@ function FinancialTransactions() {
                   {selectedMonth?.label}
                 </button>
                 {dateDropdown && (
-                  <div className="absolute top-8 flex flex-col z-50">
+                  <div className="fixed left-10 top-20 z-[9999] flex flex-col border-4 border-red-500 bg-white">
+                    <div className="p-5 text-black">DROPDOWN TEST</div>
+
                     {months
                       .filter((month) => month.key !== selectedMonth?.key)
-                      .map((month, index, arr) => (
+                      .map((month) => (
                         <button
+                          type="button"
                           key={month.key}
                           onClick={() => {
                             setSelectedMonth(month);
                             setSelectedDay(null);
                             setPage(1);
-                            setDateDropdown(!dateDropdown);
+                            setDateDropdown(false);
                           }}
-                          className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer
-                  ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}
+                          className="w-40 bg-white p-3 text-black hover:bg-gray-200"
                         >
                           {month.label}
                         </button>
