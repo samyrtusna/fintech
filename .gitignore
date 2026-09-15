@@ -35,6 +35,13 @@ wwwroot/lib/
 # HTTPS development certificate
 *.pfx
 
+# Local configuration
+appsettings.json
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.Local.json
+
+secrets.json
 
 # ============================================================
 # Node / React / Vite
