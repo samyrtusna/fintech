@@ -126,12 +126,12 @@ function NewFinancialTransaction() {
     return <Spinner />;
   }
   return (
-    <div className="w-dvw flex justify-center lg:p-5">
+    <div className="w-dvw flex justify-center md:p-5">
       <div className="w-full lg:w-10/12 xl:w-7/12 p-5 bg-bg-secondary rounded-sm shadow-card ">
         <div className="flex mb-5 justify-between items-center">
           <Link
             to="/financialTransactions"
-            className="flex justify-center items-center h-10 aspect-square lg:mx-2 rounded-full hover:bg-bg-muted"
+            className="flex justify-center items-center h-10 aspect-square md:mx-2 rounded-full hover:bg-bg-muted"
           >
             <ArrowLeft className="stroke-gray-500" />
           </Link>
@@ -140,8 +140,8 @@ function NewFinancialTransaction() {
         </div>
 
         <form onSubmit={formik.handleSubmit}>
-          <div className="w-full  lg:p-5 lg:flex lg:justify-between">
-            <div className="relative mb-6 lg:mb-0">
+          <div className="w-full  md:p-5 md:flex md:justify-between">
+            <div className="relative mb-6 md:mb-0">
               <h2>Type</h2>
               <select
                 name="type"
@@ -149,7 +149,7 @@ function NewFinancialTransaction() {
                 onChange={(e) =>
                   setSelectedType(e.target.value as FinancialTypes)
                 }
-                className="w-full lg:w-45 p-2 bg-bg-surface rounded-sm shadow-card cursor-pointer"
+                className="w-full md:w-45 p-2 bg-bg-surface rounded-sm shadow-card cursor-pointer"
               >
                 {types.map((t, index, arr) => (
                   <option
@@ -162,13 +162,13 @@ function NewFinancialTransaction() {
                 ))}
               </select>
             </div>
-            <div className="relative mb-6 lg:mb-0">
+            <div className="relative mb-6 md:mb-0">
               <h2>Category</h2>
               <select
                 name="categoryId"
                 value={formik.values.categoryId}
                 onChange={formik.handleChange}
-                className="w-full lg:w-45 p-2  bg-bg-surface rounded-sm shadow-card cursor-pointer"
+                className="w-full md:w-45 p-2  bg-bg-surface rounded-sm shadow-card cursor-pointer"
               >
                 {filteredCategories.map((c, index, arr) => (
                   <option
@@ -181,7 +181,7 @@ function NewFinancialTransaction() {
                 ))}
               </select>
             </div>
-            <div className="relative mb-6 lg:mb-0">
+            <div className="relative mb-6 md:mb-0">
               <h2>Is Essential</h2>
               <button
                 type="button"
@@ -191,14 +191,14 @@ function NewFinancialTransaction() {
                     !formik.values.isEssential,
                   )
                 }
-                className="w-full lg:w-45 p-2 bg-bg-surface rounded-sm shadow-card"
+                className="w-full md:w-45 p-2 bg-bg-surface rounded-sm shadow-card"
               >
                 {formik.values.isEssential ? "Essential" : "Not Essential"}
               </button>
             </div>
           </div>
-          <div className="w-full lg:p-5 lg:flex lg:justify-between">
-            <div className="mb-6 lg:mb-0">
+          <div className="w-full md:p-5 md:flex md:justify-between">
+            <div className="mb-6 md:mb-0">
               <h2>Amount</h2>
               <input
                 type="number"
@@ -207,16 +207,16 @@ function NewFinancialTransaction() {
                 step="0.01"
                 value={formik.values.amount}
                 onChange={formik.handleChange}
-                className="w-full lg:w-45 p-2 bg-bg-surface shadow-card rounded-sm"
+                className="w-full md:w-45 p-2 bg-bg-surface shadow-card rounded-sm"
               />
             </div>
-            <div className="relative mb-6 lg:mb-0">
+            <div className="relative mb-6 md:mb-0">
               <h2>Currency</h2>
               <select
                 name="currency"
                 value={formik.values.currency}
                 onChange={formik.handleChange}
-                className="w-full lg:w-45 p-2 bg-bg-surface rounded-sm shadow-card cursor-pointer"
+                className="w-full md:w-45 p-2 bg-bg-surface rounded-sm shadow-card cursor-pointer"
               >
                 {currencies.map((c, index, arr) => (
                   <option
@@ -234,13 +234,13 @@ function NewFinancialTransaction() {
               <button
                 type="button"
                 onClick={toggleShowCalendar}
-                className="w-full lg:w-45 p-2  bg-bg-surface rounded-sm shadow-card cursor-pointer"
+                className="w-full md:w-45 p-2  bg-bg-surface rounded-sm shadow-card cursor-pointer"
               >
                 {format(formik.values.transactionDate!, "dd-MM-yyyy")}
               </button>
 
               {showCalendar && (
-                <div className="absolute top-15 lg:-top-25 lg:right-80 z-20 w-full">
+                <div className="absolute top-15 md:-top-25 md:right-80 z-20 w-full">
                   <Calendar
                     selectedDate={formik.values.transactionDate!}
                     handledate={(date) => {
@@ -252,7 +252,7 @@ function NewFinancialTransaction() {
               )}
             </div>
           </div>
-          <div className="flex w-full  py-5 lg:px-5 justify-between">
+          <div className="flex w-full  py-5 md:px-5 justify-between">
             <div className="w-full">
               <h2>Description</h2>
               <textarea
@@ -263,7 +263,7 @@ function NewFinancialTransaction() {
               />
             </div>
           </div>
-          <div className="px-5">
+          <div className="md:px-5">
             <Button
               label={formik.isSubmitting ? "Saving..." : "Submit"}
               type="submit"
