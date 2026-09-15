@@ -143,22 +143,20 @@ function FinancialTransactions() {
                   {selectedMonth?.label}
                 </button>
                 {dateDropdown && (
-                  <div className="fixed left-10 top-20 z-[9999] flex flex-col border-4 border-red-500 bg-white">
-                    <div className="p-5 text-black">DROPDOWN TEST</div>
-
+                  <div className="absolute top-8 flex flex-col z-50">
                     {months
                       .filter((month) => month.key !== selectedMonth?.key)
-                      .map((month) => (
+                      .map((month, index, arr) => (
                         <button
-                          type="button"
                           key={month.key}
                           onClick={() => {
                             setSelectedMonth(month);
                             setSelectedDay(null);
                             setPage(1);
-                            setDateDropdown(false);
+                            setDateDropdown(!dateDropdown);
                           }}
-                          className="w-40 bg-white p-3 text-black hover:bg-gray-200"
+                          className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer
+                  ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}
                         >
                           {month.label}
                         </button>
