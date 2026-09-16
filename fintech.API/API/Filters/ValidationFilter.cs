@@ -7,9 +7,12 @@ namespace fintech.API.API.Filters
 {
     public class ValidationFilter : IAsyncActionFilter
     {
-        public async Task OnActionExecutionAsync(ActionExecutingContext context,ActionExecutionDelegate next)
+        public async Task OnActionExecutionAsync(
+            ActionExecutingContext context,
+            ActionExecutionDelegate next)
         {
-            var cancellationToken = context.HttpContext.RequestAborted;
+            var cancellationToken =
+                context.HttpContext.RequestAborted;
 
             var arguments = context.ActionArguments;
 
@@ -20,25 +23,28 @@ namespace fintech.API.API.Filters
                 if (argument == null)
                     continue;
 
-                var validatorType = typeof(IValidator<>).MakeGenericType(argument.GetType());
+                var validatorType =
+                    typeof(IValidator<>).MakeGenericType(argument.GetType());
 
-                var validator = context.HttpContext.RequestServices.GetRequiredService(validatorType) ?? throw new Exception("validator not found");
-                var validationContext = new ValidationContext<object>(argument);
+                var validator =
+                    context.HttpContext.RequestServices
+                        .GetRequiredService(validatorType);
 
-                var validateAsyncMethod = validatorType.GetMethod("ValidateAsync", [typeof(IValidationContext), typeof(CancellationToken)]);
+                var validationContext =
+                    new ValidationContext<object>(argument);
 
-                if (validateAsyncMethod == null)
+                if (validator is not IValidator asyncValidator)
                     continue;
 
-                var task = (Task<ValidationResult>)validateAsyncMethod.Invoke(
-                    validator,
-                    [validationContext, cancellationToken]
-                )!;
-
-                var result = await task;
+                var result =
+                    await asyncValidator.ValidateAsync(
+                        validationContext,
+                        cancellationToken);
 
                 if (!result.IsValid)
+                {
                     failures.AddRange(result.Errors);
+                }
             }
 
             if (failures.Count != 0)
