@@ -61,10 +61,10 @@
 :root,
 .light {
   /* 4 Background Colors */
-  --bg-primary: oklch(0.98 0.01 240); /* Soft white tint */
-  --bg-surface: oklch(0.93 0.03 240); /* Lightest tint (#BDD8E9 derived) */
-  --bg-secondary: oklch(0.88 0.04 240); /* #BDD8E9 */
-  --bg-muted: oklch(0.82 0.05 235); /* #7BBDE8 soft variant */
+  --bg-primary: oklch(0.99 0.01 240); /* Soft white tint */
+  --bg-surface: oklch(0.94 0.03 240); /* Lightest tint (#BDD8E9 derived) */
+  --bg-secondary: oklch(0.89 0.04 240); /* #BDD8E9 */
+  --bg-muted: oklch(0.83 0.05 235); /* #7BBDE8 soft variant */
 
   /* 2 Text Colors */
   --text-primary: oklch(0.22 0.06 250); /* #001D39 Deep Midnight */
