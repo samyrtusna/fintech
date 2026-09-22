@@ -17,11 +17,11 @@ namespace fintech.API.API.Controllers
             return Ok(symbols);
         }
 
-        //[HttpPost("newApiKey")]
-        //public async Task<ActionResult<string>> StoreEncryptedApiKey([FromBody] string apiKey)
-        //{
-        //    var encryptedApiKey = await exchangeRateApiService.StoreEncryptedApiKey(apiKey);
-        //    return Ok(encryptedApiKey);
-        //}
+        [HttpPost("newApiKey")]
+        public async Task<ActionResult<string>> StoreEncryptedApiKey([FromBody] string apiKey)
+        {
+            var encryptedApiKey = await exchangeRateApiService.StoreEncryptedApiKey(apiKey);
+            return Ok(encryptedApiKey);
+        }
     }
 }

@@ -4,6 +4,6 @@
     {
         Task<Dictionary<string, string>> GetSymbolsAsync();
         Task<decimal> GetEchangeRateAsync(string transactionCurrency, string baseCurrency);
-        //Task<string> StoreEncryptedApiKey(string apiKey);
+        Task<string> StoreEncryptedApiKey(string apiKey);
     }
 }

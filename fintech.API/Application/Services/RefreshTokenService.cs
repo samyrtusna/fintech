@@ -66,6 +66,7 @@ namespace fintech.API.Application.Services
             await refreshTokenRepository.AddAsync(newRefreshTokenEntity);
             existingToken.IsRevoked = true;
             existingToken.ReplacedByToken = newHashedToken;
+            refreshTokenRepository.Update(existingToken);
             await refreshTokenRepository.SaveChangesAsync();
 
             cookieService.SetTokenToCookie(newRefreshToken);

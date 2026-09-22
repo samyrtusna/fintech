@@ -25,11 +25,12 @@ namespace fintech.API.Infrastructure.Services
         }
         public async Task<Dictionary<string, string>> GetSymbolsAsync()
         {
-            string apiKey = await GetApiKeyAsync();
+            string apiKey = await GetApiKeyAsync()?? throw new NotFoundException("Exchange rate API Decrypted key not found.");
             string url = $"{apiUrl}/symbols?access_key={Uri.EscapeDataString(apiKey)}";
 
             HttpResponseMessage response = await client.GetAsync(url);
 
+            //TODO: add cache to cache the symbols
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<ExchangeRateSymbolsResponseDto>();
@@ -42,7 +43,12 @@ namespace fintech.API.Infrastructure.Services
             }
             else
             {
-                throw new HttpRequestException($"Failed to retrieve symbols. Status code: {response.StatusCode}");
+                var errorBody = await response.Content.ReadAsStringAsync();
+
+                throw new HttpRequestException(
+                    $"Failed to retrieve symbols. " +
+                    $"Status code: {response.StatusCode}. " +
+                    $"Response: {errorBody}");
             }
         }
 
@@ -67,15 +73,15 @@ namespace fintech.API.Infrastructure.Services
             throw new HttpRequestException($"Failed to retrieve exchange rate ({response.StatusCode}): {errorDetails}");
         }
 
-        //public async Task<string> StoreEncryptedApiKey (string apiKey)
-        //{
-        //    string encryptedApiKey = _encryptionService.Encrypt(apiKey);
-        //    var newApiKeyEntity = new Options { Key = "ExchangeRateApiKey", Value = encryptedApiKey };
-        //    await _optionsRepository.AddAsync(newApiKeyEntity);
-        //    await _optionsRepository.SaveChangesAsync();
+        public async Task<string> StoreEncryptedApiKey(string apiKey)
+        {
+            string encryptedApiKey = _encryptionService.Encrypt(apiKey);
+            var newApiKeyEntity = new Options { Key = "ExchangeRateApiKey", Value = encryptedApiKey };
+            await _optionsRepository.AddAsync(newApiKeyEntity);
+            await _optionsRepository.SaveChangesAsync();
 
-        //    return encryptedApiKey;
-        //}
+            return encryptedApiKey;
+        }
 
         private async Task<string> GetApiKeyAsync()
         {

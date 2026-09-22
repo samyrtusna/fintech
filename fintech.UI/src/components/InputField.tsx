@@ -10,13 +10,13 @@ function InputField(props: InputFieldProps) {
         name={name}
         type={type}
         placeholder={placeholder}
-        className="w-full py-1 pl-3 rounded-sm border border-width-thin border-border-subtle"
+        className="w-full py-1 pl-3 rounded-sm border border-width-thin border-input-border bg-input-bg"
       />
       <div className="min-h-5 pl-3">
         <ErrorMessage
           name={name}
           component={component}
-          className="text-xs text-red-500"
+          className="text-xs text-btn-danger"
         />
       </div>
     </>
