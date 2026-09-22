@@ -105,9 +105,9 @@ function FinancialTransactions() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative ">
       <div className="relative min-h-dvh w-full">
-        <div className="hidden md:block absolute w-11/12 bg-bg-secondary -top-14 bottom-2 left-1/2 -translate-x-1/2 -z-10"></div>
+        {/* <div className="hidden md:block absolute w-11/12 bg-bg-secondary -top-14 bottom-2 left-1/2 -translate-x-1/2 -z-10"></div> */}
         <div className="flex w-full justify-center mt-5">
           <div
             ref={periodRef}
@@ -115,14 +115,14 @@ function FinancialTransactions() {
           >
             <button
               onClick={() => setPeriodDropdown(!periodDropdown)}
-              className={`py-1 px-2 w-20 bg-bg-secondary hover:bg-bg-muted cursor-pointer ${periodDropdown ? "rounded-tl-sm" : "rounded-l-sm"}`}
+              className={`py-1 px-2 w-20 bg-navbar-bg hover:bg-btn-standard cursor-pointer ${periodDropdown ? "rounded-tl-sm" : "rounded-l-sm"}`}
             >
               {period}
             </button>
             <div className={!periodDropdown ? "hidden" : "absolute top-8 z-20"}>
               <button
                 onClick={togglePeriod}
-                className="w-20 py-1 px-2  bg-bg-secondary hover:bg-bg-muted rounded-b-sm cursor-pointer"
+                className="w-20 py-1 px-2  bg-navbar-bg hover:bg-btn-standard rounded-b-sm cursor-pointer"
               >
                 {period === ("Month" as PeriodType) ? "Day" : "Month"}
               </button>
@@ -138,12 +138,12 @@ function FinancialTransactions() {
                   onClick={() => {
                     setDateDropdown((prev) => !prev);
                   }}
-                  className={`w-50 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
+                  className={`w-50 py-1 px-2 bg-navbar-bg hover:bg-btn-standard cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
                 >
                   {selectedMonth?.label}
                 </button>
                 {dateDropdown && (
-                  <div className="absolute top-8 flex flex-col z-50">
+                  <div className="absolute top-8 w-50 flex flex-col z-50">
                     {months
                       .filter((month) => month.key !== selectedMonth?.key)
                       .map((month, index, arr) => (
@@ -155,7 +155,7 @@ function FinancialTransactions() {
                             setPage(1);
                             setDateDropdown(!dateDropdown);
                           }}
-                          className={`py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer
+                          className={`py-1 px-2 bg-navbar-bg hover:bg-btn-standard cursor-pointer
                   ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}
                         >
                           {month.label}
@@ -168,7 +168,7 @@ function FinancialTransactions() {
               <div>
                 <button
                   onClick={() => setDateDropdown(!dateDropdown)}
-                  className={`w-30 py-1 px-2 bg-bg-secondary hover:bg-bg-muted cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
+                  className={`w-30 py-1 px-2 bg-btn-standard hover:bg-btn-standard-hover cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
                 >
                   {format(selectedDay!, "dd-MM-yyyy")}
                 </button>
@@ -194,10 +194,10 @@ function FinancialTransactions() {
           </div>
         </div>
         <div className="mt-10 w-full flex justify-center">
-          <div className="relative w-full md:w-fit flex justify-center bg-bg-secondary">
+          <div className="relative w-full md:w-fit flex justify-center ">
             <table className="border-collapse w-full md:w-fit table-fixed shadow-card">
               <thead>
-                <tr className="hidden md:table-row bg-bg-muted">
+                <tr className="hidden md:table-row bg-table-head-bg">
                   {tableHead.map((head) => (
                     <th
                       key={head}
@@ -207,13 +207,13 @@ function FinancialTransactions() {
                     </th>
                   ))}
                 </tr>
-                <tr className="md:hidden bg-bg-muted">
+                <tr className="md:hidden bg-table-head-bg">
                   <th className="py-4">Type</th>
                   <th>Category</th>
                   <th>Amount</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-table-row-bg">
                 {transactionsState.transactions?.items.map((transaction) => (
                   <tr
                     key={transaction.id}
@@ -221,7 +221,7 @@ function FinancialTransactions() {
                       navigate(`financialTransaction/${transaction.id}`)
                     }
                     className={
-                      "border-b border-b-border-subtle  cursor-pointer hover:bg-bg-muted"
+                      "border-b border-b-border-subtle  cursor-pointer hover:bg-table-row-alt-bg"
                     }
                   >
                     <td className="flex justify-start py-3 pl-4">
@@ -241,11 +241,12 @@ function FinancialTransactions() {
                 ))}
               </tbody>
             </table>
-            <div className="absolute -top-9 md:-top-12 right-0 md:-right-12 h-8 md:h-12 aspect-square group bg-bg-secondary hover:bg-bg-muted">
+            <div className="absolute -top-9 md:-top-12 right-0 md:-right-12 h-8 md:h-12 aspect-square group bg-navbar-bg hover:bg-btn-standard">
+              {/* TODO Add Button */}
               <Link to="newFinancialTransaction">
                 <Plus className="stroke-1 stroke-text-primary w-full h-full rounded-sm shadow-card hover:stroke-gray-700" />
               </Link>
-              <span className="absolute opacity-0 group-hover:opacity-100 -top-5 -right-40 px-2 py-1 bg-bg-secondary rounded-sm">
+              <span className="absolute opacity-0 md:group-hover:opacity-100 -top-5 -right-40 px-2 py-1 bg-navbar-bg rounded-sm">
                 Add new Transaction
               </span>
             </div>
@@ -255,21 +256,21 @@ function FinancialTransactions() {
           <button
             disabled={page === 1}
             onClick={() => setPage((prev) => prev - 1)}
-            className="px-3 py-1 disabled:opacity-0 cursor-pointer"
+            className="px-2 py-1 mr-1 rounded-md disabled:opacity-0 cursor-pointer bg-navbar-bg hover:bg-btn-standard "
           >
-            <ChevronLeft className="stroke-text-secondary" />
+            <ChevronLeft className="stroke-text-primary" />
           </button>
 
-          <span>
+          <span className="px-2 pt-1 rounded-md bg-navbar-bg">
             Page {page} of {totalPages}
           </span>
 
           <button
             disabled={page === totalPages}
             onClick={() => setPage((prev) => prev + 1)}
-            className="px-3 py-1 disabled:opacity-0 cursor-pointer"
+            className="px-2 py-1 ml-1 rounded-md disabled:opacity-0 cursor-pointer bg-navbar-bg hover:bg-btn-standard "
           >
-            <ChevronRight className="stroke-text-secondary" />
+            <ChevronRight className="stroke-text-primary" />
           </button>
         </div>
       </div>

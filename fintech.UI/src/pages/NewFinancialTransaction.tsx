@@ -12,7 +12,7 @@ import financialTrascationService from "../API/Services/financialTrascationServi
 import exchangeRateService from "../API/Services/exchangeRateService";
 import Calendar from "../components/Calendar";
 import { useFormik, type FormikHelpers } from "formik";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Button from "../components/Button";
 import categoryService from "../API/Services/categoryService";
@@ -127,14 +127,15 @@ function NewFinancialTransaction() {
   }
   return (
     <div className="w-dvw flex justify-center md:p-5">
-      <div className="w-full lg:w-10/12 xl:w-7/12 p-5 bg-bg-secondary rounded-sm shadow-card ">
+      <div className="w-full lg:w-10/12 xl:w-7/12 p-5 bg-bg-muted rounded-sm shadow-card ">
         <div className="flex mb-5 justify-between items-center">
-          <Link
-            to="/financialTransactions"
-            className="flex justify-center items-center h-10 aspect-square md:mx-2 rounded-full hover:bg-bg-muted"
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="flex justify-center items-center h-10 aspect-square md:mx-2 rounded-full bg-bg-primary hover:bg-navbar-bg"
           >
-            <ArrowLeft className="stroke-gray-500" />
-          </Link>
+            <ArrowLeft className="stroke-text-surface" />
+          </button>
           <h1>New Financial Transaction</h1>
           <Banknote className="stroke-blue-500" />
         </div>
@@ -267,9 +268,9 @@ function NewFinancialTransaction() {
             <Button
               label={formik.isSubmitting ? "Saving..." : "Submit"}
               type="submit"
-              background="bg-btn-primary"
-              hoverBg="hover:bg-btn-primary-hover"
-              textColor="text-btn-primary-text"
+              background="bg-btn-standard"
+              hoverBg="hover:bg-btn-standard-hover"
+              textColor="text-btn-standard-text"
               disabled={formik.isSubmitting}
             />
           </div>

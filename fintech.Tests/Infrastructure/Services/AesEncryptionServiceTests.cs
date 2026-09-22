@@ -1,4 +1,5 @@
-﻿using fintech.API.Infrastructure.Services;
+﻿using fintech.API.Application.Interfaces.Services;
+using fintech.API.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 
@@ -229,6 +230,23 @@ namespace fintech.Tests.Infrastructure.Services
 
             Assert.Throws<AuthenticationTagMismatchException>(
                 () => decryptionService.Decrypt(encrypted));
+        }
+
+        [Fact]
+        public void EncryptDecrypt_ShouldReturnOriginalValue()
+        {
+            // Arrange
+            var configuration = CreateConfiguration(GenerateValidKey());
+            var encryptionService = new AesEncryptionService(configuration);
+
+            var originalApiKey = "my-test-api-key";
+
+            // Act
+            var encrypted = encryptionService.Encrypt(originalApiKey);
+            var decrypted = encryptionService.Decrypt(encrypted);
+
+            // Assert
+            Assert.Equal(originalApiKey, decrypted);
         }
     }
 }

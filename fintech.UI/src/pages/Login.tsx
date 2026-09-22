@@ -55,11 +55,11 @@ function Login() {
 
   return (
     <div className="flex flex-col items-center bg-bg-primary h-dvh md:justify-center">
-      <div className="w-full h-fit max-h-dvh py-3 px-2 bg-bg-surface rounded-sm md:w-1/2  md:shadow-card xl:w-1/3">
+      <div className="w-full h-fit max-h-dvh py-3 px-2 bg-form-bg rounded-sm md:w-1/2  md:shadow-card xl:w-1/3">
         {/* the div background color is hardcoded */}
         <Link
           to="/"
-          className="flex justify-center items-center h-10 aspect-square mx-2 rounded-full hover:bg-bg-muted"
+          className="flex justify-center items-center h-10 aspect-square mx-2 rounded-full bg-input-bg hover:bg-bg-muted"
         >
           <IconComponent icon={ArrowLeft} />
         </Link>
@@ -103,7 +103,7 @@ function Login() {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/3 -translate-y-1/2 text-text-secondary hover:text-gray-700 cursor-pointer"
+                          className="absolute right-3 top-1/3 -translate-y-1/2 text-text-primary hover:text-text-surface cursor-pointer"
                           aria-label={
                             showPassword ? "Hide password" : "Show password"
                           }
@@ -118,9 +118,9 @@ function Login() {
                       <Button
                         label="Log In"
                         type="submit"
-                        background="bg-btn-primary"
-                        hoverBg="hover:bg-btn-primary-hover"
-                        textColor="text-btn-primary-text"
+                        background="bg-btn-standard"
+                        hoverBg="hover:bg-btn-standard-hover"
+                        textColor="text-btn-standard-text"
                         disabled={
                           !formik.dirty ||
                           !formik.isValid ||
@@ -134,7 +134,7 @@ function Login() {
                       {/* Link color is hardcoded */}
                       <Link
                         to="/register"
-                        className="text-blue-700 pl-4"
+                        className="text-text-secondary hover:text-text-surface pl-4"
                       >
                         Register here
                       </Link>
