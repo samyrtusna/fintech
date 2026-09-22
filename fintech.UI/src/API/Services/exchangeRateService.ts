@@ -4,7 +4,7 @@ import http from "./http";
 const getCurrencies = async (): Promise<GetSymbolsResponse> => {
   try {
     return await http.get<GetSymbolsResponse, undefined>(
-      "exchangeRateAPI/symbols",
+      "exchangeRateApi/symbols",
     );
   } catch (error) {
     if (error instanceof Error) {
