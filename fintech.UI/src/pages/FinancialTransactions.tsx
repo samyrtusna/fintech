@@ -196,7 +196,7 @@ function FinancialTransactions() {
 
   return (
     <div className="relative min-h-dvh h-full min-w-dvw ">
-      <div className="flex justify-around my-12">
+      <div className="flex justify-around w-full my-12 px-5">
         <GlobalAggregates
           debtValue={globalAggregates?.totalActiveDebt}
           investmentValue={globalAggregates?.totalInvestment}
@@ -545,3 +545,4 @@ function FinancialTransactions() {
 }
 
 export default FinancialTransactions;
+// TODO:add an interface to allow a user to set it's currencies
