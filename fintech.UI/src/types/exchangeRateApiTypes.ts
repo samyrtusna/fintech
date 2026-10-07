@@ -1,3 +1,4 @@
 export interface GetSymbolsResponse {
-  sybmbols: Record<string, string>;
+  currencyCode: string;
+  currencySymbol: string;
 }

@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace fintech.API.Infrastructure.EFcore.Configurations
 {
-    public class FinancialAggregatesConfiguration : IEntityTypeConfiguration<FinancialAggregates>
+    public class FinancialAggregatesConfiguration : IEntityTypeConfiguration<FinancialAggregate>
     {
-        public void Configure(EntityTypeBuilder<FinancialAggregates> builder)
+        public void Configure(EntityTypeBuilder<FinancialAggregate> builder)
         {
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Name).IsRequired();

@@ -2,12 +2,14 @@ import { configureStore } from "@reduxjs/toolkit";
 import authUserReducer from "./slices/authSlice";
 import transactionsReducer from "./slices/financialTransactionSlice";
 import categoriesReducer from "./slices/categorySlice";
+import financialAggregatesReducer from "./slices/financialAggregatesSlice";
 
 const store = configureStore({
   reducer: {
     authUser: authUserReducer,
     transactions: transactionsReducer,
     categories: categoriesReducer,
+    financialAggregates: financialAggregatesReducer,
   },
   devTools: import.meta.env.MODE !== "production",
 });

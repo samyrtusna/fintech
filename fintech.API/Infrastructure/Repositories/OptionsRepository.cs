@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace fintech.API.Infrastructure.Repositories
 {
-    public class OptionsRepository(AppDbContext context) : GenericRepository<Options>(context), IOptionsRepository
+    public class OptionsRepository(AppDbContext context) : GenericRepository<Option>(context), IOptionsRepository
     {
-        public async Task<Options?> GetByKey (string key)
+        public async Task<Option?> GetByKey (string key)
         {
             return await context.Options
                 .Where(o => o.Key == key)

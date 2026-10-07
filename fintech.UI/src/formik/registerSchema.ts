@@ -9,4 +9,7 @@ export const registerSchema = Yup.object().shape({
     .min(6, "Password must be at least 6 characters")
     .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
     .required("Password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Passwords must match")
+    .required("Confirm password is required"),
 });

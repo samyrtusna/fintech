@@ -19,6 +19,7 @@ export interface NewTransactionRequest extends UpdateTransactionRequest {
   categoryId: string;
   amount: number;
   currency: string;
+  currencySymbol: string;
   transactionDate?: Date;
 }
 
@@ -31,6 +32,9 @@ export interface GetTransactionResponse {
   categoryId: string;
   amount: number;
   currency: string;
+  currencySymbol: string;
+  baseCurrency: string;
+  baseCurrencySymbol: string;
   transactionDate: string;
   description?: string;
   isEssential?: boolean;
@@ -44,9 +48,7 @@ export interface PaginatedTransactions {
 }
 
 export interface TransactionsFilter {
-  year: number;
-  month: number;
-  day?: number;
+  date: Date;
   categoryId?: string;
   isEssential?: boolean;
   page: number;
@@ -64,9 +66,7 @@ export interface TransactionState {
 
 export interface MonthItem {
   key: string;
-  label: string;
-  year: number;
-  month: number;
+  value: Date;
 }
 
 export interface FinancialTransactionProps {

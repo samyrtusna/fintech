@@ -20,10 +20,7 @@ namespace fintech.API.Infrastructure.EFcore.Configurations
             builder.Property(u => u.Role)
                 .HasConversion<string>()
                 .IsRequired()
-                .HasMaxLength(20);
-            builder.Property(u => u.BaseCurrency)
-                .HasMaxLength(3)
-                .IsRequired();
+                .HasMaxLength(20);      
             builder.Property(u => u.CreatedAt)
                 .IsRequired ();
             builder.HasIndex(u => u.Email)
@@ -33,6 +30,10 @@ namespace fintech.API.Infrastructure.EFcore.Configurations
             builder.HasMany(u => u.RefreshTokens)
                 .WithOne(rt => rt.User)
                 .HasForeignKey(rt => rt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany(u => u.UserCurrencies)
+                .WithOne(uc => uc.User)
+                .HasForeignKey(uc => uc.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

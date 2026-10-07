@@ -67,7 +67,7 @@ namespace fintech.Tests.Application.Services
                 Username = "existinguser",
                 Email = dto.Email,
                 PasswordHash = "existing-password-hash",
-                BaseCurrency = "USD"
+     
             };
 
             _userRepositoryMock
@@ -262,7 +262,7 @@ namespace fintech.Tests.Application.Services
                 Username = "testuser",
                 Email = dto.Email,
                 PasswordHash = "correct-password-hash",
-                BaseCurrency = "USD"
+
             };
 
             _userRepositoryMock
@@ -321,7 +321,7 @@ namespace fintech.Tests.Application.Services
                 Username = "testuser",
                 Email = dto.Email,
                 PasswordHash = "correct-password-hash",
-                BaseCurrency = "USD"
+
             };
 
             const string accessToken = "access-token";

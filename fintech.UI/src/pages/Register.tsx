@@ -12,7 +12,8 @@ import type { RegisterRequest } from "../types/authTypes";
 import IconComponent from "../components/IconComponent";
 import Spinner from "../components/Spinner";
 import Button from "../components/Button";
-import { setAccessToken } from "../state/slices/authSlice";
+import { setAccessToken, setUserInformations } from "../state/slices/authSlice";
+import userService from "../API/Services/userService";
 
 function Register() {
   const initialValues: RegisterRequest = {
@@ -21,6 +22,7 @@ function Register() {
     password: "",
   };
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const authState = useAppSelector((state) => state.authUser);
 
@@ -39,6 +41,10 @@ function Register() {
       setIsLoading(true);
       const accessToken = await authService.signup(values);
       dispatch(setAccessToken(accessToken));
+      if (accessToken) {
+        const user = await userService.getUserAsync();
+        dispatch(setUserInformations(user));
+      }
       props.resetForm();
       navigate("/");
     } catch (error) {
@@ -56,9 +62,8 @@ function Register() {
     );
   }
   return (
-    <div className="flex bg-bg h-dvh  md:justify-center md:items-center">
+    <div className="flex h-dvh  md:justify-center md:items-center">
       <div className="w-full h-fit max-h-dvh py-2 px-2 bg-bg-surface rounded-sm md:w-1/2  md:shadow-card lg:w-1/3">
-        {/* the div background color is hardcoded */}
         <Link
           to="/"
           className="flex justify-center items-center h-10 aspect-square mx-2 rounded-full hover:bg-bg-muted"
@@ -66,7 +71,7 @@ function Register() {
           <IconComponent icon={ArrowLeft} />
         </Link>
         <div className="flex flex-col items-center">
-          <div className="h-25 py-5 my-10 ">
+          <div className="h-25 py-5 my-5 ">
             <Logo className="text-6xl font-bold ml-2" />
           </div>
           <div className="flex flex-col items-center w-full py-2">
@@ -107,7 +112,6 @@ function Register() {
                           component="div"
                           placeholder="Enter your password"
                         />
-                        {/* button color is hardcoded */}
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
@@ -123,13 +127,40 @@ function Register() {
                           )}
                         </button>
                       </div>
+                      <div className="relative w-full">
+                        <InputField
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          component="div"
+                          placeholder="Confirm your password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          className="absolute right-3 top-1/3 -translate-y-1/2 text-text-secondary hover:text-gray-700 cursor-pointer"
+                          aria-label={
+                            showConfirmPassword
+                              ? "Hide password"
+                              : "Show password"
+                          }
+                        >
+                          {showConfirmPassword ? (
+                            <EyeClosed size={18} />
+                          ) : (
+                            <Eye size={18} />
+                          )}
+                        </button>
+                      </div>
 
                       <Button
                         label="Sign Up"
                         type="submit"
-                        background="bg-btn-primary"
-                        hoverBg="hover:bg-btn-primary-hover"
-                        textColor="text-btn-primary-text"
+                        background="bg-btn-standard"
+                        hoverBg="hover:bg-btn-standard-hover"
+                        textColor="text-btn-standard-text"
                         disabled={
                           !formik.dirty ||
                           !formik.isValid ||

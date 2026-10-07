@@ -43,7 +43,7 @@ function Navbar() {
   }
   return (
     <>
-      <div className="flex justify-between items-center min-w-dvw h-12 px-3 bg-navbar-bg md:hidden">
+      <div className="flex justify-between items-center min-w-dvw h-12 px-3  md:hidden">
         {!accessToken ? (
           <Link
             to="/login"
@@ -64,7 +64,7 @@ function Navbar() {
             key={link.to}
             to={link.to}
             className={({ isActive }) =>
-              `h-8 w-8 rounded-sm ${isActive ? "bg-bg-muted" : "bg-navbar-bg "}`
+              `h-8 w-8 ${isActive ? "bg-bg-muted scale-110 rounded-sm" : "bg-bg-surface rounded-xl"}`
             }
           >
             <IconComponent icon={link.icon} />
@@ -72,7 +72,7 @@ function Navbar() {
         ))}
         <button
           onClick={toggleTheme}
-          className="h-8 w-8 rounded-xl bg-navbar-bg "
+          className="h-8 w-8 rounded-xl bg-bg-surface "
         >
           <IconComponent icon={theme === "dark" ? Sun : MoonStar} />
         </button>

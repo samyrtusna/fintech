@@ -10,8 +10,11 @@ namespace fintech.API.Domain.Entities
         public FinancialType Type { get; set; }
         public decimal Amount { get; set; }
         public string Currency { get; set; } = null!;
+        public string CurrencySymbol { get; set; } = string.Empty;
         public decimal ExchangeRate { get; set; } 
         public decimal BaseAmount { get; set; }
+        public string BaseCurrency { get; set; } = null!;
+        public string BaseCurrencySymbol { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public bool IsEssential { get; set; }
         public DateTime TransactionDate { get; set; }
@@ -19,6 +22,6 @@ namespace fintech.API.Domain.Entities
         public bool IsDeleted { get; set; } = false;  
         public User User { get; set; } = null!;  
         public Category Category { get; set; } = null!;
-        //TODO: Add BaseCurrency property to store the user's base currency at the time of transaction for historical accuracy.
+        
     }
 }

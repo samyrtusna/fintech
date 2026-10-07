@@ -19,5 +19,5 @@ export interface UpdateCategoryRequest {
 }
 
 export interface CategoryState {
-  categories: GetCategoryResponse[];
+  items: GetCategoryResponse[];
 }

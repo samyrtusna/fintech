@@ -35,7 +35,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.EnableDetailedErrors();
     if(builder.Environment.IsDevelopment())
     {
-        options.LogTo(Console.WriteLine, [DbLoggerCategory.Database.Command.Name], LogLevel.Information);
+        options.LogTo(Console.WriteLine, [DbLoggerCategory.Database.Command.Name], LogLevel.Debug);
     }
 });
 builder.Services.AddFluentValidationAutoValidation();

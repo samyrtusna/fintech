@@ -18,6 +18,9 @@ namespace fintech.API.Application.Validators.FinancialTransactionDtosValidators
                 .Length(3).WithMessage("Currency must be a 3-letter code.")
                 .Must(c => c.Equals(c, StringComparison.CurrentCultureIgnoreCase)).WithMessage("Currency must be uppercase.")
                 .Matches("^[A-Z]{3}$").WithMessage("Currency must be a valid ISO code (e.g., USD, EUR)");
+            RuleFor(x => x.CurrencySymbol)
+                .NotEmpty().WithMessage("Currency symbol is required.")
+                .Length(1, 3).WithMessage("Currency symbol must be between 1 and 3 characters long.");
             RuleFor(x => x.Description)
                 .MaximumLength(500).WithMessage("Description must be at most 500 characters long.");
         }

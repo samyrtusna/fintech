@@ -12,7 +12,8 @@ import Logo from "../components/Logo";
 import IconComponent from "../components/IconComponent";
 import Spinner from "../components/Spinner";
 import Button from "../components/Button";
-import { setAccessToken } from "../state/slices/authSlice";
+import { setAccessToken, setUserInformations } from "../state/slices/authSlice";
+import userService from "../API/Services/userService";
 
 function Login() {
   const initialValues: LoginRequest = { email: "", password: "" };
@@ -36,6 +37,10 @@ function Login() {
       setIsLoading(true);
       const accessToken = await authService.login(values);
       dispatch(setAccessToken(accessToken));
+      if (accessToken) {
+        const user = await userService.getUserAsync();
+        dispatch(setUserInformations(user));
+      }
       props.resetForm();
       navigate("/");
     } catch (error) {
@@ -56,7 +61,6 @@ function Login() {
   return (
     <div className="flex flex-col items-center bg-bg-primary h-dvh md:justify-center">
       <div className="w-full h-fit max-h-dvh py-3 px-2 bg-form-bg rounded-sm md:w-1/2  md:shadow-card xl:w-1/3">
-        {/* the div background color is hardcoded */}
         <Link
           to="/"
           className="flex justify-center items-center h-10 aspect-square mx-2 rounded-full bg-input-bg hover:bg-bg-muted"
@@ -70,7 +74,7 @@ function Login() {
           <div className="flex flex-col items-center w-full py-5">
             <h1 className="text-3xl font-bold">Welcome back!</h1>
             <h2 className="my-3 px-3 text-xl text-center ">
-              Please enter your details.
+              Please enter your credentials.
             </h2>
           </div>
           <div className="flex flex-col w-full mt-10">

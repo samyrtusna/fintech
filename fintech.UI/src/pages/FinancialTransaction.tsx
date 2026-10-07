@@ -20,7 +20,6 @@ import FormatAmount from "../helpers/amountFormatter";
 import Button from "../components/Button";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppSelector } from "../state/stateHooks";
-import { DecodeToken } from "../helpers/tokenDecoder";
 import { format } from "date-fns";
 
 function FinancialTransaction() {
@@ -28,9 +27,6 @@ function FinancialTransaction() {
   const transaction = useAppSelector(
     (state) => state.transactions.transactions?.items,
   )?.find((t) => t.id === id);
-  const token = useAppSelector((state) => state.authUser.accessToken);
-
-  const baseCurrency = DecodeToken(token!).baseCurrency;
 
   const today = new Date();
   const transactionDate = new Date(transaction!.transactionDate);
@@ -88,8 +84,8 @@ function FinancialTransaction() {
   };
 
   return (
-    <div className="flex justify-center">
-      <div className="w-full lg:w-10/12 p-10 bg-bg-surface rounded-sm ">
+    <div className="flex justify-center min-h-dvh">
+      <div className="w-full lg:w-10/12 h-fit p-10 lg:bg-bg-secondary rounded-sm ">
         <div className="flex justify-between items-center w-full my-2">
           <button
             onClick={() => navigate(-1)}
@@ -129,7 +125,7 @@ function FinancialTransaction() {
             </div>
           </div>
         </div>
-        <div className="md:flex w-full rounded-md shadow-card">
+        <div className="md:flex border-thin border-border-subtle w-full rounded-md shadow-card">
           <div className="flex flex-col justify-center items-center py-3 md:w-5/12 rounded-t-md md:rounded-t-none md:rounded-l-md bg-bg-muted">
             <div className="flex justify-center w-15 m-3">
               {transaction!.type === "Income" ? (
@@ -171,7 +167,7 @@ function FinancialTransaction() {
             </div>
             <div className="opacity-0 md:opacity-100 w-1/6 md:mt-10 border-t"></div>
           </div>
-          <div className="rounded-b-md md:w-7/12 p-10 bg-bg-primary">
+          <div className="rounded-b-md md:w-7/12 p-10 bg-bg-surface">
             <div className="md:flex md:justify-between md:my-5 w-full">
               <div className="flex items-center w-full md:w-40 md:shrink-0 my-2 md:my-0">
                 <div className="flex h-full aspect-square rounded-xl bg-bg justify-center items-center">
@@ -270,11 +266,12 @@ function FinancialTransaction() {
             <div className="md:hidden">
               <Button
                 label="Update"
-                type="submit"
+                type="button"
                 background="bg-btn-standard"
                 hoverBg="hover:bg-btn-standard-hover"
                 textColor="text-btn-standard-text"
                 disabled={false}
+                handleClick={handleUpdate}
               />
             </div>
             <div className="py-1 md:hidden">
@@ -288,6 +285,7 @@ function FinancialTransaction() {
                     hoverBg="hover:bg-btn-danger-hover"
                     textColor="text-btn-danger-text"
                     disabled={false}
+                    handleClick={handleDelete}
                   />
                 )}
             </div>

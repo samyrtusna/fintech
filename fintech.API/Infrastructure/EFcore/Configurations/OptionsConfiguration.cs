@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace fintech.API.Infrastructure.EFcore.Configurations
 {
-    public class OptionsConfiguration : IEntityTypeConfiguration<Options>
+    public class OptionsConfiguration : IEntityTypeConfiguration<Option>
     {
-        public void Configure(EntityTypeBuilder<Options> builder)
+        public void Configure(EntityTypeBuilder<Option> builder)
         {
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Key)

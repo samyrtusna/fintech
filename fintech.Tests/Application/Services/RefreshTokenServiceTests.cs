@@ -349,7 +349,7 @@ namespace fintech.Tests.Application.Services
                 Username = "testuser",
                 Email = "test@example.com",
                 PasswordHash = "dummy-password-hash",
-                BaseCurrency = "USD"
+       
             };
 
             var existingToken = new RefreshToken

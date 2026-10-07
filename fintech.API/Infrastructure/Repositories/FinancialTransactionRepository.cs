@@ -39,21 +39,6 @@ namespace fintech.API.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<TopSpendingCategoryDto?> GetTopSpendingCategoryPerDayAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default)
-        {
-            return await context.FinancialTransactions
-                .Where(t => t.UserId == userId &&
-                !t.IsDeleted &&
-                t.TransactionDate.Year == date.Year &&
-                t.TransactionDate.Month == date.Month &&
-                t.TransactionDate.Day == date.Day &&
-                t.Type == FinancialType.Expense)
-                .AsNoTracking()
-                .GroupBy(t => t.Category.Name)
-                .Select(g => new TopSpendingCategoryDto { Category = g.Key, TotalAmount = g.Sum(t => t.Amount) })
-                .OrderByDescending(g => g.TotalAmount)
-                .FirstOrDefaultAsync(cancellationToken);
-        }
 
         public async Task<TopSpendingCategoryDto?> GetTopSpendingCategoryPerMonthAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default)
         {

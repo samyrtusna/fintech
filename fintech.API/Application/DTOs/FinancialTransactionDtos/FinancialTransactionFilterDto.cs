@@ -1,14 +1,13 @@
 ﻿using fintech.API.Application.DTOs.QueryDtos;
+using fintech.API.Domain.Enums;
 
 namespace fintech.API.Application.DTOs.FinancialTransactionDtos
 {
     public class FinancialTransactionFilterDto : PaginationDto
     {
-        public int? Year { get; set; }
-        public int? Month { get; set; } 
-        public int? Day { get; set; }
+        public DateTime? Date { get; set; }
         public Guid? CategoryId { get; set; }
-        public bool? IsEssential { get; set; } 
+        public bool? IsEssential { get; set; }  
     }
 } 
   
