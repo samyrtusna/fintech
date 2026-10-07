@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import generateMonths from "../helpers/generateMonths";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, PenLine, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -23,7 +23,6 @@ import { setUserInformations } from "../state/slices/authSlice";
 
 function FinancialTransactions() {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
 
   const userInformations = useAppSelector(
     (state) => state.authUser.userInformations,
@@ -33,7 +32,7 @@ function FinancialTransactions() {
     (state) => state.financialAggregates?.globalAggregates,
   );
 
-  const fetchUserInformations = async () => {
+  const fetchUserInformations = useCallback(async () => {
     if (userInformations !== null) {
       return;
     }
@@ -47,9 +46,9 @@ function FinancialTransactions() {
           : "Failed to fetch user information",
       );
     }
-  };
+  }, [userInformations, dispatch]);
 
-  const fetchGlobalAggregates = async () => {
+  const fetchGlobalAggregates = useCallback(async () => {
     try {
       const fetchedAggregates =
         await financialAggregatesService.getGlobalAggregates();
@@ -61,12 +60,12 @@ function FinancialTransactions() {
           : "Failed to fetch globalAggregates",
       );
     }
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     fetchGlobalAggregates();
     fetchUserInformations();
-  }, []);
+  }, [fetchGlobalAggregates, fetchUserInformations]);
 
   const months = generateMonths(userInformations!.createdAt);
 
