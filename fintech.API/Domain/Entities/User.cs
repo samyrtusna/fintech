@@ -10,8 +10,9 @@ namespace fintech.API.Domain.Entities
         public required string PasswordHash { get; set; } 
         public UserRole Role { get; set; } = UserRole.User;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public string BaseCurrency { get; set; } = "USD";
-        public List<RefreshToken>? RefreshTokens { get; set; } = [];
+        public List<UserCurrency> UserCurrencies { get; set; } = [];
+        public List<RefreshToken>? RefreshTokens { get; set; } = []; 
     }
 }
+
  

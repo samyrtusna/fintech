@@ -2,6 +2,7 @@
 using fintech.API.Application.DTOs.FinancialTransactionDtos;
 using fintech.API.Application.DTOs.QueryDtos;
 using fintech.API.Application.Interfaces.Services;
+using fintech.API.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -91,8 +92,7 @@ namespace fintech.Tests.API.Controllers
         {
             var dto = new FinancialTransactionFilterDto
             {
-                Year = 2026,
-                Month = 9,
+                Date = new DateTime(2026, 9, 1),
                 Page = 1,
                 PageSize = 10
             };

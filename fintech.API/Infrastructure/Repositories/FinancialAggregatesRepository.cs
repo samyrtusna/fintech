@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace fintech.API.Infrastructure.Repositories
 {
-    public class FinancialAggregatesRepository(AppDbContext context) : GenericRepository<FinancialAggregates>(context), IFinancialAggregatesRepository
+    public class FinancialAggregatesRepository(AppDbContext context) : GenericRepository<FinancialAggregate>(context), IFinancialAggregatesRepository
     {
-        public async Task<List<FinancialAggregates>> GetFinancialAggregatesByYearAsync(Guid userId, int year, CancellationToken cancellationToken = default)
+        public async Task<List<FinancialAggregate>> GetFinancialAggregatesByYearAsync(Guid userId, int year, CancellationToken cancellationToken = default)
         {
             return await context.FinancialAggregates
                 .Where(fa => fa.UserId == userId && fa.Year == year)

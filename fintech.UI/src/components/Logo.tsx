@@ -1,9 +1,9 @@
 function Logo({ className }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div className="flex justify-center items-center h-full ">
-      <div className=" h-5/6 aspect-square rounded-full bg-inherit flex items-center justify-center">
+      <div className=" h-11/12 aspect-square p-1 rounded-full bg-bg-secondary flex items-center justify-center">
         <img
-          src="/Logo.png"
+          src="/logo.png"
           alt="App Logo"
           className=" object-cover"
         />

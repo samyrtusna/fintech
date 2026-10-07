@@ -8,21 +8,36 @@
 
   body {
     color: var(--text-primary);
-    background-color: var(--bg-primary);
+    background: var(--bg-primary);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     font-family:
       ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
       "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    overflow-x: hidden;
   }
 }
 
 /* Tailwind CSS v4 Theme Mapping */
 @theme {
+  --animate-slow-drift: slow-drift 8s ease-in-out infinite;
+
+  @keyframes slow-drift {
+    0%,
+    100% {
+      transform: translateY(-10%);
+    }
+    50% {
+      transform: translateY(10%);
+    }
+  }
   /* 4 Background Colors */
   --color-bg-primary: var(--bg-primary);
   --color-bg-secondary: var(--bg-secondary);
   --color-bg-surface: var(--bg-surface);
   --color-bg-muted: var(--bg-muted);
-
+  --color-bg-contrast: var(--bg-contrast);
   /* 4 Text Colors */
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
@@ -76,10 +91,16 @@
 :root,
 .light {
   /* 4 Background Colors */
-  --bg-primary: oklch(98.5% 0.002 247.839);
+  --bg-primary: radial-gradient(
+    circle at 20% 10%,
+    oklch(97% 0.014 254.604),
+    oklch(88.2% 0.059 254.128) 45%,
+    oklch(89.4% 0.057 293.283)
+  );
   --bg-secondary: oklch(92.8% 0.006 264.531);
-  --bg-surface: oklch(97% 0.014 254.604);
+  --bg-surface: oklch(80.9% 0.105 251.813);
   --bg-muted: oklch(88.2% 0.059 254.128);
+  --bg-contrast: oklch(94.3% 0.029 294.588);
 
   /* 4 Text Colors */
   --text-primary: oklch(13% 0.028 261.692);
@@ -117,7 +138,7 @@
   --table-border: oklch(0.91 0.025 250);
 
   /* Border */
-  --border-subtle: oklch(88.2% 0.059 254.128);
+  --border-subtle: oklch(70.7% 0.022 261.325);
 }
 
 /* ==========================================================================
@@ -127,9 +148,16 @@
 .dark {
   /* 4 Background Colors */
   --bg-primary: oklch(13% 0.028 261.692);
+  --bg-primary: radial-gradient(
+    circle at 20% 10%,
+    oklch(27.8% 0.033 256.848),
+    oklch(13% 0.028 261.692) 45%,
+    oklch(20.579% 0.05108 50.804)
+  );
   --bg-secondary: oklch(21% 0.034 264.665);
   --bg-surface: oklch(27.9% 0.077 45.635);
   --bg-muted: oklch(41.4% 0.112 45.904);
+  --bg-contrast: oklch(44.6% 0.03 256.802);
 
   /* 4 Text Colors */
   --text-primary: oklch(98.5% 0.002 247.839);

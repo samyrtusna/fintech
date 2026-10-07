@@ -25,21 +25,19 @@ namespace fintech.API.Infrastructure.Services
         }
         public async Task<Dictionary<string, string>> GetSymbolsAsync()
         {
-            string apiKey = await GetApiKeyAsync()?? throw new NotFoundException("Exchange rate API Decrypted key not found.");
-            string url = $"{apiUrl}/symbols?access_key={Uri.EscapeDataString(apiKey)}";
+            string url = $"{apiUrl}/currencies";
 
             HttpResponseMessage response = await client.GetAsync(url);
 
-            //TODO: add cache to cache the symbols
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<ExchangeRateSymbolsResponseDto>();
+                var result = await response.Content.ReadFromJsonAsync<IEnumerable<ExchangeRateSymbolsResponseDto>>();
 
-                if(result is null || !result.Success)
+                if(result is null)
                 {
-                    throw new Exception("API request was successful but returned success = false.");
+                    throw new Exception("API request was successful but returned no data.");
                 }
-                return result.Symbols;
+                return result.ToDictionary(s => s.IsoCode, s => s.Symbol);
             }
             else
             {
@@ -54,17 +52,17 @@ namespace fintech.API.Infrastructure.Services
 
         public async Task<decimal> GetEchangeRateAsync(string transactionCurrency, string baseCurrency)
         {
-            string apiKey = await GetApiKeyAsync();
-            string url = $"{apiUrl}/latest?access_key={Uri.EscapeDataString(apiKey)}&base={transactionCurrency}&symbols={baseCurrency}";
+            string url = $"{apiUrl}/rates?base={transactionCurrency}&quotes={baseCurrency}";
 
             HttpResponseMessage response = await client.GetAsync(url); 
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<ExchangeRateResponseDto>();
+                var result = await response.Content.ReadFromJsonAsync<IEnumerable<ExchangeRateResponseDto>>();
 
-                if (result != null && result.Rates.TryGetValue(baseCurrency, out decimal rate))
+                if (result != null && result.Any())
                 {
+                    var rate = result.First().Rate;
                     return rate;
                 }
                 throw new Exception($"Rate for '{baseCurrency}' was not found in the API response.");
@@ -73,25 +71,25 @@ namespace fintech.API.Infrastructure.Services
             throw new HttpRequestException($"Failed to retrieve exchange rate ({response.StatusCode}): {errorDetails}");
         }
 
-        public async Task<string> StoreEncryptedApiKey(string apiKey)
-        {
-            string encryptedApiKey = _encryptionService.Encrypt(apiKey);
-            var newApiKeyEntity = new Options { Key = "ExchangeRateApiKey", Value = encryptedApiKey };
-            await _optionsRepository.AddAsync(newApiKeyEntity);
-            await _optionsRepository.SaveChangesAsync();
+        //public async Task<string> StoreEncryptedApiKey(string apiKey)
+        //{
+        //    string encryptedApiKey = _encryptionService.Encrypt(apiKey);
+        //    var newApiKeyEntity = new Options { Key = "ExchangeRateApiKey", Value = encryptedApiKey };
+        //    await _optionsRepository.AddAsync(newApiKeyEntity);
+        //    await _optionsRepository.SaveChangesAsync();
 
-            return encryptedApiKey;
-        }
+        //    return encryptedApiKey;
+        //}
 
-        private async Task<string> GetApiKeyAsync()
-        {
-            if (string.IsNullOrEmpty(_apiKey))
-            {
-                var apiKeyEntity = await _optionsRepository.GetByKey("ExchangeRateApiKey") ?? throw new NotFoundException("Exchange rate API key not found.");
-                var EncryptedApiKey = apiKeyEntity.Value;
-                _apiKey = _encryptionService.Decrypt(EncryptedApiKey);
-            }
-            return _apiKey;
-        }
+        //private async Task<string> GetApiKeyAsync()
+        //{
+        //    if (string.IsNullOrEmpty(_apiKey))
+        //    {
+        //        var apiKeyEntity = await _optionsRepository.GetByKey("ExchangeRateApiKey") ?? throw new NotFoundException("Exchange rate API key not found.");
+        //        var EncryptedApiKey = apiKeyEntity.Value;
+        //        _apiKey = _encryptionService.Decrypt(EncryptedApiKey);
+        //    }
+        //    return _apiKey;
+        //}
     }
 }

@@ -1,4 +1,5 @@
-﻿using fintech.API.Application.Exceptions;
+﻿using fintech.API.Application.DTOs.ExchangeRateApiDtos;
+using fintech.API.Application.Exceptions;
 using fintech.API.Application.Interfaces.Repositories;
 using fintech.API.Application.Interfaces.Services;
 using fintech.API.Domain.Entities;
@@ -17,8 +18,7 @@ namespace fintech.Tests.Infrastructure.Services
         private readonly Mock<IOptionsRepository> _optionsRepository;
         private readonly IConfiguration _configuration;
 
-        private ExchangeRateApiService CreateService(
-            HttpMessageHandler handler)
+        private ExchangeRateApiService CreateService(HttpMessageHandler handler)
         {
             var httpClient = new HttpClient(handler);
 
@@ -49,23 +49,6 @@ namespace fintech.Tests.Infrastructure.Services
             _optionsRepository = new Mock<IOptionsRepository>();
         }
 
-        private void SetupApiKey()
-        {
-            var options = new Options
-            {
-                Key = "ExchangeRateApiKey",
-                Value = "encrypted-api-key"
-            };
-
-            _optionsRepository
-                .Setup(x => x.GetByKey("ExchangeRateApiKey"))
-                .ReturnsAsync(options);
-
-            _encryptionService
-                .Setup(x => x.Decrypt("encrypted-api-key"))
-                .Returns("test-api-key");
-        }
-
         // =========================================================
         // GetSymbolsAsync
         // =========================================================
@@ -74,23 +57,19 @@ namespace fintech.Tests.Infrastructure.Services
         public async Task GetSymbolsAsync_ValidResponse_ReturnsSymbols()
         {
             // Arrange
-            SetupApiKey();
-
             var handler = new TestHttpMessageHandler(request =>
             {
                 Assert.Equal(
-                    "https://api.example.com/symbols?access_key=test-api-key",
+                    "https://api.example.com/currencies",
                     request.RequestUri!.ToString());
 
-                return CreateJsonResponse(new
+                var data = new List<ExchangeRateSymbolsResponseDto>
                 {
-                    success = true,
-                    symbols = new Dictionary<string, string>
-                    {
-                        ["USD"] = "United States Dollar",
-                        ["EUR"] = "Euro"
-                    }
-                });
+                    new() { IsoCode = "USD", Symbol = "United States Dollar" },
+                    new() { IsoCode = "EUR", Symbol = "Euro" }
+                };
+
+                return CreateJsonResponse(data);
             });
 
             var service = CreateService(handler);
@@ -105,89 +84,10 @@ namespace fintech.Tests.Infrastructure.Services
         }
 
         [Fact]
-        public async Task GetSymbolsAsync_ApiKeyIsLoadedAndDecrypted_UsesDecryptedKey()
+        public async Task GetSymbolsAsync_ApiReturnsNullData_ThrowsException()
         {
             // Arrange
-            SetupApiKey();
-
-            var handler = new TestHttpMessageHandler(request =>
-            {
-                Assert.Contains(
-                    "access_key=test-api-key",
-                    request.RequestUri!.Query);
-
-                return CreateJsonResponse(new
-                {
-                    success = true,
-                    symbols = new Dictionary<string, string>()
-                });
-            });
-
-            var service = CreateService(handler);
-
-            // Act
-            await service.GetSymbolsAsync();
-
-            // Assert
-            _optionsRepository.Verify(
-                x => x.GetByKey("ExchangeRateApiKey"),
-                Times.Once);
-
-            _encryptionService.Verify(
-                x => x.Decrypt("encrypted-api-key"),
-                Times.Once);
-        }
-
-        [Fact]
-        public async Task GetSymbolsAsync_ApiKeyContainsSpecialCharacters_EscapesApiKey()
-        {
-            // Arrange
-            var options = new Options
-            {
-                Key = "ExchangeRateApiKey",
-                Value = "encrypted-api-key"
-            };
-
-            _optionsRepository
-                .Setup(x => x.GetByKey("ExchangeRateApiKey"))
-                .ReturnsAsync(options);
-
-            _encryptionService
-                .Setup(x => x.Decrypt("encrypted-api-key"))
-                .Returns("key with special&characters");
-
-            var handler = new TestHttpMessageHandler(request =>
-            {
-                Assert.Contains(
-                    "access_key=key%20with%20special%26characters",
-                    request.RequestUri!.Query);
-
-                return CreateJsonResponse(new
-                {
-                    success = true,
-                    symbols = new Dictionary<string, string>()
-                });
-            });
-
-            var service = CreateService(handler);
-
-            // Act
-            await service.GetSymbolsAsync();
-        }
-
-        [Fact]
-        public async Task GetSymbolsAsync_ApiReturnsSuccessFalse_ThrowsException()
-        {
-            // Arrange
-            SetupApiKey();
-
-            var handler = new TestHttpMessageHandler(_ =>
-                CreateJsonResponse(new
-                {
-                    success = false,
-                    symbols = new Dictionary<string, string>()
-                }));
-
+            var handler = new TestHttpMessageHandler(_ => CreateJsonResponse((object?)null));
             var service = CreateService(handler);
 
             // Act
@@ -195,19 +95,18 @@ namespace fintech.Tests.Infrastructure.Services
                 () => service.GetSymbolsAsync());
 
             // Assert
-            Assert.Equal(
-                "API request was successful but returned success = false.",
-                exception.Message);
+            Assert.Equal("API request was successful but returned no data.", exception.Message);
         }
 
         [Fact]
         public async Task GetSymbolsAsync_ApiReturnsNonSuccessStatus_ThrowsHttpRequestException()
         {
             // Arrange
-            SetupApiKey();
-
             var handler = new TestHttpMessageHandler(_ =>
-                new HttpResponseMessage(HttpStatusCode.Unauthorized));
+                new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                {
+                    Content = new StringContent("Unauthorized access")
+                });
 
             var service = CreateService(handler);
 
@@ -228,22 +127,18 @@ namespace fintech.Tests.Infrastructure.Services
         public async Task GetEchangeRateAsync_ValidResponse_ReturnsExchangeRate()
         {
             // Arrange
-            SetupApiKey();
-
             var handler = new TestHttpMessageHandler(request =>
             {
                 Assert.Equal(
-                    "https://api.example.com/latest?access_key=test-api-key&base=EUR&symbols=USD",
+                    "https://api.example.com/rates?base=EUR&quotes=USD",
                     request.RequestUri!.ToString());
 
-                return CreateJsonResponse(new
+                var data = new List<ExchangeRateResponseDto>
                 {
-                    success = true,
-                    rates = new Dictionary<string, decimal>
-                    {
-                        ["USD"] = 1.08m
-                    }
-                });
+                    new() { Rate = 1.08m }
+                };
+
+                return CreateJsonResponse(data);
             });
 
             var service = CreateService(handler);
@@ -259,18 +154,7 @@ namespace fintech.Tests.Infrastructure.Services
         public async Task GetEchangeRateAsync_RateNotFound_ThrowsException()
         {
             // Arrange
-            SetupApiKey();
-
-            var handler = new TestHttpMessageHandler(_ =>
-                CreateJsonResponse(new
-                {
-                    success = true,
-                    rates = new Dictionary<string, decimal>
-                    {
-                        ["EUR"] = 1.00m
-                    }
-                }));
-
+            var handler = new TestHttpMessageHandler(_ => CreateJsonResponse(new List<ExchangeRateResponseDto>()));
             var service = CreateService(handler);
 
             // Act
@@ -278,25 +162,19 @@ namespace fintech.Tests.Infrastructure.Services
                 () => service.GetEchangeRateAsync("EUR", "USD"));
 
             // Assert
-            Assert.Equal(
-                "Rate for 'USD' was not found in the API response.",
-                exception.Message);
+            Assert.Equal("Rate for 'USD' was not found in the API response.", exception.Message);
         }
 
         [Fact]
         public async Task GetEchangeRateAsync_NonSuccessResponse_ThrowsHttpRequestExceptionWithErrorDetails()
         {
             // Arrange
-            SetupApiKey();
-
             var handler = new TestHttpMessageHandler(_ =>
             {
-                var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
+                return new HttpResponseMessage(HttpStatusCode.BadRequest)
                 {
                     Content = new StringContent("Invalid API request.")
                 };
-
-                return response;
             });
 
             var service = CreateService(handler);
@@ -306,84 +184,11 @@ namespace fintech.Tests.Infrastructure.Services
                 () => service.GetEchangeRateAsync("EUR", "USD"));
 
             // Assert
-            Assert.Contains(
-                "Failed to retrieve exchange rate (BadRequest)",
-                exception.Message);
-
-            Assert.Contains(
-                "Invalid API request.",
-                exception.Message);
+            Assert.Contains("Failed to retrieve exchange rate (BadRequest)", exception.Message);
+            Assert.Contains("Invalid API request.", exception.Message);
         }
 
-        // =========================================================
-        // API key caching
-        // =========================================================
-
-        [Fact]
-        public async Task MultipleRequests_LoadApiKeyOnlyOnce()
-        {
-            // Arrange
-            SetupApiKey();
-
-            var requestCount = 0;
-
-            var handler = new TestHttpMessageHandler(_ =>
-            {
-                requestCount++;
-
-                return CreateJsonResponse(new
-                {
-                    success = true,
-                    rates = new Dictionary<string, decimal>
-                    {
-                        ["USD"] = 1.10m
-                    }
-                });
-            });
-
-            var service = CreateService(handler);
-
-            // Act
-            await service.GetEchangeRateAsync("EUR", "USD");
-            await service.GetEchangeRateAsync("EUR", "USD");
-
-            // Assert
-            Assert.Equal(2, requestCount);
-
-            _optionsRepository.Verify(
-                x => x.GetByKey("ExchangeRateApiKey"),
-                Times.Once);
-
-            _encryptionService.Verify(
-                x => x.Decrypt("encrypted-api-key"),
-                Times.Once);
-        }
-
-        [Fact]
-        public async Task GetSymbolsAsync_MissingApiKey_ThrowsNotFoundException()
-        {
-            // Arrange
-            _optionsRepository
-                .Setup(x => x.GetByKey("ExchangeRateApiKey"))
-                .ReturnsAsync((Options?)null);
-
-            var handler = new TestHttpMessageHandler(_ =>
-                throw new InvalidOperationException(
-                    "HTTP request should not be made."));
-
-            var service = CreateService(handler);
-
-            // Act
-            var exception = await Assert.ThrowsAsync<NotFoundException>(
-                () => service.GetSymbolsAsync());
-
-            // Assert
-            Assert.Equal(
-                "Exchange rate API key not found.",
-                exception.Message);
-        }
-
-        private static HttpResponseMessage CreateJsonResponse(object content)
+        private static HttpResponseMessage CreateJsonResponse<T>(T content)
         {
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -391,13 +196,11 @@ namespace fintech.Tests.Infrastructure.Services
             };
         }
 
-        private sealed class TestHttpMessageHandler
-            : HttpMessageHandler
+        private sealed class TestHttpMessageHandler : HttpMessageHandler
         {
             private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
 
-            public TestHttpMessageHandler(
-                Func<HttpRequestMessage, HttpResponseMessage> handler)
+            public TestHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> handler)
             {
                 _handler = handler;
             }

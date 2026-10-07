@@ -4,10 +4,15 @@ namespace fintech.API.Application.DTOs.ExchangeRateApiDtos
 {
     public class ExchangeRateResponseDto
     {
-        [JsonPropertyName("success")]
-        public bool Success { get; set; }
+        [JsonPropertyName("date")]
+        public string Date { get; set; } = string.Empty;
 
-        [JsonPropertyName("rates")]
-        public Dictionary<string, decimal> Rates { get; set; } = [];
+        [JsonPropertyName("base")]
+        public string Base { get; set; } = string.Empty;
+
+        [JsonPropertyName("quote")]
+        public string Quote { get; set; } = string.Empty;
+        [JsonPropertyName("rate")]
+        public decimal Rate { get; set; }
     }
 }

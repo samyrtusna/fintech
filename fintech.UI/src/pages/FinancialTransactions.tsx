@@ -1,50 +1,149 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import generateMonths from "../helpers/generateMonths";
-import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ChevronLeft, ChevronRight, PenLine, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import {
+  type GetTransactionResponse,
   type MonthItem,
   type TransactionsFilter,
 } from "../types/financialTransactionTypes";
 import { useAppDispatch, useAppSelector } from "../state/stateHooks";
 import useClickOutside from "../hooks/useClickOutside";
-import { DecodeToken } from "../helpers/tokenDecoder";
 import FormatAmount from "../helpers/amountFormatter";
-import Calendar from "../components/Calendar";
 import financialTrascationService from "../API/Services/financialTrascationService";
 import { setFinancialTransactions } from "../state/slices/financialTransactionSlice";
-import { format } from "date-fns";
-
-type PeriodType = "Month" | "Day";
+import Spinner from "../components/Spinner";
+import GlobalAggregates from "../components/GlobalAggregates";
+import financialAggregatesService from "../API/Services/financialAggregatesService";
+import { setGlobalAggregates } from "../state/slices/financialAggregatesSlice";
+import Button from "../components/Button";
+import userService from "../API/Services/userService";
+import { setUserInformations } from "../state/slices/authSlice";
 
 function FinancialTransactions() {
-  const months = generateMonths();
+  const dispatch = useAppDispatch();
+
+  const userInformations = useAppSelector(
+    (state) => state.authUser.userInformations,
+  );
+  const transactionsState = useAppSelector((state) => state.transactions);
+  const globalAggregates = useAppSelector(
+    (state) => state.financialAggregates?.globalAggregates,
+  );
+
+  const fetchUserInformations = useCallback(async () => {
+    if (userInformations !== null) {
+      return;
+    }
+    try {
+      const user = await userService.getUserAsync();
+      dispatch(setUserInformations(user));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch user information",
+      );
+    }
+  }, [userInformations, dispatch]);
+
+  const fetchGlobalAggregates = useCallback(async () => {
+    try {
+      const fetchedAggregates =
+        await financialAggregatesService.getGlobalAggregates();
+      dispatch(setGlobalAggregates(fetchedAggregates));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch globalAggregates",
+      );
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    fetchGlobalAggregates();
+    fetchUserInformations();
+  }, [fetchGlobalAggregates, fetchUserInformations]);
+
+  const months = generateMonths(userInformations!.createdAt);
 
   const [selectedMonth, setSelectedMonth] = useState<MonthItem | null>(
     months[0],
   );
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [dateDropdown, setDateDropdown] = useState<boolean>(false);
-  const [period, setPeriod] = useState<PeriodType>("Month");
-  const [periodDropdown, setPeriodDropdown] = useState<boolean>(false);
+  const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
+  const [refreshTransactions, setRefreshTransactions] = useState(0);
+  const [dateDropdown, setDateDropdown] = useState(false);
   const [page, setPage] = useState(1);
+  const [pageChange, setPageChange] = useState(false);
+  const [transactionDetails, setTransactionDetails] = useState(-1);
+  const [updateTransaction, setUpdateTransaction] = useState(-1);
+  const [showDate, setShowDate] = useState(true);
 
-  const navigate = useNavigate();
+  const [description, setDescription] = useState("");
+  const [isEssential, setIsEssential] = useState(false);
+
+  let selectedTransaction;
+
+  const startUpdateTransaction = (index: number) => {
+    selectedTransaction = transactionsState.transactions?.items[index];
+
+    if (!selectedTransaction) {
+      return;
+    }
+
+    setUpdateTransaction(index);
+    setDescription(selectedTransaction.description ?? "");
+    setIsEssential(selectedTransaction.isEssential ?? false);
+  };
+
   const pageSize = 10;
 
-  const periodRef = useClickOutside<HTMLDivElement>(() =>
-    setPeriodDropdown(false),
-  );
   const monthRef = useClickOutside<HTMLDivElement>(() =>
     setDateDropdown(false),
   );
 
-  const token = useAppSelector((state) => state.authUser.accessToken);
-  const transactionsState = useAppSelector((state) => state.transactions);
-  const dispatch = useAppDispatch();
+  const handleUpdate = async () => {
+    const requestBody = {
+      description:
+        description!.length > 1 &&
+        description !== selectedTransaction!.description
+          ? description
+          : undefined,
+      isEssential:
+        isEssential !== selectedTransaction!.isEssential
+          ? isEssential
+          : undefined,
+    };
+    try {
+      await financialTrascationService.updateAsync(
+        selectedTransaction!.id,
+        requestBody,
+      );
+      setRefreshTransactions((prev) => prev + 1);
+      setUpdateTransaction(-1);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update transaction",
+      );
+    }
+  };
 
-  const baseCurrency = DecodeToken(token!).baseCurrency;
+  const handleDelete = async (t: GetTransactionResponse) => {
+    try {
+      await financialTrascationService.deleteAsync(t.id);
+
+      setTransactionDetails(-1);
+      setUpdateTransaction(-1);
+
+      setRefreshTransactions((prev) => prev + 1);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete transaction",
+      );
+    }
+  };
 
   const totalPages =
     transactionsState.transactions == null
@@ -56,223 +155,390 @@ function FinancialTransactions() {
 
   useEffect(() => {
     const filter: TransactionsFilter = {
-      year:
-        period === "Month" ? selectedMonth!.year : selectedDay!.getFullYear(),
-
-      month:
-        period === "Month" ? selectedMonth!.month : selectedDay!.getMonth() + 1,
-
-      day: period === "Day" ? selectedDay!.getDate() : undefined,
-
+      date: selectedMonth!.value,
       page,
       pageSize,
     };
 
     const fetchTransactions = async () => {
       try {
+        setIsTransactionsLoading(true);
         const fetchedTransactions =
           await financialTrascationService.getByFilterAsync(filter);
 
         dispatch(setFinancialTransactions(fetchedTransactions));
+        if (fetchedTransactions.totalCount >= 10) {
+          setPageChange(true);
+        } else {
+          setPageChange(false);
+        }
       } catch (error) {
         toast.error(
           error instanceof Error
             ? error.message
             : "Failed to fetch transactions",
         );
+      } finally {
+        setIsTransactionsLoading(false);
       }
     };
 
     fetchTransactions();
-  }, [period, selectedMonth, selectedDay, page, dispatch]);
+  }, [selectedMonth, refreshTransactions, page, dispatch]);
 
-  const tableHead = ["Type", "Category", "Amount", "Currency", "Essential"];
-
-  const togglePeriod = () => {
-    const newPeriod = period === "Month" ? "Day" : "Month";
-
-    setPeriod(newPeriod);
-
-    if (newPeriod === "Month") {
-      setSelectedMonth(months[0]);
-      setSelectedDay(null);
-    } else {
-      setSelectedDay(new Date());
-      setSelectedMonth(null);
-    }
+  const handleMonthClick = (month: MonthItem) => {
+    setSelectedMonth(month);
     setPage(1);
-    setPeriodDropdown(false);
+    setDateDropdown(!dateDropdown);
+    setTransactionDetails(-1);
+    setUpdateTransaction(-1);
   };
 
   return (
-    <div className="relative ">
-      <div className="relative min-h-dvh w-full">
-        {/* <div className="hidden md:block absolute w-11/12 bg-bg-secondary -top-14 bottom-2 left-1/2 -translate-x-1/2 -z-10"></div> */}
-        <div className="flex w-full justify-center mt-5">
-          <div
-            ref={periodRef}
-            className="relative"
-          >
+    <div className="relative min-h-dvh h-full min-w-dvw ">
+      <div className="flex justify-around my-12">
+        <GlobalAggregates
+          debtValue={globalAggregates?.totalActiveDebt}
+          investmentValue={globalAggregates?.totalInvestment}
+          cashFlowValue={globalAggregates?.totalCashFlow}
+          savingValue={globalAggregates?.totalSavings}
+          symbol={
+            transactionsState.transactions?.items[0]?.baseCurrencySymbol ?? ""
+          }
+        />
+      </div>
+
+      <div className="flex w-full justify-center">
+        <div
+          ref={monthRef}
+          className="relative"
+        >
+          <div>
             <button
-              onClick={() => setPeriodDropdown(!periodDropdown)}
-              className={`py-1 px-2 w-20 bg-navbar-bg hover:bg-btn-standard cursor-pointer ${periodDropdown ? "rounded-tl-sm" : "rounded-l-sm"}`}
+              onClick={() => {
+                setDateDropdown((prev) => !prev);
+              }}
+              className={`w-30 py-1 px-2 border-thin border-border-subtle bg-bg-muted hover:bg-bg-secondary cursor-pointer ${dateDropdown ? "rounded-t-sm" : "rounded-sm"}`}
             >
-              {period}
+              {selectedMonth?.key}
             </button>
-            <div className={!periodDropdown ? "hidden" : "absolute top-8 z-20"}>
-              <button
-                onClick={togglePeriod}
-                className="w-20 py-1 px-2  bg-navbar-bg hover:bg-btn-standard rounded-b-sm cursor-pointer"
-              >
-                {period === ("Month" as PeriodType) ? "Day" : "Month"}
-              </button>
-            </div>
-          </div>
-          <div
-            ref={monthRef}
-            className="relative"
-          >
-            {period === "Month" ? (
-              <div>
-                <button
-                  onClick={() => {
-                    setDateDropdown((prev) => !prev);
-                  }}
-                  className={`w-50 py-1 px-2 bg-navbar-bg hover:bg-btn-standard cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
-                >
-                  {selectedMonth?.label}
-                </button>
-                {dateDropdown && (
-                  <div className="absolute top-8 w-50 flex flex-col z-50">
-                    {months
-                      .filter((month) => month.key !== selectedMonth?.key)
-                      .map((month, index, arr) => (
-                        <button
-                          key={month.key}
-                          onClick={() => {
-                            setSelectedMonth(month);
-                            setSelectedDay(null);
-                            setPage(1);
-                            setDateDropdown(!dateDropdown);
-                          }}
-                          className={`py-1 px-2 bg-navbar-bg hover:bg-btn-standard cursor-pointer
-                  ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}
-                        >
-                          {month.label}
-                        </button>
-                      ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div>
-                <button
-                  onClick={() => setDateDropdown(!dateDropdown)}
-                  className={`w-30 py-1 px-2 bg-btn-standard hover:bg-btn-standard-hover cursor-pointer ${dateDropdown ? "rounded-tr-sm" : "rounded-r-sm"}`}
-                >
-                  {format(selectedDay!, "dd-MM-yyyy")}
-                </button>
-                <div
-                  className={
-                    !dateDropdown
-                      ? "hidden"
-                      : "absolute top-8 flex flex-col z-20"
-                  }
-                >
-                  <Calendar
-                    selectedDate={selectedDay}
-                    handledate={(date) => {
-                      setSelectedDay(date);
-                      setSelectedMonth(null);
-                      setPage(1);
-                      setDateDropdown(false);
-                    }}
-                  />
-                </div>
+            {dateDropdown && (
+              <div className="absolute top-8 w-30 flex flex-col z-50">
+                {months
+                  .filter((month) => month.key !== selectedMonth?.key)
+                  .map((month, index, arr) => (
+                    <button
+                      key={month.key}
+                      onClick={() => handleMonthClick(month)}
+                      className={`py-1 px-2 bg-bg-muted hover:bg-bg-secondary border-x-thin border-x-border-subtle cursor-pointer
+                  ${index === arr.length - 1 ? "rounded-b-sm border-b-thin border-b-border-subtle" : ""}`}
+                    >
+                      {month.key}
+                    </button>
+                  ))}
               </div>
             )}
           </div>
         </div>
-        <div className="mt-10 w-full flex justify-center">
-          <div className="relative w-full md:w-fit flex justify-center ">
-            <table className="border-collapse w-full md:w-fit table-fixed shadow-card">
-              <thead>
-                <tr className="hidden md:table-row bg-table-head-bg">
-                  {tableHead.map((head) => (
-                    <th
-                      key={head}
-                      className={`${head === "Category" ? "w-50" : "w-30"} py-4`}
-                    >
-                      {head}
-                    </th>
-                  ))}
-                </tr>
-                <tr className="md:hidden bg-table-head-bg">
-                  <th className="py-4">Type</th>
-                  <th>Category</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody className="bg-table-row-bg">
-                {transactionsState.transactions?.items.map((transaction) => (
-                  <tr
-                    key={transaction.id}
-                    onClick={() =>
-                      navigate(`financialTransaction/${transaction.id}`)
-                    }
-                    className={
-                      "border-b border-b-border-subtle  cursor-pointer hover:bg-table-row-alt-bg"
-                    }
+      </div>
+      <div className="relative w-full px-2 flex justify-center mt-6">
+        {isTransactionsLoading ? (
+          <Spinner />
+        ) : (
+          <div className="w-full p-4">
+            {transactionsState.transactions?.items.map((t, index, arr) => (
+              <div
+                key={t.id}
+                className={`${updateTransaction !== -1 && updateTransaction !== index ? "hidden" : updateTransaction === index ? "w-full mx-auto md:w-2/3" : "w-full mx-auto md:w-1/2 lg:w-5/12"}`}
+              >
+                {showDate && (
+                  <div
+                    className={`
+                    ${t.transactionDate === arr[index - 1]?.transactionDate || updateTransaction !== -1 ? "hidden" : "block"} text-sm`}
                   >
-                    <td className="flex justify-start py-3 pl-4">
-                      {transaction.type}
-                    </td>
-                    <td className="md:py-3 pl-4">{transaction.categoryName}</td>
-                    <td className="flex justify-end py-3 pr-6">
-                      {FormatAmount(transaction.baseAmount)}
-                    </td>
-                    <td className="hidden md:table-cell w-30 py-3 pl-10">
-                      {baseCurrency}
-                    </td>
-                    <td className="hidden md:table-cell w-30 py-3 pl-10">
-                      {transaction.isEssential ? "True" : "False"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="absolute -top-9 md:-top-12 right-0 md:-right-12 h-8 md:h-12 aspect-square group bg-navbar-bg hover:bg-btn-standard">
-              {/* TODO Add Button */}
+                    {t.transactionDate}
+                  </div>
+                )}
+                <div
+                  className={`my-2 border-thin border-border-subtle rounded-md bg-bg-muted w-full transition-all duration-200 ${
+                    updateTransaction === index
+                      ? "shadow-lg p-2"
+                      : "cursor-pointer"
+                  }`}
+                >
+                  <div
+                    className={`min-w-full ${transactionDetails === index ? "flex" : "hidden"} justify-end items-baseline px-5 py-3`}
+                  >
+                    <button
+                      onClick={() => {
+                        setUpdateTransaction(-1);
+                      }}
+                      className={`h-8 aspect-square rounded-full p-1 hover:bg-bg-secondary cursor-pointer ${updateTransaction === index ? "block" : "hidden"}`}
+                    >
+                      <X className="stroke-2" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        startUpdateTransaction(index);
+                      }}
+                      className={`h-8 aspect-square rounded-full p-1 hover:bg-bg-secondary cursor-pointer ${updateTransaction === index ? "hidden" : "block"}`}
+                    >
+                      <PenLine className="stroke-1" />
+                    </button>
+                  </div>
+                  <div
+                    onClick={() =>
+                      updateTransaction !== index && setTransactionDetails(-1)
+                    }
+                    className={`min-w-full ${transactionDetails === index ? "flex" : "hidden"} justify-between items-baseline px-5 py-3`}
+                  >
+                    <div className="w-full md:w-1/3">
+                      <h3
+                        className={`my-1 ${updateTransaction === index ? "block" : "hidden"}`}
+                      >
+                        Type
+                      </h3>
+                      <h3
+                        className={`${updateTransaction === index ? "w-full px-2 py-1 border-thin border-border-subtle rounded-sm bg-bg-contrast" : "mx-0"}`}
+                      >
+                        {t.type}
+                      </h3>
+                    </div>
+                  </div>
+                  <div
+                    onClick={() =>
+                      transactionDetails !== index
+                        ? setTransactionDetails(index)
+                        : updateTransaction !== index &&
+                          setTransactionDetails(-1)
+                    }
+                    className={`min-w-full justify-between items-baseline px-5 py-3 ${updateTransaction === index ? "flex-col md:flex md:flex-row" : "flex"}`}
+                  >
+                    <div
+                      className={`w-full pb-6 md:pb-0 ${updateTransaction === index ? "md:w-1/3" : "md:w-fit"}`}
+                    >
+                      <h3
+                        className={`my-1 ${updateTransaction === index ? "block" : "hidden"}`}
+                      >
+                        Category
+                      </h3>
+                      <h3
+                        className={`${updateTransaction === index ? "w-full px-2 py-1 border-thin border-border-subtle rounded-sm bg-bg-contrast" : "mx-0"}`}
+                      >
+                        {t.categoryName}
+                      </h3>
+                    </div>
+                    <div className="w-full md:w-1/3">
+                      <h3
+                        className={`my-1 ${updateTransaction === index ? "block" : "hidden"}`}
+                      >
+                        Amount
+                      </h3>
+                      <div
+                        className={`flex ${updateTransaction === index ? "w-full px-2 py-1 border-thin border-border-subtle rounded-sm bg-bg-contrast" : "float-end"}`}
+                      >
+                        <h3 className="font-bold text-green-500 ">
+                          {t.currencySymbol}
+                        </h3>{" "}
+                        <h3 className="font-bold ml-1">
+                          {FormatAmount(t.amount)}
+                        </h3>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    onClick={() =>
+                      updateTransaction !== index && setTransactionDetails(-1)
+                    }
+                    className={`min-w-full ${transactionDetails === index ? "block" : "hidden"}`}
+                  >
+                    <div
+                      className={`min-w-full justify-between items-baseline px-5 py-3 ${updateTransaction === index ? "flex-col md:flex md:flex-row" : "flex"}`}
+                    >
+                      <div
+                        className={`w-full pb-6 md:pb-0 ${updateTransaction === index ? "md:w-1/3" : "md:w-fit"}`}
+                      >
+                        <h3
+                          className={`${updateTransaction === index ? "block" : "hidden"}`}
+                        >
+                          Description
+                        </h3>
+                        <input
+                          type="text"
+                          placeholder={t!.description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          className={`placeholder:text-text-primary ${updateTransaction === index ? "w-full px-2 py-1 border-thin border-border-subtle rounded-sm bg-bg-contrast outline-0 " : "mx-0"}`}
+                        />
+                      </div>
+                      <div className="w-full md:w-1/3">
+                        <h3
+                          className={`my-1 ${updateTransaction === index ? "block" : "hidden"}`}
+                        >
+                          Base Amount
+                        </h3>
+                        <div
+                          className={`flex ${updateTransaction === index ? "w-full px-2 py-1 border-thin border-border-subtle rounded-sm bg-bg-contrast font-bold" : "float-end"}`}
+                        >
+                          {t.baseAmount !== t.amount ? (
+                            <>
+                              {" "}
+                              <h3 className="font-bold text-green-500">
+                                {t.baseCurrencySymbol}
+                              </h3>{" "}
+                              <h3 className="ml-1">
+                                {FormatAmount(t.baseAmount)}
+                              </h3>
+                            </>
+                          ) : updateTransaction === index ? (
+                            FormatAmount(t.amount)
+                          ) : (
+                            ""
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className={`min-w-full justify-between items-baseline px-5 py-3 ${updateTransaction === index ? "flex-col md:flex md:flex-row" : "flex"}`}
+                    >
+                      <div className="w-full pb-6 md:w-1/3 md:pb-0">
+                        <h3
+                          className={`${updateTransaction === index ? "block" : "hidden"}`}
+                        >
+                          Transaction Date
+                        </h3>
+                        <h3
+                          className={`${updateTransaction === index ? "w-full px-2 py-1 border-thin border-border-subtle rounded-sm bg-bg-contrast" : "mx-0"}`}
+                        >
+                          {t.transactionDate}
+                        </h3>
+                      </div>
+
+                      <div className="w-full md:w-1/3">
+                        <h3
+                          className={`my-1 ${updateTransaction === index ? "block" : "hidden"}`}
+                        >
+                          Exchange Rate
+                        </h3>
+                        <h3
+                          className={`${updateTransaction === index ? "w-full px-2 py-1 border-thin border-border-subtle rounded-sm bg-bg-contrast" : "float-end"}`}
+                        >
+                          {t.exchangeRate !== 1
+                            ? t.exchangeRate
+                            : updateTransaction === index
+                              ? 1
+                              : ""}
+                        </h3>
+                      </div>
+                    </div>
+                    <div
+                      className={`min-w-full  px-5 py-3 ${updateTransaction === index ? "flex-col md:flex md:flex-row md:justify-between md:items-end" : "block"}`}
+                    >
+                      <div className="w-full md:w-1/3">
+                        <h3
+                          className={`my-1 ${updateTransaction === index ? "block" : "hidden"}`}
+                        >
+                          Importance
+                        </h3>
+                        <h3
+                          onClick={() => setIsEssential((prev) => !prev)}
+                          className={`${updateTransaction === index ? "w-full px-2 py-1 border-thin border-border-subtle rounded-sm bg-bg-contrast cursor-pointer" : "mx-0"}`}
+                        >
+                          {updateTransaction === index
+                            ? isEssential
+                              ? "Important"
+                              : "Not Important"
+                            : ""}
+                        </h3>
+                      </div>
+                      <div
+                        className={`w-full md:w-1/3 ${updateTransaction === index ? "flex-col md:flex md:flex-row justify-between" : "hidden"} `}
+                      >
+                        <div className="w-full mt-2 md:w-[45%]">
+                          <Button
+                            label="Delete"
+                            type="button"
+                            background="bg-btn-danger"
+                            hoverBg="hover:bg-btn-danger-hover"
+                            textColor="btn-danger-text"
+                            handleClick={() => handleDelete(t)}
+                            disabled={
+                              new Date(t.transactionDate).getFullYear <
+                              new Date().getFullYear
+                            }
+                          />
+                        </div>
+                        <div className="w-full mt-2 md:w-[45%]">
+                          <Button
+                            label="Update"
+                            type="button"
+                            background="bg-btn-standard"
+                            hoverBg="hover:bg-btn-standard-hover"
+                            textColor="btn-standard-text"
+                            handleClick={handleUpdate}
+                            disabled={
+                              description === t.description &&
+                              isEssential === t.isEssential
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div
+                        className={`w-50 h-1 mx-auto rounded-full my-2 ${t.isEssential ? "bg-lime-500" : "bg-red-500"} ${updateTransaction === index ? "hidden" : "block"}`}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              // TODO: user can handle category importance
+            ))}
+            <div
+              className={` h-10 aspect-square group bg-blue-500 hover:bg-blue-600 rounded-sm ${updateTransaction === -1 ? "absolute -top-8 right-6 md:right-[27%] lg:right-[31%]" : "hidden"}`}
+            >
               <Link to="newFinancialTransaction">
-                <Plus className="stroke-1 stroke-text-primary w-full h-full rounded-sm shadow-card hover:stroke-gray-700" />
+                <Plus className="stroke-1 stroke-white w-full h-full rounded-sm shadow-card" />
               </Link>
-              <span className="absolute opacity-0 md:group-hover:opacity-100 -top-5 -right-40 px-2 py-1 bg-navbar-bg rounded-sm">
+              <span className="absolute opacity-0 md:group-hover:opacity-100 -top-5 -right-40 px-2 py-1 bg-bg-muted border-thin border-border-subtle rounded-sm">
                 Add new Transaction
               </span>
             </div>
+            <div
+              className={`flex ${updateTransaction ? "absolute -top-8 left-6 md:left-[27%] lg:left-[31%]" : "hidden"}`}
+            >
+              <div className="flex justify-between h-8 w-16 rounded-full bg-bg-contrast p-1 border-thin border-border-subtle">
+                <div
+                  onClick={() => setShowDate((prev) => !prev)}
+                  className={`h-full aspect-square rounded-full bg-btn-disabled cursor-pointer ${showDate ? "opacity-0" : "opacity-100"}`}
+                ></div>
+                <div
+                  onClick={() => setShowDate((prev) => !prev)}
+                  className={`h-full aspect-square rounded-full bg-bg-surface cursor-pointer ${showDate ? "opacity-100" : "opacity-0"}`}
+                ></div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="flex justify-center gap-2 py-6">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage((prev) => prev - 1)}
-            className="px-2 py-1 mr-1 rounded-md disabled:opacity-0 cursor-pointer bg-navbar-bg hover:bg-btn-standard "
-          >
-            <ChevronLeft className="stroke-text-primary" />
-          </button>
+        )}
+      </div>
+      <div className={`${pageChange ? "flex justify-center gap-2" : "hidden"}`}>
+        <button
+          disabled={page === 1}
+          onClick={() => setPage((prev) => prev - 1)}
+          className="px-2 py-1 mr-1 rounded-md disabled:opacity-0 cursor-pointer hover:bg-bg-muted "
+        >
+          <ChevronLeft className="stroke-text-primary" />
+        </button>
 
-          <span className="px-2 pt-1 rounded-md bg-navbar-bg">
-            Page {page} of {totalPages}
-          </span>
+        <span className="px-2 pt-1 rounded-md">
+          {page} / {totalPages}
+        </span>
 
-          <button
-            disabled={page === totalPages}
-            onClick={() => setPage((prev) => prev + 1)}
-            className="px-2 py-1 ml-1 rounded-md disabled:opacity-0 cursor-pointer bg-navbar-bg hover:bg-btn-standard "
-          >
-            <ChevronRight className="stroke-text-primary" />
-          </button>
-        </div>
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage((prev) => prev + 1)}
+          className="px-2 py-1 ml-1 rounded-md disabled:opacity-0 cursor-pointer hover:bg-bg-muted "
+        >
+          <ChevronRight className="stroke-text-primary" />
+        </button>
       </div>
     </div>
   );

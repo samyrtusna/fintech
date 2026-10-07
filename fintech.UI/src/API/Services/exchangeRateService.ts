@@ -1,10 +1,10 @@
 import type { GetSymbolsResponse } from "../../types/exchangeRateApiTypes";
 import http from "./http";
 
-const getCurrencies = async (): Promise<GetSymbolsResponse> => {
+const getCurrencies = async (): Promise<Array<GetSymbolsResponse>> => {
   try {
-    return await http.get<GetSymbolsResponse, undefined>(
-      "exchangeRateApi/symbols",
+    return await http.get<Array<GetSymbolsResponse>, undefined>(
+      "userCurrencies",
     );
   } catch (error) {
     if (error instanceof Error) {

@@ -20,6 +20,7 @@ namespace fintech.Tests.Application.Validators.FinancialTransactionDtosValidator
                 CategoryId = Guid.NewGuid(),
                 Amount = 1500.50m,
                 Currency = "USD",
+                CurrencySymbol = "$",
                 Description = "Grocery shopping"
             };
         }

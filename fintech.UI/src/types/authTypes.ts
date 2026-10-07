@@ -7,10 +7,6 @@ export interface RegisterRequest extends LoginRequest {
   username: string;
 }
 
-export interface AuthInitialState {
-  accessToken: string | null;
-}
-
 export interface JwtPayload {
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": string;
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress": string;
@@ -28,7 +24,24 @@ export interface DecodedTokenType {
   emailAddress: string;
   nameIdentifier: string;
   role: string;
-  baseCurrency: string;
-  createdAt: string;
   expire?: number;
+}
+
+interface CurrencyType {
+  currencyCode: string;
+  currencySymbol: string;
+  isDefault: boolean;
+}
+
+export interface UserIformations {
+  email: string;
+  username: string;
+  role: "User" | "Admin";
+  createdAt: Date;
+  userCurrencies: CurrencyType[];
+}
+
+export interface UserState {
+  accessToken: string | null;
+  userInformations: UserIformations | null;
 }

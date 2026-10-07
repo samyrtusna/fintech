@@ -9,7 +9,6 @@ import {
 import { useAppDispatch, useAppSelector } from "../state/stateHooks";
 import type { GetCategoryResponse } from "../types/categoryTypes";
 import financialTrascationService from "../API/Services/financialTrascationService";
-import exchangeRateService from "../API/Services/exchangeRateService";
 import Calendar from "../components/Calendar";
 import { useFormik, type FormikHelpers } from "formik";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +18,8 @@ import categoryService from "../API/Services/categoryService";
 import { setCategories } from "../state/slices/categorySlice";
 import Spinner from "../components/Spinner";
 import { format } from "date-fns";
+import financialAggregatesService from "../API/Services/financialAggregatesService";
+import { setGlobalAggregates } from "../state/slices/financialAggregatesSlice";
 
 function NewFinancialTransaction() {
   //
@@ -27,7 +28,6 @@ function NewFinancialTransaction() {
     FinancialTypes.Expense,
     FinancialTypes.Investment,
     FinancialTypes.Savings,
-    FinancialTypes.Debt,
     FinancialTypes.ContractedLoan,
     FinancialTypes.InterestPayment,
     FinancialTypes.PrincipalRepayment,
@@ -37,13 +37,32 @@ function NewFinancialTransaction() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
+  const user = useAppSelector((state) => state.authUser.userInformations);
+
+  const [currencyOptions, setCurrencyOptions] = useState(false);
+
   const initialValues: NewTransactionRequest = {
     categoryId: "",
     amount: 0.01,
     currency: "",
+    currencySymbol: "",
     transactionDate: new Date(),
     description: "",
     isEssential: true,
+  };
+
+  const fetchGlobalAggregates = async () => {
+    try {
+      const fetchedAggregates =
+        await financialAggregatesService.getGlobalAggregates();
+      dispatch(setGlobalAggregates(fetchedAggregates));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch globalAggregates",
+      );
+    }
   };
 
   const handleSubmit = async (
@@ -52,7 +71,16 @@ function NewFinancialTransaction() {
   ) => {
     try {
       setIsLoading(true);
-      await financialTrascationService.addAsync(values);
+      const selectedCurrency = user?.userCurrencies.find(
+        (c) => c.currencyCode === values.currency,
+      );
+
+      const request: NewTransactionRequest = {
+        ...values,
+        currencySymbol: selectedCurrency?.currencySymbol ?? "",
+      };
+      await financialTrascationService.addAsync(request);
+      fetchGlobalAggregates();
       props.resetForm();
       navigate("/financialTransactions");
     } catch (error) {
@@ -74,19 +102,7 @@ function NewFinancialTransaction() {
     return await categoryService.getAllAsync();
   };
 
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const categories = await fetchCategories();
-        dispatch(setCategories(categories));
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      }
-    };
-    loadCategories();
-  }, [dispatch]);
-
-  const categories = useAppSelector((state) => state.categories.categories);
+  const categories = useAppSelector((state) => state.categories.items);
   const [selectedType, setSelectedType] = useState<FinancialTypes>(types[0]);
   const [filteredCategories, setFilteredCategories] = useState<
     GetCategoryResponse[]
@@ -94,20 +110,28 @@ function NewFinancialTransaction() {
   const [currencies, setCurrencies] = useState<string[]>([]);
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
 
-  const loadCurrencies = async () => {
-    try {
-      const data = await exchangeRateService.getCurrencies();
-      const symbolsKeys = Object.keys(data);
-
-      setCurrencies(symbolsKeys);
-      formik.setFieldValue("currency", "USD");
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (categories.length == 0) {
+        try {
+          const categories = await fetchCategories();
+          dispatch(setCategories(categories));
+        } catch (error) {
+          console.error("Failed to fetch categories:", error);
+        }
+      }
+    };
+    loadCategories();
+  }, [dispatch]);
 
   useEffect(() => {
-    loadCurrencies();
+    const currencies = user?.userCurrencies ?? [];
+
+    setCurrencies(currencies.map((c) => c.currencyCode));
+    const defaultCurrency = currencies.find((c) => c.isDefault);
+    if (defaultCurrency) {
+      formik.setFieldValue("currency", defaultCurrency.currencyCode);
+    }
   }, []);
 
   useEffect(() => {
@@ -127,7 +151,7 @@ function NewFinancialTransaction() {
   }
   return (
     <div className="w-dvw flex justify-center md:p-5">
-      <div className="w-full lg:w-10/12 xl:w-7/12 p-5 bg-bg-muted rounded-sm shadow-card ">
+      <div className="w-full lg:w-10/12 xl:w-7/12 p-5 bg-bg-muted border-thin border-border-subtle rounded-sm shadow-card ">
         <div className="flex mb-5 justify-between items-center">
           <button
             type="button"
@@ -150,13 +174,13 @@ function NewFinancialTransaction() {
                 onChange={(e) =>
                   setSelectedType(e.target.value as FinancialTypes)
                 }
-                className="w-full md:w-45 p-2 bg-bg-surface rounded-sm shadow-card cursor-pointer"
+                className="w-full md:w-45 appearance-none text-center p-2 bg-bg-surface border-thin border-border-subtle rounded-sm shadow-card cursor-pointer outline-0"
               >
                 {types.map((t, index, arr) => (
                   <option
                     key={t}
                     value={t}
-                    className={`w-full p-2 hover:bg-bg-secondary  ${index === arr.length - 1 && "rounded-b-sm"}`}
+                    className={`w-full p-2 hover:bg-bg-secondary  ${index === arr.length - 1 ? "rounded-b-sm" : "rounded-none"}`}
                   >
                     {t}
                   </option>
@@ -169,7 +193,7 @@ function NewFinancialTransaction() {
                 name="categoryId"
                 value={formik.values.categoryId}
                 onChange={formik.handleChange}
-                className="w-full md:w-45 p-2  bg-bg-surface rounded-sm shadow-card cursor-pointer"
+                className="w-full md:w-45 appearance-none text-center p-2  bg-bg-surface rounded-sm border-thin border-border-subtle shadow-card cursor-pointer outline-0"
               >
                 {filteredCategories.map((c, index, arr) => (
                   <option
@@ -192,7 +216,7 @@ function NewFinancialTransaction() {
                     !formik.values.isEssential,
                   )
                 }
-                className="w-full md:w-45 p-2 bg-bg-surface rounded-sm shadow-card"
+                className="w-full md:w-45 p-2 bg-bg-surface rounded-sm border-thin border-border-subtle shadow-card"
               >
                 {formik.values.isEssential ? "Essential" : "Not Essential"}
               </button>
@@ -208,40 +232,50 @@ function NewFinancialTransaction() {
                 step="0.01"
                 value={formik.values.amount}
                 onChange={formik.handleChange}
-                className="w-full md:w-45 p-2 bg-bg-surface shadow-card rounded-sm"
+                className="w-full md:w-45  p-2 bg-bg-surface border-thin border-border-subtle shadow-card rounded-sm outline-0"
               />
             </div>
             <div className="relative mb-6 md:mb-0">
               <h2>Currency</h2>
-              <select
-                name="currency"
-                value={formik.values.currency}
-                onChange={formik.handleChange}
-                className="w-full md:w-45 p-2 bg-bg-surface rounded-sm shadow-card cursor-pointer"
+              <button
+                type="button"
+                className={`w-full md:w-45 p-2 bg-bg-surface  border-thin border-border-subtle shadow-card cursor-pointer ${currencyOptions ? "rounded-t-sm" : "rounded-sm"}`}
+                onClick={() => setCurrencyOptions((prev) => !prev)}
               >
-                {currencies.map((c, index, arr) => (
-                  <option
-                    key={c}
-                    value={c}
-                    className={`w-full p-2  ${index === arr.length - 1 && "rounded-b-lg"}`}
-                  >
-                    {c}
-                  </option>
-                ))}
-              </select>
+                {formik.values.currency}
+              </button>
+              {currencyOptions && (
+                <div className="absolute w-full md:w-45 z-50">
+                  {currencies
+                    .filter((c) => c !== formik.values.currency)
+                    .map((c, index, arr) => (
+                      <button
+                        type="button"
+                        key={c}
+                        onClick={() => {
+                          formik.setFieldValue("currency", c);
+                          setCurrencyOptions(false);
+                        }}
+                        className={`w-full p-2 bg-bg-surface hover:bg-btn-standard border-x-thin border-b-thin border-border-subtle cursor-pointer ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                </div>
+              )}
             </div>
             <div className="relative">
               <h2>Transaction date</h2>
               <button
                 type="button"
                 onClick={toggleShowCalendar}
-                className="w-full md:w-45 p-2  bg-bg-surface rounded-sm shadow-card cursor-pointer"
+                className="w-full md:w-45 p-2  bg-bg-surface rounded-sm border-thin border-border-subtle shadow-card cursor-pointer"
               >
                 {format(formik.values.transactionDate!, "dd-MM-yyyy")}
               </button>
 
               {showCalendar && (
-                <div className="absolute top-15 md:-top-25 md:right-80 z-20 w-full">
+                <div className="absolute -top-73 z-20 w-full">
                   <Calendar
                     selectedDate={formik.values.transactionDate!}
                     handledate={(date) => {
@@ -260,7 +294,7 @@ function NewFinancialTransaction() {
                 name="description"
                 value={formik.values.description}
                 onChange={formik.handleChange}
-                className="w-full p-2 bg-bg-surface shadow-card rounded-sm"
+                className="w-full p-2 bg-bg-surface border-thin border-border-subtle shadow-card rounded-sm outline-0"
               />
             </div>
           </div>

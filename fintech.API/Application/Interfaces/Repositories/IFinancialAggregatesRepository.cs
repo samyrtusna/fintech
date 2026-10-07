@@ -2,8 +2,8 @@
 
 namespace fintech.API.Application.Interfaces.Repositories
 {
-    public interface IFinancialAggregatesRepository : IGenericRepository<FinancialAggregates>
+    public interface IFinancialAggregatesRepository : IGenericRepository<FinancialAggregate>
     {
-        Task<List<FinancialAggregates>> GetFinancialAggregatesByYearAsync(Guid userId, int year, CancellationToken cancellationToken = default);
+        Task<List<FinancialAggregate>> GetFinancialAggregatesByYearAsync(Guid userId, int year, CancellationToken cancellationToken = default);
     }
 }

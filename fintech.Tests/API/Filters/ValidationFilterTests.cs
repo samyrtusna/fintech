@@ -56,7 +56,7 @@ namespace fintech.Tests.API.Filters
                 actionContext,
                 new List<IFilterMetadata>(),
                 arguments,
-                controller: null);
+                controller: null!);
         }
 
         private static DefaultHttpContext CreateHttpContext(
@@ -133,7 +133,7 @@ namespace fintech.Tests.API.Filters
                 var executedContext = new ActionExecutedContext(
                     context,
                     new List<IFilterMetadata>(),
-                    null);
+                    null!);
 
                 return Task.FromResult(executedContext);
             };
@@ -167,7 +167,7 @@ namespace fintech.Tests.API.Filters
                 var executedContext = new ActionExecutedContext(
                     context,
                     new List<IFilterMetadata>(),
-                    null);
+                    null!);
 
                 return Task.FromResult(executedContext);
             };
@@ -208,7 +208,7 @@ namespace fintech.Tests.API.Filters
                 var executedContext = new ActionExecutedContext(
                     context,
                     new List<IFilterMetadata>(),
-                    null);
+                    null!);
 
                 return Task.FromResult(executedContext);
             };
@@ -283,7 +283,7 @@ namespace fintech.Tests.API.Filters
                 var executedContext = new ActionExecutedContext(
                     context,
                     new List<IFilterMetadata>(),
-                    null);
+                    null!);
 
                 return Task.FromResult(executedContext);
             };
@@ -327,7 +327,7 @@ namespace fintech.Tests.API.Filters
                 var executedContext = new ActionExecutedContext(
                     context,
                     new List<IFilterMetadata>(),
-                    null);
+                    null!);
 
                 return Task.FromResult(executedContext);
             };
@@ -404,7 +404,7 @@ namespace fintech.Tests.API.Filters
                 var executedContext = new ActionExecutedContext(
                     context,
                     new List<IFilterMetadata>(),
-                    null);
+                    null!);
 
                 return Task.FromResult(executedContext);
             };
@@ -472,7 +472,7 @@ namespace fintech.Tests.API.Filters
                 var executedContext = new ActionExecutedContext(
                     context,
                     new List<IFilterMetadata>(),
-                    null);
+                    null!);
 
                 return Task.FromResult(executedContext);
             };

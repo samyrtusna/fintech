@@ -5,7 +5,7 @@ import type {
 } from "../../types/categoryTypes";
 
 const initialState: CategoryState = {
-  categories: [],
+  items: [],
 };
 
 export const categorySlice = createSlice({
@@ -13,7 +13,7 @@ export const categorySlice = createSlice({
   initialState,
   reducers: {
     setCategories: (state, action: PayloadAction<GetCategoryResponse[]>) => {
-      state.categories = action.payload;
+      state.items = action.payload;
     },
   },
 });

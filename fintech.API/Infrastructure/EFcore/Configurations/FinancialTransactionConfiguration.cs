@@ -23,14 +23,23 @@ namespace fintech.API.Infrastructure.EFcore.Configurations
             builder.Property(t => t.Currency)
                 .IsRequired()
                 .HasMaxLength(3);
+            builder.Property(t => t.CurrencySymbol)
+                .IsRequired()
+                .HasMaxLength(3);
             builder.Property(t => t.ExchangeRate)
                 .IsRequired()
                 .HasColumnType("decimal(18,6)");
             builder.Property(t => t.BaseAmount)
                 .IsRequired()
                 .HasColumnType("decimal(18,2)");
+            builder.Property(t => t.BaseCurrency)
+                .IsRequired()
+                .HasMaxLength(3);
+            builder.Property(t => t.BaseCurrencySymbol)
+                .IsRequired()
+                .HasMaxLength(3);
             builder.Property(t => t.Description)
-                .HasMaxLength(500);
+                .HasMaxLength(30);
             builder.Property(t => t.IsEssential)
                 .IsRequired();
             builder.Property(t => t.TransactionDate)

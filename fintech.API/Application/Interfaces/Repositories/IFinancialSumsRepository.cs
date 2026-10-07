@@ -2,7 +2,7 @@
 
 namespace fintech.API.Application.Interfaces.Repositories
 {
-    public interface IFinancialRatiosRepository : IGenericRepository<FinancialTransaction> 
+    public interface IFinancialSumsRepository : IGenericRepository<FinancialTransaction>  
     {
         Task<decimal> GetTotalIncomePerMonth(Guid userId, DateTime date, CancellationToken cancellationToken = default);
         Task<decimal> GetTotalIncomePerYear(Guid userId, DateTime date, CancellationToken cancellationToken = default);

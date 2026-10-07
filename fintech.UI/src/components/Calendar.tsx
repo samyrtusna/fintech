@@ -35,7 +35,7 @@ export default function Calendar(props: PropsType) {
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
   return (
-    <div className="w-xs mx-auto p-6 bg-white rounded-2xl shadow-xl border border-gray-100">
+    <div className="w-xs mx-auto p-6 bg-bg-muted rounded-2xl shadow-xl border border-gray-100">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-800">
           {format(currentMonth, "MMMM yyyy")}

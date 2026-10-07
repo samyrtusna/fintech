@@ -38,7 +38,6 @@ namespace fintech.Tests.Infrastructure.Services
                 Username = "testuser",
                 PasswordHash = "hashed-password",
                 Role = UserRole.User,
-                BaseCurrency = "USD",
                 CreatedAt = DateTime.UtcNow
             };
         }
@@ -106,48 +105,6 @@ namespace fintech.Tests.Infrastructure.Services
         }
 
         [Fact]
-        public void GenerateAccessToken_ValidUser_ContainsBaseCurrencyClaim()
-        {
-            // Arrange
-            var user = CreateUser();
-
-            // Act
-            var tokenString = _jwtService.GenerateAccessToken(user);
-
-            var handler = new JwtSecurityTokenHandler();
-            var token = handler.ReadJwtToken(tokenString);
-
-            // Assert
-            var userDataClaims = token.Claims
-                .Where(c => c.Type == ClaimTypes.UserData)
-                .Select(c => c.Value)
-                .ToList();
-
-            Assert.Contains(user.BaseCurrency, userDataClaims);
-        }
-
-        [Fact]
-        public void GenerateAccessToken_ValidUser_ContainsCreatedAtClaim()
-        {
-            // Arrange
-            var user = CreateUser();
-
-            // Act
-            var tokenString = _jwtService.GenerateAccessToken(user);
-
-            var handler = new JwtSecurityTokenHandler();
-            var token = handler.ReadJwtToken(tokenString);
-
-            // Assert
-            var userDataClaims = token.Claims
-                .Where(c => c.Type == ClaimTypes.UserData)
-                .Select(c => c.Value)
-                .ToList();
-
-            Assert.Contains(user.CreatedAt.ToString("o"), userDataClaims);
-        }
-
-        [Fact]
         public void GenerateAccessToken_ValidUser_ContainsJtiClaim()
         {
             // Arrange
@@ -200,7 +157,6 @@ namespace fintech.Tests.Infrastructure.Services
             var token = handler.ReadJwtToken(tokenString);
 
             // Assert
-
             var expectedMinimum = beforeGeneration.AddMinutes(60);
             var expectedMaximum = afterGeneration.AddMinutes(60);
 

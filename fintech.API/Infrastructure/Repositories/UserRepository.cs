@@ -13,5 +13,12 @@ namespace fintech.API.Infrastructure.Repositories
         {
             return await context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
+
+        public async Task<User?> GetUserByIdAsync(Guid id)
+        {
+            return await context.Users.Where(u => u.Id == id)
+                .Include(u => u.UserCurrencies) 
+                .FirstOrDefaultAsync();
+        }
     }
 }

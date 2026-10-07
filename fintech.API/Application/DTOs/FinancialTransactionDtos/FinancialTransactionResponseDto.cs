@@ -9,8 +9,11 @@ namespace fintech.API.Application.DTOs.FinancialTransactionDtos
         public FinancialType Type { get; set; }
         public decimal Amount { get; set; }
         public string Currency { get; set; } = null!;
+        public string CurrencySymbol { get; set; } = string.Empty;
         public decimal ExchangeRate { get; set; }
         public decimal BaseAmount { get; set; }
+        public string BaseCurrency { get; set; } = null!;
+        public string BaseCurrencySymbol { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public bool IsEssential { get; set; }
         public DateOnly TransactionDate { get; set; }

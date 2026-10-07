@@ -15,7 +15,7 @@ function Button(props: PropsType) {
       type={type}
       onClick={handleClick}
       disabled={disabled}
-      className={`w-full p-1 items-center ${background} ${hoverBg} ${textColor} disabled:bg-btn-disabled disabled:hover:bg-btn-disabled-hover disabled:text-btn-disabled-text disabled:cursor-not-allowed rounded-full lg:rounded-md cursor-pointer`}
+      className={`w-full p-1 items-center ${background} ${hoverBg} ${textColor} disabled:bg-btn-disabled disabled:hover:bg-btn-disabled-hover disabled:text-btn-disabled-text disabled:cursor-not-allowed rounded-full md:rounded-md cursor-pointer`}
     >
       {label}
     </button>
