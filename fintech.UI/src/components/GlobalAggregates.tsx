@@ -11,7 +11,7 @@ function GlobalAggregates(props: PropsType) {
   const { debtValue, investmentValue, cashFlowValue, savingValue, symbol } =
     props;
   return (
-    <div className="flex w-full justify-around">
+    <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-x-10 gap-y-4 justify-around">
       <AggregateCard
         aggregateName="Debt"
         symbol={symbol}
