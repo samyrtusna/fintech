@@ -73,8 +73,8 @@ namespace fintech.API.Application.Services
             var currentTotals = await CalculateTransactionTotals(userId, currenttransactions) ?? throw new NotFoundException("Failed to calculate current month's transaction totals");
             var previousTotals = await CalculateTransactionTotals(userId, previousTransactions) ?? throw new NotFoundException("Failed to calculate previous month's transaction totals");
 
-            var currentAggregates = CalculateAggregates(currentTotals, date);
-            var previousAggregates = CalculateAggregates(previousTotals, previousMonth);
+            var currentAggregates = CalculateAggregates(currentTotals);
+            var previousAggregates = CalculateAggregates(previousTotals);
 
             var variations = CalculateVarations(currentTotals, currentAggregates, previousTotals, previousAggregates);
 
@@ -90,8 +90,8 @@ namespace fintech.API.Application.Services
             var currentTotals = await CalculateTransactionTotals(userId, currenttransactions);
             var previousTotals = await CalculateTransactionTotals(userId, previousTransactions);
 
-            var currentAggregates = CalculateAggregates(currentTotals, date);
-            var previousAggregates = CalculateAggregates(previousTotals, previousYear);
+            var currentAggregates = CalculateAggregates(currentTotals);
+            var previousAggregates = CalculateAggregates(previousTotals);
 
             var variations = CalculateVarations(currentTotals, currentAggregates, previousTotals, previousAggregates);
 
@@ -165,11 +165,13 @@ namespace fintech.API.Application.Services
             };
         }
 
-        private CalculatedAggregatesDto CalculateAggregates(FinancialTotalsDto totals, DateTime date)
+        private CalculatedAggregatesDto CalculateAggregates(FinancialTotalsDto totals)
         {
             return new CalculatedAggregatesDto {
                 NetBalance = financialCalculations.GetNetBalance(totals.TotalIncome, totals.TotalExpense),
                 NetCashFlow = financialCalculations.GetNetCashFlow(totals.TotalIncome, totals.TotalExpense, totals.TotalInvestment, totals.TotalSavings, totals.TotalContractedLoans, totals.TotalInterestPayments, totals.TotalPrincipalRepayments),
+                TotalInflow = financialCalculations.GetTotalInflow(totals.TotalIncome, totals.TotalContractedLoans),
+                TotalOutflow = financialCalculations.GetTotalOutflow(totals.TotalExpense, totals.TotalInvestment, totals.TotalSavings, totals.TotalInterestPayments, totals.TotalPrincipalRepayments),
                 SavingsRate = financialCalculations.GetSavingsRate(totals.TotalIncome, totals.TotalSavings),
                 EssentialExpensesRatio = financialCalculations.GetEssentialExpensesRatio(totals.TotalIncome, totals.TotalExpense),
                 ExpensesRatio = financialCalculations.GetExpensesRatio(totals.TotalIncome, totals.TotalExpense),
@@ -177,9 +179,7 @@ namespace fintech.API.Application.Services
                 DebtRatio = financialCalculations.GetDebtRatio(totals.TotalIncome, totals.TotalContractedLoans),
                 DebtPaymentRatio = financialCalculations.GetDebtPaymentRatio(totals.TotalIncome, totals.TotalPrincipalRepayments, totals.TotalInterestPayments),
                 InterestBurdenRatio = financialCalculations.GetInterestBurdenRatio(totals.TotalIncome, totals.TotalInterestPayments)
-            };
-            
-            
+            };                  
         }
 
         private AggregateVariationDto CalculateVarations (FinancialTotalsDto currentTotals, CalculatedAggregatesDto currentAggregates, FinancialTotalsDto previousTotals, CalculatedAggregatesDto previousAggregates)
@@ -200,22 +200,24 @@ namespace fintech.API.Application.Services
         {
             return [
 
-            new() { Date = date, Name = AggregateName.TotalIncome, Value = Math.Round(totals.TotalIncome,2,MidpointRounding.AwayFromZero), Variation = variations.IncomeVariation },
-                new() { Date = date, Name = AggregateName.TotalExpense, Value = Math.Round(totals.TotalExpense,2,MidpointRounding.AwayFromZero), Variation = variations.ExpensesVariation },
-                new() { Date = date, Name = AggregateName.TotalInvestment, Value = Math.Round(totals.TotalInvestment,2,MidpointRounding.AwayFromZero), Variation = variations.InvestmentVariation },
-                new() { Date = date, Name = AggregateName.TotalSavings, Value = Math.Round(totals.TotalSavings,2,MidpointRounding.AwayFromZero), Variation = variations.SavingsVariation },
-                new() { Date = date, Name = AggregateName.TotalContractedLoans, Value = Math.Round(totals.TotalContractedLoans,2,MidpointRounding.AwayFromZero), Variation = variations.DebtVariation },
-                new() { Date = date, Name = AggregateName.TotalInterestPayments, Value = Math.Round(totals.TotalInterestPayments,2,MidpointRounding.AwayFromZero)},
-                new() { Date = date, Name = AggregateName.TotalPrincipalRepayments, Value = Math.Round(totals.TotalPrincipalRepayments,2,MidpointRounding.AwayFromZero) },
-                new() { Date = date, Name = AggregateName.NetBalance, Value = Math.Round(calculatedAggregates.NetBalance,2,MidpointRounding.AwayFromZero), Variation = variations.NetBalanceVariation },
-                new() { Date = date, Name = AggregateName.NetCashFlow, Value = Math.Round(calculatedAggregates.NetCashFlow,2,MidpointRounding.AwayFromZero), Variation = variations.NetCashFlowVariation },
-                new() { Date = date, Name = AggregateName.SavingsRate, Value = Math.Round(calculatedAggregates.SavingsRate,2,MidpointRounding.AwayFromZero) },
-                new() { Date = date, Name = AggregateName.EssentialExpensesRatio, Value = Math.Round(calculatedAggregates.EssentialExpensesRatio,2,MidpointRounding.AwayFromZero) },
-                new() { Date = date, Name = AggregateName.ExpensesRatio, Value = Math.Round(calculatedAggregates.ExpensesRatio,2,MidpointRounding.AwayFromZero)},
-                new() { Date = date, Name = AggregateName.InvestmentRatio, Value = Math.Round(calculatedAggregates.InvestmentRatio,2,MidpointRounding.AwayFromZero)},
-                new() { Date = date, Name = AggregateName.DebtRatio, Value = Math.Round(calculatedAggregates.DebtRatio,2,MidpointRounding.AwayFromZero)},
-                new() { Date = date, Name = AggregateName.DebtPaymentRatio, Value = Math.Round(calculatedAggregates.DebtPaymentRatio,2,MidpointRounding.AwayFromZero)},
-                new() { Date = date, Name = AggregateName.InterestBurdenRatio, Value = Math.Round(calculatedAggregates.InterestBurdenRatio,2,MidpointRounding.AwayFromZero) }
+            new() { Date = date, Name = AggregateName.TotalIncome, Value = totals.TotalIncome, Variation= variations.IncomeVariation},
+                new() { Date = date, Name = AggregateName.TotalExpense, Value = totals.TotalExpense, Variation= variations.ExpensesVariation},
+                new() { Date = date, Name = AggregateName.TotalInvestment, Value = totals.TotalInvestment, Variation= variations.InvestmentVariation},
+                new() { Date = date, Name = AggregateName.TotalInflow, Value = calculatedAggregates.TotalInflow},
+                new() { Date = date, Name = AggregateName.TotalOutflow, Value = calculatedAggregates.TotalOutflow},
+                new() { Date = date, Name = AggregateName.TotalSavings, Value = totals.TotalSavings, Variation= variations.SavingsVariation },
+                new() { Date = date, Name = AggregateName.TotalContractedLoans, Value = totals.TotalContractedLoans, Variation= variations.DebtVariation },
+                new() { Date = date, Name = AggregateName.TotalInterestPayments, Value = totals.TotalInterestPayments},
+                new() { Date = date, Name = AggregateName.TotalPrincipalRepayments, Value = totals.TotalPrincipalRepayments},
+                new() { Date = date, Name = AggregateName.NetBalance, Value = calculatedAggregates.NetBalance, Variation = variations.NetBalanceVariation},
+                new() { Date = date, Name = AggregateName.NetCashFlow, Value = calculatedAggregates.NetCashFlow, Variation= variations.NetCashFlowVariation},
+                new() { Date = date, Name = AggregateName.SavingsRate, Value = calculatedAggregates.SavingsRate},
+                new() { Date = date, Name = AggregateName.EssentialExpensesRatio, Value = calculatedAggregates.EssentialExpensesRatio},
+                new() { Date = date, Name = AggregateName.ExpensesRatio, Value = calculatedAggregates.ExpensesRatio},
+                new() { Date = date, Name = AggregateName.InvestmentRatio, Value = calculatedAggregates.InvestmentRatio},
+                new() { Date = date, Name = AggregateName.DebtRatio, Value = calculatedAggregates.DebtRatio},
+                new() { Date = date, Name = AggregateName.DebtPaymentRatio, Value = calculatedAggregates.DebtPaymentRatio},
+                new() { Date = date, Name = AggregateName.InterestBurdenRatio, Value = calculatedAggregates.InterestBurdenRatio }
         ];
         }
     }

@@ -5,6 +5,8 @@ import FinancialTransactions from "./pages/FinancialTransactions";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./providers/protectedRoute";
+import LandingPage from "./pages/LandingPage";
+import Dashboard from "./pages/Dashboard";
 
 const Routes = () => {
   return (
@@ -23,7 +25,23 @@ const Routes = () => {
         />
         <Route
           path="/financialTransactions/newFinancialTransaction"
-          element={<NewFinancialTransaction />}
+          element={
+            <ProtectedRoute>
+              <NewFinancialTransaction />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          index
+          element={<LandingPage />}
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
         />
       </Route>
       <Route

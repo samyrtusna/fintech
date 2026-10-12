@@ -10,7 +10,7 @@ import type { PieLabelRenderProps, PieSectorShapeProps } from "recharts";
 
 const RADIAN = Math.PI / 180;
 // Assign meaningful colors: Expenses (Red), Investments (Green), Debt (Yellow), Other (Blue)
-const COLORS = ["#EF4444", "#22C55E", "#EAB308", "#3B82F6"];
+const COLORS = ["#EF4444", "#22C55E", "#EAB308", "#d946ef", "#3B82F6"];
 
 const renderCustomizedLabel = ({
   cx,
@@ -71,7 +71,7 @@ interface PieChartProps {
   isAnimationActive?: boolean;
 }
 
-export default function PieChartWithCustomizedLabel({
+export default function PieCharts({
   data,
   isAnimationActive = true,
 }: PieChartProps) {
