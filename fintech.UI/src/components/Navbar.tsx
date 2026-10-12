@@ -16,7 +16,10 @@ function Navbar() {
   const iconLinks = [
     { icon: IoMdHome, to: "/" },
     { icon: FaChartPie, to: "/dashboard" },
-    { icon: AiOutlineTransaction, to: "/financialTransactions" },
+    {
+      icon: AiOutlineTransaction,
+      to: "/financialTransactions",
+    },
     { icon: FaWallet, to: "/budget" },
     { icon: GoGoal, to: "/goal" },
   ];
@@ -41,19 +44,23 @@ function Navbar() {
     <>
       <div className="flex justify-between items-center min-w-dvw h-12 px-3  md:hidden">
         {!accessToken ? (
-          <Link
+          <NavLink
             to="/login"
-            className="h-8 w-8 rounded-xl "
+            className={({ isActive }) =>
+              `h-8 w-8 ${isActive ? "bg-bg-muted scale-110 rounded-sm" : "bg-bg-surface rounded-xl"}`
+            }
           >
             <IconComponent icon={FaUser} />
-          </Link>
+          </NavLink>
         ) : (
-          <Link
+          <NavLink
             to="#"
-            className="h-8 w-8 py-0.5 bg-bg-muted rounded-md text-center font-bold"
+            className={({ isActive }) =>
+              `h-8 w-8 ${isActive ? "bg-bg-muted scale-110 rounded-sm" : "bg-bg-surface rounded-xl"}`
+            }
           >
             {initials}
-          </Link>
+          </NavLink>
         )}{" "}
         {iconLinks.map((link) => (
           <NavLink

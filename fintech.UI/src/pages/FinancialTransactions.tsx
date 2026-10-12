@@ -25,8 +25,9 @@ import TransactionCard from "../components/TransactionCard";
 import { IoMdAdd } from "react-icons/io";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { AiOutlineTransaction } from "react-icons/ai";
-import PieChartWithCustomizedLabel from "../components/PieChart";
+import PieCharts from "../components/PieChart";
 import PeriodicAggregateCard from "../components/PeriodicAggregateCard";
+import ScrollReveal from "../components/ScrollReveal";
 
 function FinancialTransactions() {
   const dispatch = useAppDispatch();
@@ -46,35 +47,36 @@ function FinancialTransactions() {
     monthAggregates?.find((ag) => ag.name === "TotalIncome")?.value ?? 0;
   const incomeVariation =
     monthAggregates?.find((ag) => ag.name === "TotalIncome")?.variation ?? 0;
+
   const totalExpense =
     monthAggregates?.find((ag) => ag.name === "TotalExpense")?.value ?? 0;
   const expenseVariation =
     monthAggregates?.find((ag) => ag.name === "TotalExpense")?.variation ?? 0;
-  const expenseRatio =
-    monthAggregates?.find((ag) => ag.name === "ExpensesRatio")?.value ?? 0;
 
   const totalInvestment =
     monthAggregates?.find((ag) => ag.name === "TotalInvestment")?.value ?? 0;
   const investmentVariation =
     monthAggregates?.find((ag) => ag.name === "TotalInvestment")?.variation ??
     0;
-  const investmentRatio =
-    monthAggregates?.find((ag) => ag.name === "InvestmentRatio")?.value ?? 0;
+
   const debt =
     monthAggregates?.find((ag) => ag.name === "TotalContractedLoans")?.value ??
     0;
   const debtVariation =
     monthAggregates?.find((ag) => ag.name === "TotalContractedLoans")
       ?.variation ?? 0;
-  const debtRatio =
-    monthAggregates?.find((ag) => ag.name === "DebtRatio")?.value ?? 0;
 
-  const totalOthers = totalIncome - (totalExpense + totalInvestment + debt);
+  const savings =
+    monthAggregates?.find((ag) => ag.name === "TotalSavings")?.value ?? 0;
+
+  const totalOthers =
+    totalIncome - (totalExpense + totalInvestment + debt + savings);
 
   const pieChartData = [
     { name: "Expenses", value: totalExpense },
     { name: "Investments", value: totalInvestment },
     { name: "Debt", value: debt },
+    { name: "Savings", value: savings },
     { name: "Other", value: totalOthers },
   ];
 
@@ -126,7 +128,7 @@ function FinancialTransactions() {
   const [pageChange, setPageChange] = useState(false);
   const [transactionDetails, setTransactionDetails] = useState("");
   const [updateTransaction, setUpdateTransaction] = useState("");
-  const [showDate, setShowDate] = useState(true);
+  const [showDate, setShowDate] = useState(false);
 
   const [description, setDescription] = useState("");
   const [isEssential, setIsEssential] = useState(false);
@@ -302,21 +304,16 @@ function FinancialTransactions() {
         >
           <PeriodicAggregateCard
             title="Monthly Income"
-            AggregateName="Total income"
             aggregateValue={totalIncome}
             aggregateVariation={incomeVariation}
-            condition={incomeVariation > 10}
             symbol={symbol!}
             isBaseElement={true}
             isAnActif={true}
           />
           <PeriodicAggregateCard
             title="Monthly Investment"
-            AggregateName="Total invested"
             aggregateValue={totalInvestment}
             aggregateVariation={investmentVariation}
-            aggregateRatio={investmentRatio}
-            condition={investmentRatio > 10}
             symbol={symbol!}
             isBaseElement={false}
             isAnActif={true}
@@ -446,26 +443,20 @@ function FinancialTransactions() {
           </div>
         )}
         <div
-          className={`hidden  w-[20%] h-fit mt-10  ${updateTransaction !== "" ? "md:hidden" : "md:block"}`}
+          className={`hidden  w-[20%] h-full mt-10 justify-between  ${updateTransaction !== "" ? "md:hidden" : "md:flex md:flex-col"}`}
         >
           <PeriodicAggregateCard
             title="Monthly Expense"
-            AggregateName="Total spent"
             aggregateValue={totalExpense}
             aggregateVariation={expenseVariation}
-            aggregateRatio={expenseRatio}
-            condition={expenseRatio < 20}
             symbol={symbol!}
             isBaseElement={false}
             isAnActif={false}
           />
           <PeriodicAggregateCard
             title="Monthly Debt"
-            AggregateName="Contracted debt"
             aggregateValue={debt}
             aggregateVariation={debtVariation}
-            aggregateRatio={debtRatio}
-            condition={debtRatio < 10}
             symbol={symbol!}
             isBaseElement={false}
             isAnActif={false}
@@ -475,96 +466,95 @@ function FinancialTransactions() {
       <div className="flex flex-col justify-center md:hidden px-6">
         <PeriodicAggregateCard
           title="Monthly Income"
-          AggregateName="Total income"
           aggregateValue={totalIncome}
           aggregateVariation={incomeVariation}
-          condition={incomeVariation > 10}
           symbol={symbol!}
           isBaseElement={true}
           isAnActif={true}
         />
         <PeriodicAggregateCard
           title="Monthly Investment"
-          AggregateName="Total invested"
           aggregateValue={totalInvestment}
           aggregateVariation={investmentVariation}
-          aggregateRatio={investmentRatio}
-          condition={investmentRatio > 10}
           symbol={symbol!}
           isBaseElement={false}
           isAnActif={true}
         />
         <PeriodicAggregateCard
           title="Monthly Expense"
-          AggregateName="Total spent"
           aggregateValue={totalExpense}
           aggregateVariation={expenseVariation}
-          aggregateRatio={expenseRatio}
-          condition={expenseRatio < 20}
           symbol={symbol!}
           isBaseElement={false}
           isAnActif={false}
         />
         <PeriodicAggregateCard
           title="Monthly Debt"
-          AggregateName="Contracted debt"
           aggregateValue={debt}
           aggregateVariation={debtVariation}
-          aggregateRatio={debtRatio}
-          condition={debtRatio < 10}
           symbol={symbol!}
           isBaseElement={false}
           isAnActif={false}
         />
       </div>
+      <ScrollReveal>
+        <div
+          className={`w-full h-fit my-5 px-6 md:px-12  ${updateTransaction !== "" || totalIncome === 0 ? "md:hidden" : "md:block"}`}
+        >
+          <div className="w-full h-fit px-10 border-thin border-border-subtle rounded-md bg-bg-contrast shadow-card ">
+            <h3 className="text-xl font-bold mt-5 text-center">
+              Income Breakdown
+            </h3>
+            <div className="w-full flex flex-col md:flex-row justify-between items-center">
+              <div className="w-2/3 md:w-1/3 flex flex-col items-center">
+                <PieCharts data={pieChartData} />
+              </div>
 
-      <div
-        className={`w-full h-fit my-5 px-6 md:px-12  ${updateTransaction !== "" || totalIncome === 0 ? "md:hidden" : "md:block"}`}
-      >
-        <div className="w-full h-fit px-10 border-thin border-border-subtle rounded-md bg-bg-contrast shadow-card ">
-          <h3 className="text-xl font-bold mt-5 text-center">
-            Income Breakdown
-          </h3>
-          <div className="w-full flex flex-col md:flex-row justify-between items-center">
-            <div className="w-2/3 md:w-1/3 flex flex-col items-center">
-              <PieChartWithCustomizedLabel data={pieChartData} />
-            </div>
-
-            <div className="w-1/2 md:w-1/4 mt-4 text-sm space-y-1">
-              <div className="flex justify-between items-center">
-                <span className="text-red-500 font-semibold">● Expenses</span>
-                <span>
-                  {symbol}
-                  {totalExpense.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-green-500 font-semibold">
-                  ● Investments
-                </span>
-                <span>
-                  {symbol}
-                  {totalInvestment.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-yellow-500 font-semibold">● Debt</span>
-                <span>
-                  {symbol}
-                  {debt.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-blue-500 font-semibold">● Other</span>
-                <span>
-                  {symbol}
-                  {totalOthers.toFixed(2)}
-                </span>
+              <div className="w-full md:w-1/4 mt-4 text-sm space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-red-500 font-semibold">● Expenses</span>
+                  <span>
+                    {symbol}
+                    {totalExpense.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-green-500 font-semibold">
+                    ● Investments
+                  </span>
+                  <span>
+                    {symbol}
+                    {totalInvestment.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-yellow-500 font-semibold">● Debt</span>
+                  <span>
+                    {symbol}
+                    {debt.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-fuchsia-500 font-semibold">
+                    ● Savings
+                  </span>
+                  <span>
+                    {symbol}
+                    {debt.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-blue-500 font-semibold">● Other</span>
+                  <span>
+                    {symbol}
+                    {totalOthers.toFixed(2)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </ScrollReveal>
     </div>
   );
 }
