@@ -20,8 +20,8 @@ namespace fintech.API.Application.Helpers
             {
                 if (!string.Equals(transaction.BaseCurrency, baseCurrency.CurrencyCode, StringComparison.OrdinalIgnoreCase))
                 {
-                    var exchangeRate = await exchangeRateApiService.GetEchangeRateAsync(transaction.BaseCurrency, baseCurrency.CurrencyCode);
-                    transaction.BaseAmount = transaction.BaseAmount * exchangeRate;
+                    var exchangeRate = await exchangeRateApiService.GetEchangeRateAsync(transaction.Currency, baseCurrency.CurrencyCode);
+                    transaction.BaseAmount = transaction.Amount * exchangeRate;
                     transaction.BaseCurrency = baseCurrency.CurrencyCode;
                     transaction.BaseCurrencySymbol = baseCurrency.CurrencySymbol; 
 
