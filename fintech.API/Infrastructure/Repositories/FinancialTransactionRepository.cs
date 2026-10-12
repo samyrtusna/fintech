@@ -40,34 +40,30 @@ namespace fintech.API.Infrastructure.Repositories
         }
 
 
-        public async Task<TopSpendingCategoryDto?> GetTopSpendingCategoryPerMonthAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default)
+        public async Task<List<FinancialTransaction>> GetByTypeByMonth (Guid userId, DateTime date, FinancialType type, CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions
                 .Where(t => t.UserId == userId &&
                 !t.IsDeleted &&
                 t.TransactionDate.Year == date.Year &&
                 t.TransactionDate.Month == date.Month &&
-                t.Type == FinancialType.Expense)
+                t.Type == type)
                 .AsNoTracking()
-                .GroupBy(t => t.Category.Name)
-                .Select(g => new TopSpendingCategoryDto { Category = g.Key, TotalAmount = g.Sum(t => t.Amount) })
-                .OrderByDescending(g => g.TotalAmount)
-                .FirstOrDefaultAsync(cancellationToken);
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<TopSpendingCategoryDto?> GetTopSpendingCategoryPerYearAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default)
+
+        public async Task<List<FinancialTransaction>> GetByTypeByYear(Guid userId, DateTime date, FinancialType type, CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions
                 .Where(t => t.UserId == userId &&
                 !t.IsDeleted &&
                 t.TransactionDate.Year == date.Year &&
-                t.Type == FinancialType.Expense)
+                t.Type == type)
                 .AsNoTracking()
-                .GroupBy(t => t.Category.Name)
-                .Select(g => new TopSpendingCategoryDto { Category = g.Key, TotalAmount = g.Sum(t => t.Amount) })
-                .OrderByDescending(g => g.TotalAmount)
-                .FirstOrDefaultAsync(cancellationToken);
+                .ToListAsync(cancellationToken);
         }
+
     }
 }
   

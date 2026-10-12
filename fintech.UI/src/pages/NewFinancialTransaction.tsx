@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { ArrowLeft, Banknote } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   FinancialTypes,
@@ -20,6 +19,8 @@ import Spinner from "../components/Spinner";
 import { format } from "date-fns";
 import financialAggregatesService from "../API/Services/financialAggregatesService";
 import { setGlobalAggregates } from "../state/slices/financialAggregatesSlice";
+import { IoChevronBack } from "react-icons/io5";
+import { FaRegMoneyBillAlt } from "react-icons/fa";
 
 function NewFinancialTransaction() {
   //
@@ -158,10 +159,10 @@ function NewFinancialTransaction() {
             onClick={() => navigate(-1)}
             className="flex justify-center items-center h-10 aspect-square md:mx-2 rounded-full bg-bg-primary hover:bg-navbar-bg"
           >
-            <ArrowLeft className="stroke-text-surface" />
+            <IoChevronBack className="stroke-text-surface" />
           </button>
           <h1>New Financial Transaction</h1>
-          <Banknote className="stroke-blue-500" />
+          <FaRegMoneyBillAlt className="stroke-blue-500" />
         </div>
 
         <form onSubmit={formik.handleSubmit}>

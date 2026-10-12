@@ -1,9 +1,8 @@
 import authService from "../API/Services/authService";
 import { Formik, Form, type FormikHelpers } from "formik";
-import { ArrowLeft, Eye, EyeClosed } from "lucide-react";
 import Logo from "../components/Logo";
 import InputField from "../components/InputField";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { registerSchema } from "../formik/registerSchema";
 import { useAppDispatch, useAppSelector } from "../state/stateHooks";
 import { useNavigate, Link } from "react-router-dom";
@@ -14,6 +13,8 @@ import Spinner from "../components/Spinner";
 import Button from "../components/Button";
 import { setAccessToken, setUserInformations } from "../state/slices/authSlice";
 import userService from "../API/Services/userService";
+import { IoChevronBack } from "react-icons/io5";
+import { LuEye, LuEyeClosed } from "react-icons/lu";
 
 function Register() {
   const initialValues: RegisterRequest = {
@@ -26,8 +27,14 @@ function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const authState = useAppSelector((state) => state.authUser);
 
+  const usernameInputRef = useRef<HTMLInputElement>(null);
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    usernameInputRef.current?.focus();
+  }, []);
 
   const handleSubmit = async (
     values: RegisterRequest,
@@ -68,7 +75,7 @@ function Register() {
           to="/"
           className="flex justify-center items-center h-10 aspect-square mx-2 rounded-full hover:bg-bg-muted"
         >
-          <IconComponent icon={ArrowLeft} />
+          <IconComponent icon={IoChevronBack} />
         </Link>
         <div className="flex flex-col items-center">
           <div className="h-25 py-5 my-5 ">
@@ -92,6 +99,7 @@ function Register() {
                   <div className=" w-full h-full">
                     <Form className="flex flex-col justify-end w-full">
                       <InputField
+                        ref={usernameInputRef}
                         id="username"
                         name="username"
                         component="div"
@@ -121,9 +129,9 @@ function Register() {
                           }
                         >
                           {showPassword ? (
-                            <EyeClosed size={18} />
+                            <LuEyeClosed size={18} />
                           ) : (
-                            <Eye size={18} />
+                            <LuEye size={18} />
                           )}
                         </button>
                       </div>
@@ -148,9 +156,9 @@ function Register() {
                           }
                         >
                           {showConfirmPassword ? (
-                            <EyeClosed size={18} />
+                            <LuEyeClosed size={18} />
                           ) : (
-                            <Eye size={18} />
+                            <LuEye size={18} />
                           )}
                         </button>
                       </div>

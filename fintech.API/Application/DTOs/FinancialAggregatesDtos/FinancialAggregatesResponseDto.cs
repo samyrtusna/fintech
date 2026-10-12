@@ -4,9 +4,9 @@ namespace fintech.API.Application.DTOs.FinancialAggregatesDtos
 {
     public class FinancialAggregatesResponseDto
     {
-        public int Year { get; set; }
-        public int? Month { get; set; }
+        public DateTime Date { get; set; } 
         public AggregateName Name { get; set; }
         public decimal Value { get; set; }
+        public decimal? Variation { get; set; }
     }
 }

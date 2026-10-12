@@ -1,30 +1,30 @@
 type AggregateName =
-  | "netBalance"
-  | "netCashFlow"
-  | "totalInvestment"
-  | "totalSavings"
-  | "activeDebt"
-  | "totalIncome"
-  | "totalExpense"
-  | "totalContractedLoans"
-  | "totalInterestPayments"
-  | "totalPrincipalRepayments"
-  | "topSpendingCategory"
-  | "totalInflow"
-  | "totalOutflow"
-  | "savingsRate"
-  | "essentialExpensesRatio"
-  | "expensesRatio"
-  | "investmentRatio"
-  | "debtRatio"
-  | "debtPaymentRatio"
-  | "interestBurdenRatio";
+  | "NetBalance"
+  | "NetCashFlow"
+  | "TotalInvestment"
+  | "TotalSavings"
+  | "TctiveDebt"
+  | "TotalIncome"
+  | "TotalExpense"
+  | "TotalContractedLoans"
+  | "TotalInterestPayments"
+  | "TotalPrincipalRepayments"
+  | "TopSpendingCategory"
+  | "TotalInflow"
+  | "TotalOutflow"
+  | "SavingsRate"
+  | "EssentialExpensesRatio"
+  | "ExpensesRatio"
+  | "InvestmentRatio"
+  | "DebtRatio"
+  | "DebtPaymentRatio"
+  | "InterestBurdenRatio";
 
 export interface FilteredAggregatesResponse {
-  year: number;
-  month?: number;
+  date: Date;
   name: AggregateName;
   value: number;
+  variation: number;
 }
 
 export interface AggregatesFilter {
@@ -42,4 +42,5 @@ export interface GlobalAggregatesResponse {
 
 export interface AggregatesState {
   globalAggregates: GlobalAggregatesResponse | null;
+  monthAggregates: FilteredAggregatesResponse[] | null;
 }

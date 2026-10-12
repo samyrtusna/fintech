@@ -61,7 +61,7 @@ namespace fintech.API.Application.Helpers
 
         public decimal GetIndicatorGrowth(decimal previousValue, decimal currentValue)
         {
-            return previousValue == 0 ? 0 : ((currentValue - previousValue) / previousValue) * 100;
+            return previousValue == 0 ? 0 : Math.Round(((currentValue - previousValue) / previousValue) * 100, 2, MidpointRounding.AwayFromZero);
         }
     } 
 }
