@@ -1,5 +1,6 @@
 ﻿using fintech.API.Application.DTOs.FinancialAggregatesDtos;
 using fintech.API.Application.DTOs.FinancialTransactionDtos;
+using fintech.API.Application.Exceptions;
 using fintech.API.Application.Interfaces.Repositories;
 using fintech.API.Application.Interfaces.Services;
 using fintech.API.Domain.Enums;
@@ -16,11 +17,11 @@ namespace fintech.API.Application.Services
         {
             var currentYear = DateTime.UtcNow;
             var lastYear = DateTime.UtcNow.Year - 1;
-            var lastYearAggregates = await financialAggregatesRepository.GetFinancialAggregatesByYearAsync(userId, lastYear);
+            var lastYearAggregates = await financialAggregatesRepository.GetFinancialAggregatesByYearAsync(userId, lastYear) ?? throw new NotFoundException("Failed to retrieve last year's aggregates") ;
 
-            var transactions = await GetTransactionsByTypeByYear(userId, currentYear);
+            var transactions = await GetTransactionsByTypeByYear(userId, currentYear) ?? throw new NotFoundException("Failed to retrieve current year's transactions");
 
-            var totals = await CalculateTransactionTotals(userId, transactions); 
+            var totals = await CalculateTransactionTotals(userId, transactions) ?? throw new NotFoundException("Failed to calculate transaction totals");
 
 
             var totalActiveDebt = totals.TotalContractedLoans - totals.TotalPrincipalRepayments;
@@ -66,11 +67,11 @@ namespace fintech.API.Application.Services
         {
             var previousMonth = date.AddMonths(-1);
 
-            var currenttransactions = await GetTransactionsByTypeByMonth(userId, date);
-            var previousTransactions = await GetTransactionsByTypeByMonth(userId, previousMonth);
+            var currenttransactions = await GetTransactionsByTypeByMonth(userId, date) ?? throw new NotFoundException("Failed to retrieve current month's transactions");
+            var previousTransactions = await GetTransactionsByTypeByMonth(userId, previousMonth) ?? throw new NotFoundException("Failed to retrieve previous month's transactions");
 
-            var currentTotals = await CalculateTransactionTotals(userId, currenttransactions);
-            var previousTotals = await CalculateTransactionTotals(userId, previousTransactions);
+            var currentTotals = await CalculateTransactionTotals(userId, currenttransactions) ?? throw new NotFoundException("Failed to calculate current month's transaction totals");
+            var previousTotals = await CalculateTransactionTotals(userId, previousTransactions) ?? throw new NotFoundException("Failed to calculate previous month's transaction totals");
 
             var currentAggregates = CalculateAggregates(currentTotals, date);
             var previousAggregates = CalculateAggregates(previousTotals, previousMonth);
