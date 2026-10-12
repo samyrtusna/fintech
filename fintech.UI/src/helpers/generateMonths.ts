@@ -9,7 +9,7 @@ export default function generateMonths(creationDate: Date): MonthItem[] {
   // Start from the signup month
   const currentDate = new Date(
     createdAt.getFullYear(),
-    createdAt.getMonth(),
+    createdAt.getMonth() + 1,
     1,
   );
 
@@ -40,6 +40,7 @@ export default function generateMonths(creationDate: Date): MonthItem[] {
     // Move to the next month
     currentDate.setMonth(currentDate.getMonth() + 1);
   }
+
   // Most recent month first
   return result.reverse();
 }

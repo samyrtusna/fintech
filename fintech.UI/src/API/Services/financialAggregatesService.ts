@@ -22,7 +22,7 @@ const getGlobalAggregates = async (): Promise<GlobalAggregatesResponse> => {
   }
 };
 
-const getByFilterAsync = async (
+const getByFilter = async (
   aggregatesFilter: AggregatesFilter,
 ): Promise<FilteredAggregatesResponse[]> => {
   try {
@@ -42,4 +42,4 @@ const getByFilterAsync = async (
   }
 };
 
-export default { getByFilterAsync, getGlobalAggregates };
+export default { getByFilter, getGlobalAggregates };

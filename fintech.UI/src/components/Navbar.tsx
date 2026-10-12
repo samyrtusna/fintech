@@ -1,28 +1,24 @@
 import { Link, NavLink } from "react-router-dom";
-import {
-  CircleUser,
-  ChartNoAxesCombined,
-  MoonStar,
-  Sun,
-  Handshake,
-  Wallet,
-  Gem,
-  Home,
-} from "lucide-react";
 import IconComponent from "./IconComponent";
 import useTheme from "../hooks/useTheme";
 import { useAppSelector } from "../state/stateHooks";
 import { DecodeToken } from "../helpers/tokenDecoder";
+import { IoMdHome } from "react-icons/io";
+import { FaChartPie, FaUser, FaWallet } from "react-icons/fa";
+import { AiOutlineTransaction } from "react-icons/ai";
+import { GoGoal } from "react-icons/go";
+import { IoSunnyOutline } from "react-icons/io5";
+import { LuMoonStar } from "react-icons/lu";
 
 function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const accessToken = useAppSelector((state) => state.authUser.accessToken);
   const iconLinks = [
-    { icon: Home, to: "/" },
-    { icon: ChartNoAxesCombined, to: "/dashboard" },
-    { icon: Handshake, to: "/financialTransactions" },
-    { icon: Wallet, to: "/budget" },
-    { icon: Gem, to: "/goal" },
+    { icon: IoMdHome, to: "/" },
+    { icon: FaChartPie, to: "/dashboard" },
+    { icon: AiOutlineTransaction, to: "/financialTransactions" },
+    { icon: FaWallet, to: "/budget" },
+    { icon: GoGoal, to: "/goal" },
   ];
 
   const textLinks = [
@@ -49,7 +45,7 @@ function Navbar() {
             to="/login"
             className="h-8 w-8 rounded-xl "
           >
-            <IconComponent icon={CircleUser} />
+            <IconComponent icon={FaUser} />
           </Link>
         ) : (
           <Link
@@ -74,7 +70,9 @@ function Navbar() {
           onClick={toggleTheme}
           className="h-8 w-8 rounded-xl bg-bg-surface "
         >
-          <IconComponent icon={theme === "dark" ? Sun : MoonStar} />
+          <IconComponent
+            icon={theme === "dark" ? IoSunnyOutline : LuMoonStar}
+          />
         </button>
       </div>
       {/* the div background is hardcoded */}
@@ -100,7 +98,9 @@ function Navbar() {
             className="cursor-pointer hover:scale-110 hover:font-bold"
             onClick={toggleTheme}
           >
-            <IconComponent icon={theme === "dark" ? Sun : MoonStar} />
+            <IconComponent
+              icon={theme === "dark" ? IoSunnyOutline : LuMoonStar}
+            />
           </button>
         </div>
         <div

@@ -12,7 +12,8 @@ import {
   isSameDay,
   isToday,
 } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+
 type PropsType = {
   handledate: (d: Date) => void;
   selectedDate: Date | null;
@@ -45,13 +46,13 @@ export default function Calendar(props: PropsType) {
             onClick={prevMonth}
             className="p-2 hover:bg-gray-100 rounded-full transition"
           >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
+            <IoChevronBack className="w-5 h-5 text-gray-600" />
           </button>
           <button
             onClick={nextMonth}
             className="p-2 hover:bg-gray-100 rounded-full transition"
           >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
+            <IoChevronForward className="w-5 h-5 text-gray-600" />
           </button>
         </div>
       </div>

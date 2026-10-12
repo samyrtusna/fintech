@@ -1,7 +1,6 @@
 import authService from "../API/Services/authService";
 import { Formik, Form, type FormikHelpers } from "formik";
-import { ArrowLeft, Eye, EyeClosed } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LoginSchema } from "../formik/loginSchema";
 import { useAppDispatch, useAppSelector } from "../state/stateHooks";
 import type { LoginRequest } from "../types/authTypes";
@@ -14,6 +13,8 @@ import Spinner from "../components/Spinner";
 import Button from "../components/Button";
 import { setAccessToken, setUserInformations } from "../state/slices/authSlice";
 import userService from "../API/Services/userService";
+import { LuEye, LuEyeClosed } from "react-icons/lu";
+import { IoChevronBack } from "react-icons/io5";
 
 function Login() {
   const initialValues: LoginRequest = { email: "", password: "" };
@@ -21,8 +22,14 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const authState = useAppSelector((state) => state.authUser);
 
+  const emailInputRef = useRef<HTMLInputElement>(null);
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    emailInputRef.current?.focus();
+  }, []);
 
   const handleSubmit = async (
     values: LoginRequest,
@@ -65,7 +72,7 @@ function Login() {
           to="/"
           className="flex justify-center items-center h-10 aspect-square mx-2 rounded-full bg-input-bg hover:bg-bg-muted"
         >
-          <IconComponent icon={ArrowLeft} />
+          <IconComponent icon={IoChevronBack} />
         </Link>
         <div className="flex flex-col items-center mt-10">
           <div className="h-25 py-5 my-5">
@@ -89,6 +96,7 @@ function Login() {
                   <div className="w-full">
                     <Form className="w-full">
                       <InputField
+                        ref={emailInputRef}
                         id="email"
                         name="email"
                         component="div"
@@ -113,9 +121,9 @@ function Login() {
                           }
                         >
                           {showPassword ? (
-                            <EyeClosed size={18} />
+                            <LuEyeClosed size={18} />
                           ) : (
-                            <Eye size={18} />
+                            <LuEye size={18} />
                           )}
                         </button>
                       </div>
