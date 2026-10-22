@@ -9,7 +9,7 @@ export default function generateMonths(creationDate: Date): MonthItem[] {
   // Start from the signup month
   const currentDate = new Date(
     createdAt.getFullYear(),
-    createdAt.getMonth() + 1,
+    createdAt.getMonth(),
     1,
   );
 
@@ -19,12 +19,17 @@ export default function generateMonths(creationDate: Date): MonthItem[] {
     (currentDate.getFullYear() === now.getFullYear() &&
       currentDate.getMonth() <= now.getMonth())
   ) {
-    const key = currentDate
+    const shortLabel = currentDate
       .toLocaleDateString("en-US", {
         month: "short",
         year: "numeric",
       })
       .toUpperCase();
+
+    const longLabel = currentDate.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
 
     const value = new Date(
       currentDate.getFullYear(),
@@ -33,7 +38,8 @@ export default function generateMonths(creationDate: Date): MonthItem[] {
     );
 
     result.push({
-      key,
+      shortLabel,
+      longLabel,
       value,
     });
 

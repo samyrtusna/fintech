@@ -11,6 +11,8 @@ namespace fintech.API.Infrastructure.EFcore.Configurations
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Name).IsRequired();
             builder.Property(x => x.Value).HasColumnType("decimal(18,2)");
+            builder.Property(x => x.Currency).IsRequired()
+                .HasMaxLength(3);
             builder.HasIndex(x => x.Year);
         }
     }

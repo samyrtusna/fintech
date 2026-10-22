@@ -43,12 +43,14 @@ export default function Calendar(props: PropsType) {
         </h2>
         <div className="flex space-x-2">
           <button
+            type="button"
             onClick={prevMonth}
             className="p-2 hover:bg-gray-100 rounded-full transition"
           >
             <IoChevronBack className="w-5 h-5 text-gray-600" />
           </button>
           <button
+            type="button"
             onClick={nextMonth}
             className="p-2 hover:bg-gray-100 rounded-full transition"
           >

@@ -24,9 +24,9 @@ const getGlobalAggregates = async (): Promise<GlobalAggregatesResponse> => {
 
 const getByFilter = async (
   aggregatesFilter: AggregatesFilter,
-): Promise<FilteredAggregatesResponse[]> => {
+): Promise<FilteredAggregatesResponse> => {
   try {
-    return await http.get<FilteredAggregatesResponse[], AggregatesFilter>(
+    return await http.get<FilteredAggregatesResponse, AggregatesFilter>(
       "financialAggregates/filter",
       aggregatesFilter,
     );

@@ -1,4 +1,5 @@
-﻿using fintech.API.Application.DTOs.FinancialTransactionDtos;
+﻿using fintech.API.Application.DTOs.FinancialAggregatesDtos;
+using fintech.API.Application.DTOs.FinancialTransactionDtos;
 using fintech.API.Application.Interfaces.Repositories;
 using fintech.API.Domain.Entities;
 using fintech.API.Domain.Enums;
@@ -40,30 +41,63 @@ namespace fintech.API.Infrastructure.Repositories
         }
 
 
-        public async Task<List<FinancialTransaction>> GetByTypeByMonth (Guid userId, DateTime date, FinancialType type, CancellationToken cancellationToken = default)
+        public async Task<List<FinancialTransaction>> GetByMonth (Guid userId, DateTime date, CancellationToken cancellationToken = default)
         {
-            return await context.FinancialTransactions
+            return await context.FinancialTransactions 
                 .Where(t => t.UserId == userId &&
                 !t.IsDeleted &&
                 t.TransactionDate.Year == date.Year &&
-                t.TransactionDate.Month == date.Month &&
-                t.Type == type)
+                t.TransactionDate.Month == date.Month)
+                .Include(t => t.Category)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
 
 
-        public async Task<List<FinancialTransaction>> GetByTypeByYear(Guid userId, DateTime date, FinancialType type, CancellationToken cancellationToken = default)
+        public async Task<List<FinancialTransaction>> GetByYear(Guid userId, DateTime date, CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions
                 .Where(t => t.UserId == userId &&
                 !t.IsDeleted &&
-                t.TransactionDate.Year == date.Year &&
-                t.Type == type)
+                t.TransactionDate.Year == date.Year)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<AggregateByPeriodDto>> GetByTypeByMonth (Guid userId, FinancialType type, CancellationToken cancellationToken = default)
+        {
+            return await context.FinancialTransactions
+                .Where(t => t.UserId == userId &&
+                t.Type == type &&
+                !t.IsDeleted)
+                .AsNoTracking()
+                .GroupBy(t => new { t.TransactionDate.Year, t.TransactionDate.Month })
+                .Select(g => new AggregateByPeriodDto
+                {
+                    Period = new DateTime(g.Key.Year, g.Key.Month, 1),
+                    Type = type,
+                    Amount = g.Sum(x => x.Amount)
+                })
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<AggregateByPeriodDto>>GetByCategoryByMonth (Guid userId, string categoryName, CancellationToken cancellationToken = default)
+        {
+            return await context.FinancialTransactions
+                .Where(t => t.UserId == userId &&
+                t.Category.Name == categoryName &&
+                !t.IsDeleted)
+                .AsNoTracking()
+                .GroupBy(t => new { t.TransactionDate.Year, t.TransactionDate.Month })
+                .Select(g => new AggregateByPeriodDto
+                {
+                    Period = new DateTime(g.Key.Year, g.Key.Month, 1),
+                    Type = g.First().Type,
+                    CategoryName = g.First().Category.Name,
+                    Amount = g.Sum(x => x.Amount)
+                })
+                .ToListAsync(cancellationToken);
+        }
     }
 }
-  
+ 

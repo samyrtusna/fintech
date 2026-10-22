@@ -10,8 +10,8 @@ interface PropsType {
 function GlobalAggregateCard(props: PropsType) {
   const { aggregateName, symbol, aggregateValue, condition } = props;
   return (
-    <div className="flex flex-col md:flex-row justify-around items-center p-2 w-full  bg-bg-contrast border-thin border-border-subtle rounded-md shadow-card animate-slow-drift">
-      <h3 className="text-lg md:mr-4">{aggregateName} </h3>
+    <div className=" p-2 w-full  bg-bg-contrast border-thin border-border-subtle rounded-md shadow-card animate-slow-drift">
+      <h3 className="md:mr-4">{aggregateName} </h3>
       <div className="flex items-baseline">
         <h3
           className={`text-lg ${condition ? "text-red-500" : "text-green-500"}`}

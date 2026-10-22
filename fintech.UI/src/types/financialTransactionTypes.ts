@@ -35,7 +35,7 @@ export interface GetTransactionResponse {
   currencySymbol: string;
   baseCurrency: string;
   baseCurrencySymbol: string;
-  transactionDate: string;
+  transactionDate: Date;
   description?: string;
   isEssential?: boolean;
 }
@@ -65,7 +65,8 @@ export interface TransactionState {
 }
 
 export interface MonthItem {
-  key: string;
+  shortLabel: string;
+  longLabel: string;
   value: Date;
 }
 

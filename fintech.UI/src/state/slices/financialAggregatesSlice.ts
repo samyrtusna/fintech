@@ -22,7 +22,7 @@ export const financialAggregatesSlice = createSlice({
     },
     setMonthAggregates: (
       state,
-      action: PayloadAction<FilteredAggregatesResponse[]>,
+      action: PayloadAction<FilteredAggregatesResponse>,
     ) => {
       state.monthAggregates = action.payload;
     },

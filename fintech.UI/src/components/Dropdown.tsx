@@ -7,7 +7,11 @@ export interface DropdownProps<T> {
 }
 
 function Dropdown<
-  T extends { key?: string | number; value?: string | number | Date },
+  T extends {
+    shortLabel?: string | number;
+    longLabel: string | number;
+    value?: string | number | Date;
+  },
 >(props: DropdownProps<T>) {
   const { selectedValue, options, onSelect } = props;
 
@@ -22,16 +26,16 @@ function Dropdown<
           isOpen ? "rounded-t-sm" : "rounded-sm"
         }`}
       >
-        {selectedValue.key}
+        {selectedValue.shortLabel}
       </button>
 
       {isOpen && (
         <div className="absolute top-8 w-full flex flex-col z-50">
           {options
-            .filter((item) => item.key !== selectedValue.key)
+            .filter((item) => item.shortLabel !== selectedValue.shortLabel)
             .map((item, index, arr) => (
               <button
-                key={item.key}
+                key={item.shortLabel}
                 type="button"
                 onClick={() => {
                   onSelect(item);
@@ -43,7 +47,7 @@ function Dropdown<
                     : ""
                 }`}
               >
-                {item.key}
+                {item.shortLabel}
               </button>
             ))}
         </div>

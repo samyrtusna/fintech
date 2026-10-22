@@ -56,7 +56,7 @@ function Navbar() {
           <NavLink
             to="#"
             className={({ isActive }) =>
-              `h-8 w-8 ${isActive ? "bg-bg-muted scale-110 rounded-sm" : "bg-bg-surface rounded-xl"}`
+              `h-8 w-8 flex justify-center items-center-safe ${isActive ? "bg-bg-muted scale-110 rounded-sm" : "bg-bg-surface rounded-xl"}`
             }
           >
             {initials}

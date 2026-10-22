@@ -8,7 +8,6 @@ namespace fintech.API.Infrastructure.Services
 {
     public class ExchangeRateApiService : IExchangeRateApiService
     {
-        private string? _apiKey;
         private readonly string? apiUrl;
         private readonly HttpClient client; 
         private readonly IOptionsRepository _optionsRepository;

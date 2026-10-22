@@ -11,14 +11,14 @@ namespace fintech.API.API.Controllers
     public class FinancialAggregatesController(IFinancialAggregatesService financialAggregatesService) : BaseController
     {
         [HttpGet("global")]
-        public async Task<IActionResult> GetGlobalAggregates()
+        public async Task<ActionResult<GlobalAggregatesResponseDto>> GetGlobalAggregates()
         {
             var results = await financialAggregatesService.GetGlobalAggregates(UserId);
             return Ok(results);
         }
 
         [HttpGet("filter")]
-        public async Task<IActionResult> GetFilteredAggregates([FromQuery] FinancialAggregatesFilterDto dto)
+        public async Task<ActionResult<FinancialAggregatesResponseDto>> GetFilteredAggregates([FromQuery] FinancialAggregatesFilterDto dto)
         {
             var results = await financialAggregatesService.GetAggregatesByFilter(UserId, dto);
             return Ok(results);
