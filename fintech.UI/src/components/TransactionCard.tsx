@@ -188,7 +188,7 @@ function TransactionCard<T extends GetTransactionResponse>(
               <h3
                 className={`${updateTransaction === transaction.id ? "w-full px-2 py-1 border-thin border-border-subtle rounded-sm bg-bg-contrast" : "mx-0"}`}
               >
-                {transaction.transactionDate}
+                {transaction.transactionDate.toDateString()}
               </h3>
             </div>
 
