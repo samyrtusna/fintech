@@ -32,20 +32,14 @@ namespace fintech.API.Infrastructure.Services
             {
                 var result = await response.Content.ReadFromJsonAsync<IEnumerable<ExchangeRateSymbolsResponseDto>>();
 
-                if(result is null)
-                {
-                    throw new Exception("API request was successful but returned no data.");
-                }
-                return result.ToDictionary(s => s.IsoCode, s => s.Symbol);
+                return result is null ? throw new Exception("API request was successful but returned no data.")
+                                      : result.ToDictionary(s => s.IsoCode, s => s.Symbol);
             }
             else
             {
-                var errorBody = await response.Content.ReadAsStringAsync();
+                var errorDetails = await response.Content.ReadAsStringAsync();
 
-                throw new HttpRequestException(
-                    $"Failed to retrieve symbols. " +
-                    $"Status code: {response.StatusCode}. " +
-                    $"Response: {errorBody}");
+                throw new HttpRequestException( $"Failed to retrieve symbols ({response.StatusCode}): {errorDetails}");
             }
         }
 
@@ -64,7 +58,7 @@ namespace fintech.API.Infrastructure.Services
                     var rate = result.First().Rate;
                     return rate;
                 }
-                throw new Exception($"Rate for '{baseCurrency}' was not found in the API response.");
+                throw new NotFoundException($"Rate for '{baseCurrency}' was not found in the API response.");
             }
             string errorDetails = await response.Content.ReadAsStringAsync();
             throw new HttpRequestException($"Failed to retrieve exchange rate ({response.StatusCode}): {errorDetails}");

@@ -11,7 +11,7 @@ namespace fintech.API.Application.Interfaces.Services
         Task<IEnumerable<CategoryResponseDto>> GetAllCategoriesAsync(Guid userId);
         Task<CategoryResponseDto> GetCategoryByIdAsync(Guid categoryId, Guid userId);
         Task<CategoryResponseDto> UpdateCategoryAsync(Guid CategoryId, UpdateCategoryRequestDto dto, Guid userId);
-        Task DeleteCategoryAsync(Guid categoryId, Guid userId);  
+        Task<ConfirmationResponseDto> DeleteCategoryAsync(Guid categoryId, Guid userId);  
         Task<ConfirmationResponseDto> SetCategoryEssentialAsync(UserCategorySettingsRequestDto dto, Guid categoryId, Guid userId);
     }
 }

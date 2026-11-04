@@ -41,7 +41,7 @@ namespace fintech.API.Infrastructure.Repositories
         }
 
 
-        public async Task<List<FinancialTransaction>> GetByMonth (Guid userId, DateTime date, CancellationToken cancellationToken = default)
+        public async Task<List<FinancialTransaction>> GetByMonthAsync (Guid userId, DateTime date, CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions 
                 .Where(t => t.UserId == userId &&
@@ -54,7 +54,7 @@ namespace fintech.API.Infrastructure.Repositories
         }
 
 
-        public async Task<List<FinancialTransaction>> GetByYear(Guid userId, DateTime date, CancellationToken cancellationToken = default)
+        public async Task<List<FinancialTransaction>> GetByYearAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions
                 .Where(t => t.UserId == userId &&
@@ -64,7 +64,7 @@ namespace fintech.API.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<AggregateByPeriodDto>> GetByTypeByMonth (Guid userId, FinancialType type, CancellationToken cancellationToken = default)
+        public async Task<List<AggregateByPeriodDto>> GetByTypeByMonthAsync (Guid userId, FinancialType type, CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions
                 .Where(t => t.UserId == userId &&
@@ -76,12 +76,12 @@ namespace fintech.API.Infrastructure.Repositories
                 {
                     Period = new DateTime(g.Key.Year, g.Key.Month, 1),
                     Type = type,
-                    Amount = g.Sum(x => x.Amount)
+                    Amount = g.Sum(x => x.BaseAmount.Amount)
                 })
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<AggregateByPeriodDto>>GetByCategoryByMonth (Guid userId, string categoryName, CancellationToken cancellationToken = default)
+        public async Task<List<AggregateByPeriodDto>>GetByCategoryByMonthAsync (Guid userId, string categoryName, CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions
                 .Where(t => t.UserId == userId &&
@@ -91,10 +91,10 @@ namespace fintech.API.Infrastructure.Repositories
                 .GroupBy(t => new { t.TransactionDate.Year, t.TransactionDate.Month })
                 .Select(g => new AggregateByPeriodDto
                 {
-                    Period = new DateTime(g.Key.Year, g.Key.Month, 1),
+                    Period = new DateTime(g.Key.Year, g.Key.Month, 1), 
                     Type = g.First().Type,
                     CategoryName = g.First().Category.Name,
-                    Amount = g.Sum(x => x.Amount)
+                    Amount = g.Sum(x => x.BaseAmount.Amount)
                 })
                 .ToListAsync(cancellationToken);
         }

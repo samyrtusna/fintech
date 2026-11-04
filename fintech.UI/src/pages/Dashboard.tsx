@@ -18,13 +18,13 @@ const Dashboard = () => {
     (state) => state.authUser.userInformations,
   );
 
-  const aggregates = useAppSelector(
+  const monthAggregates = useAppSelector(
     (state) => state.financialAggregates.monthAggregates,
   );
 
   const symbol = useAppSelector(
     (state) => state.authUser.userInformations?.userCurrencies,
-  )?.find((c) => c.isDefault === true)?.currencySymbol;
+  )?.find((c) => c.isDefault === true)?.currency.symbol; //refactor currency symbol origin
 
   const dispatch = useDispatch();
 
@@ -35,10 +35,7 @@ const Dashboard = () => {
   const fetchMonthAggregates = useCallback(
     async (date: Date) => {
       try {
-        const aggregates = await financialAggregatesService.getByFilter({
-          period: "Monthly",
-          date: date,
-        });
+        const aggregates = await financialAggregatesService.getByMonth(date);
         dispatch(setMonthAggregates(aggregates));
       } catch (error) {
         toast.error(
@@ -56,70 +53,122 @@ const Dashboard = () => {
   }, [fetchMonthAggregates, selectedMonth.value]);
 
   // Key metrics
-  const totalIncome = aggregates?.totals.find(
-    (t) => t.name === "Income",
-  )?.amount;
-  const incomeVariation = aggregates?.variations.incomeVariation;
+  const totalIncome =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalIncome".toLowerCase(),
+    )?.amount.amount ?? 0;
+  const incomeVariation =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalIncome".toLowerCase(),
+    )?.variation ?? 0;
 
-  const totalExpense = aggregates?.totals.find(
-    (t) => t.name === "Expense",
-  )?.amount;
-  const expenseVariation = aggregates?.variations.expensesVariation;
+  const totalExpense =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalExpense".toLowerCase(),
+    )?.amount.amount ?? 0;
+  const expenseVariation =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalExpense".toLowerCase(),
+    )?.variation ?? 0;
 
-  // const totalInvestment = aggregates?.totals.find(
-  //   (t) => t.name === "Investment",
-  // )?.amount;
-  // const investmentVariation = aggregates?.variations.investmentVariation;
+  // const totalInvestment =
+  //   monthAggregates?.aggregates.find(
+  //     (ag) => ag.name.toLowerCase() === "TotalInvestment".toLowerCase(),
+  //   )?.amount.amount ?? 0;
+  // const investmentVariation =
+  //   monthAggregates?.aggregates.find(
+  //     (ag) => ag.name.toLowerCase() === "TotalInvestment".toLowerCase(),
+  //   )?.variation ?? 0;
 
-  const netCashFlow = aggregates?.aggregates.netCashFlow;
-  // const netCashFlowVariation = aggregates?.variations.netCashFlowVariation;
+  const netCashFlow =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "NetCashFlow".toLowerCase(),
+    )?.amount.amount ?? 0;
+  // const netCashFlowVariation =
+  //   monthAggregates?.aggregates.find(
+  //     (ag) => ag.name.toLowerCase() === "NetCashFlow".toLowerCase(),
+  //   )?.variation ?? 0;
 
-  const netBalance = aggregates?.aggregates.netBalance;
-  // const netBalanceVariation = aggregates?.variations.netBalanceVariation;
+  const netBalance =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "NetBalance".toLowerCase(),
+    )?.amount.amount ?? 0;
+  // const netBalanceVariation =
+  //   monthAggregates?.aggregates.find(
+  //     (ag) => ag.name.toLowerCase() === "NetBalance".toLowerCase(),
+  //   )?.variation ?? 0;
 
-  // const totalInflow = aggregates?.aggregates.totalInflow;
-  // const totalOutflow = aggregates?.aggregates.totalOutflow;
+  // const totalInflow =
+  //   monthAggregates?.aggregates.find(
+  //     (ag) => ag.name.toLowerCase() === "TotalInflow".toLowerCase(),
+  //   )?.amount.amount ?? 0;
+  // const totalOutflow =
+  //   monthAggregates?.aggregates.find(
+  //     (ag) => ag.name.toLowerCase() === "TotalOutflow".toLowerCase(),
+  //   )?.amount.amount ?? 0;
 
   // const totalEssentialExpenses = aggregates?.totals.find(
   //   (t) => t.name === "Important Expenses",
   // )?.amount;
 
-  const incomeByCategory = aggregates?.totals.filter(
+  const incomeByCategory = monthAggregates?.aggregates.filter(
     (t) => t.type === "Income",
   );
 
-  const expenseByCategory = aggregates?.totals.filter(
-    (t) => t.type === "Expense" && t.name !== "Important Expenses",
+  const expenseByCategory = monthAggregates?.aggregates.filter(
+    (t) => t.type === "Expense",
   );
 
   // Ratios
-  const expensesRatio = aggregates?.aggregates.expensesRatio;
-  const investmentRatio = aggregates?.aggregates.investmentRatio;
-  const debtRatio = aggregates?.aggregates.debtRatio;
-  const savingsRate = aggregates?.aggregates.savingsRate;
-  const essentialExpensesRatio = aggregates?.aggregates.essentialExpensesRatio;
+  const expensesRatio =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "ExpensesRatio".toLowerCase(),
+    )?.amount.amount ?? 0;
+  const investmentRatio =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "InvestmentRatio".toLowerCase(),
+    )?.amount.amount ?? 0;
+  const debtRatio =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "DebtRatio".toLowerCase(),
+    )?.amount.amount ?? 0;
+  const savingsRate =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "SavingsRate".toLowerCase(),
+    )?.amount.amount ?? 0;
+  const essentialExpensesRatio =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "EssentialExpenseRatio".toLowerCase(),
+    )?.amount.amount ?? 0;
   // const debtPaymentRatio = aggregates?.aggregates.debtPaymentRatio;
 
   // Aggregate Variations By Month
 
-  const incomeVariationsData =
-    aggregates?.aggregatesVariationsByMonth.filter(
-      (ag) => ag.type === "Income" && ag.categoryName === null,
-    ) ?? [];
+  const incomeVariationsData = monthAggregates?.periodicVariations?.find(
+    (ag) => ag.name.toLowerCase() === "Income Variations".toLowerCase(),
+  );
 
-  const salaryVariationsData =
-    aggregates?.aggregatesVariationsByMonth.filter(
-      (ag) => ag.categoryName === "Salary",
-    ) ?? [];
+  const salaryVariationsData = monthAggregates?.periodicVariations?.find(
+    (ag) => ag.name.toLowerCase() === "Salary Variations".toLowerCase(),
+  );
 
-  const expenseVariationsData =
-    aggregates?.aggregatesVariationsByMonth.filter(
-      (ag) => ag.type === "Expense" && ag.categoryName === null,
-    ) ?? [];
+  const expenseVariationsData = monthAggregates?.periodicVariations?.find(
+    (ag) => ag.name.toLowerCase() === "Expense Variations".toLowerCase(),
+  );
 
-  const incomeLineChartData = FormatData(incomeVariationsData);
-  const salaryLineChartData = FormatData(salaryVariationsData);
-  const expenseLineChartData = FormatData(expenseVariationsData);
+  // const investmentVarationsData = monthAggregates?.periodicVariations?.find(
+  //   (ag) => ag.name.toLowerCase() === "Investment Variations".toLowerCase(),
+  // );
+
+  const incomeLineChartData = incomeVariationsData
+    ? FormatData(incomeVariationsData)
+    : null;
+  const salaryLineChartData = salaryVariationsData
+    ? FormatData(salaryVariationsData)
+    : null;
+  const expenseLineChartData = expenseVariationsData
+    ? FormatData(expenseVariationsData)
+    : null;
 
   const incomeSalaryData = mergeSeriesData([
     incomeLineChartData,
@@ -129,13 +178,13 @@ const Dashboard = () => {
   const expenseData = mergeSeriesData([expenseLineChartData]);
 
   const incomeLineConfigs = [
-    { dataKey: "Income", name: "Income", stroke: "#036ffc" },
-    { dataKey: "Salary", name: "Salary", stroke: "#03fc0b" },
+    { dataKey: "Income Variations", name: "Income", stroke: "#036ffc" },
+    { dataKey: "Salary Variations", name: "Salary", stroke: "#03fc0b" },
   ];
 
   const expenseLineConfigs = [
     {
-      dataKey: "Expense",
+      dataKey: "Expense Variations",
       name: "Expense",
       stroke: "#cc081c",
     },

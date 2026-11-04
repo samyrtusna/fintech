@@ -9,12 +9,19 @@ namespace fintech.API.Infrastructure.EFcore.Configurations
         public void Configure(EntityTypeBuilder<UserCurrency> builder)
         {
             builder.HasKey(uc => uc.Id);
-            builder.Property(uc => uc.CurrencySymbol)
-                .IsRequired()
-                .HasMaxLength(3);
-            builder.Property(uc => uc.CurrencyCode)
-                .IsRequired()
-                .HasMaxLength(3);
+            builder.OwnsOne(uc => uc.Currency, currency =>
+            {
+                currency.Property(c => c.Code)
+                   .HasColumnName("CurrencyCode")
+                   .HasMaxLength(3)
+                   .IsRequired();
+
+                currency.Property(c => c.Symbol)
+                    .HasColumnName("CurrencySymbol")
+                    .HasMaxLength(10)
+                    .IsRequired();
+            });
+                
             builder.Property(uc => uc.IsDefault)
                 .IsRequired();
             builder.Property(uc => uc.IsDeleted)

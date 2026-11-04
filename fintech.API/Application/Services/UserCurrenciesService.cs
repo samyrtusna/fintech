@@ -24,12 +24,12 @@ namespace fintech.API.Application.Services
             {
                 throw new BadRequestException("A user can have only one default currency.");
             }
-            if (existingUserCurrencies.Any(uc => uc.CurrencyCode.Equals(dto.CurrencyCode, StringComparison.CurrentCultureIgnoreCase)))
+            if (existingUserCurrencies.Any(uc => uc.Currency.Code.Equals(dto.Currency.Code)))
             {
-                throw new BadRequestException($"The currency with code '{dto.CurrencyCode}' already exists for this user.");
+                throw new BadRequestException($"The currency with code '{dto.Currency.Code}' already exists for this user.");
             }
-            var newUserCurrency = dto.MapToEntity(); 
-            newUserCurrency.UserId = userId;
+            var newUserCurrency = dto.MapToEntity(userId); 
+         
             await userCurrenciesRepositoy.AddAsync(newUserCurrency);
             await userCurrenciesRepositoy.SaveChangesAsync();
             return newUserCurrency.MapToDto();

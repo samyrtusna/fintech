@@ -1,18 +1,18 @@
 ﻿using fintech.API.Application.DTOs.FinancialTransactionDtos;
 using fintech.API.Domain.Entities;
+using fintech.API.Domain.ValueObjects;
 
 namespace fintech.API.Application.Mappings
 {
     public static class FinancialTransactionMapper
     {
-        public static FinancialTransaction MapToEntity(this FinancialTransactionRequestDto dto)
+        public static FinancialTransaction MapToEntity(this FinancialTransactionRequestDto dto, Guid userId)
         {
             return new FinancialTransaction
             {
+                UserId = userId,
                 CategoryId = dto.CategoryId,
-                Amount = dto.Amount,
-                Currency = dto.Currency,
-                CurrencySymbol = dto.CurrencySymbol,
+                Amount = new Money(dto.Amount.Amount, new Currency(dto.Amount.Currency!.Code, dto.Amount.Currency.Symbol)),
                 Description = dto.Description??string.Empty,
                 IsEssential = dto.IsEssential??false,
                 TransactionDate = dto.TransactionDate??DateTime.UtcNow,
@@ -27,12 +27,8 @@ namespace fintech.API.Application.Mappings
                 CategoryId = entity.CategoryId,
                 Type = entity.Type,
                 Amount = entity.Amount,
-                Currency = entity.Currency,
-                CurrencySymbol = entity.CurrencySymbol,
                 ExchangeRate = entity.ExchangeRate,
                 BaseAmount = entity.BaseAmount,
-                BaseCurrency = entity.BaseCurrency,
-                BaseCurrencySymbol = entity.BaseCurrencySymbol,
                 Description = entity.Description ?? string.Empty,
                 IsEssential = entity.IsEssential,
                 TransactionDate = DateOnly.FromDateTime(entity.TransactionDate),

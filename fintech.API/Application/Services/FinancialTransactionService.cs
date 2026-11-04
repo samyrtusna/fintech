@@ -1,10 +1,12 @@
-﻿using fintech.API.Application.DTOs.FinancialTransactionDtos;
+﻿using fintech.API.Application.DTOs.ApiResponsesDtos;
+using fintech.API.Application.DTOs.FinancialTransactionDtos;
 using fintech.API.Application.DTOs.QueryDtos;
 using fintech.API.Application.Exceptions;
 using fintech.API.Application.Interfaces.Repositories;
 using fintech.API.Application.Interfaces.Services;
 using fintech.API.Application.Mappings;
 using fintech.API.Domain.Enums;
+using fintech.API.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -16,8 +18,8 @@ namespace fintech.API.Application.Services
         ICategoryRepository categoryRepository,
         IUserCategorySettingRepository categorySettingRepository,
         IExchangeRateApiService exchangeRateApiService,
-        ILogger<FinancialTransactionService> logger,
-        IUserCurrenciesRepositoy userCurrenciesRepositoy) : IFinancialTransactionService 
+        IUserCurrenciesRepositoy userCurrenciesRepositoy,
+        IFinancialAggregatesService financialAggregatesService) : IFinancialTransactionService 
     {
         public async Task<FinancialTransactionResponseDto> CreateFinancialTransactionAsync(FinancialTransactionRequestDto dto, Guid userId)
         {
@@ -36,23 +38,29 @@ namespace fintech.API.Application.Services
             var categorySetting = await categorySettingRepository.GetByIdAsync(dto.CategoryId); 
             var baseCurrency = await userCurrenciesRepositoy.GetDefaultCurrencyAsync(userId);
 
-            var newTransaction = dto.MapToEntity();
-            if (string.Equals(dto.Currency, baseCurrency!.CurrencyCode, StringComparison.OrdinalIgnoreCase))
+            var newTransaction = dto.MapToEntity(userId);
+            if (dto.Amount.Currency!.Equals(baseCurrency!.Currency))
             {
                 newTransaction.ExchangeRate = 1;
             }
             else
             {
-                newTransaction.ExchangeRate = await exchangeRateApiService.GetEchangeRateAsync(dto.Currency, baseCurrency!.CurrencyCode);
+                newTransaction.ExchangeRate = await exchangeRateApiService.GetEchangeRateAsync(dto.Amount.Currency.Code, baseCurrency!.Currency.Code); 
             }
-            logger.LogInformation("Exchange rate for {Currency} to {BaseCurrency} is {ExchangeRate}", dto.Currency, baseCurrency!.CurrencyCode, newTransaction.ExchangeRate);
-
-            newTransaction.UserId = userId; 
+            var amount = newTransaction.Amount.Amount * newTransaction.ExchangeRate;
+            var currency = baseCurrency.Currency;
+            
             newTransaction.Type = category.Type;
-            newTransaction.BaseAmount = newTransaction.Amount * newTransaction.ExchangeRate;
-            newTransaction.BaseCurrency = baseCurrency!.CurrencyCode;
-            newTransaction.BaseCurrencySymbol = baseCurrency!.CurrencySymbol;
+            newTransaction.BaseAmount = new Money(amount, currency);
             newTransaction.IsEssential = dto.IsEssential ?? categorySetting?.IsEssential ?? false;
+
+            var globalAggregates = await financialAggregatesService.GetGlobalAggregatesAsync(userId, DateTime.UtcNow);
+
+
+            if(newTransaction.Type != FinancialType.Income && newTransaction.Type != FinancialType.ContractedLoan && amount > globalAggregates.FirstOrDefault(ag => ag.Name == AggregateName.GlobalNetCashFlow.ToString())!.Amount.Amount)
+            {
+                throw new BadRequestException("Don't have enough money to spend.");
+            }
             
             await transactionRepository.AddAsync(newTransaction);
             await transactionRepository.SaveChangesAsync();
@@ -148,7 +156,7 @@ namespace fintech.API.Application.Services
             return transaction.MapToResponseDto();
         }
 
-        public async Task DeleteFinancialTransactionAsync(Guid transactionId, Guid userId)
+        public async Task<ConfirmationResponseDto> DeleteFinancialTransactionAsync(Guid transactionId, Guid userId)
         {
             if (transactionId == Guid.Empty)
             { 
@@ -170,6 +178,11 @@ namespace fintech.API.Application.Services
             transaction.IsDeleted = true;
 
             await transactionRepository.SaveChangesAsync();
+
+            return new ConfirmationResponseDto
+            {
+                Message = $"Transaction with Id {transactionId} deleted successfully."
+            };
         }
     }
 }

@@ -4,22 +4,25 @@ import type {
 } from "../types/financialAggregatesTypes";
 
 const FormatData = (
-  data: AggregateVariationsByMonthType[],
+  data: AggregateVariationsByMonthType,
 ): FormattedChartData | null => {
-  if (data.length === 0) return null;
+  if (data.values.length === 0) return null;
 
-  const newData = data.map((d) => {
+  const newData = data.values.map((d) => {
     return {
       ...d,
-      period: new Date(d.period),
+      period: {
+        startDate: new Date(d.period.startDate),
+        endDate: new Date(d.period.endDate),
+      },
     };
   });
   const sortedData = [...newData].sort(
-    (a, b) => a.period.getTime() - b.period.getTime(),
+    (a, b) => a.period.startDate.getTime() - b.period.startDate.getTime(),
   );
 
-  const firstDate = new Date(sortedData[0].period);
-  const lastDate = new Date(sortedData[sortedData.length - 1].period);
+  const firstDate = new Date(sortedData[0].period.startDate);
+  const lastDate = new Date(sortedData[sortedData.length - 1].period.startDate);
 
   const current = new Date(
     Date.UTC(firstDate.getUTCFullYear(), firstDate.getUTCMonth(), 1),
@@ -40,9 +43,9 @@ const FormatData = (
       amount:
         sortedData.find(
           (d) =>
-            d.period.getFullYear() === year &&
-            d.period.getMonth() - 1 === month,
-        )?.amount ?? 0,
+            d.period.startDate.getFullYear() === year &&
+            d.period.startDate.getMonth() === month,
+        )?.amount.amount ?? 0,
     });
     if (current.getUTCMonth() === 11) {
       current.setUTCFullYear(current.getUTCFullYear() + 1);
@@ -50,8 +53,9 @@ const FormatData = (
     }
     current.setUTCMonth(current.getUTCMonth() + 1);
   }
+
   return {
-    key: sortedData[0].categoryName ?? sortedData[0].type,
+    key: data.name,
     value: result,
   };
 };

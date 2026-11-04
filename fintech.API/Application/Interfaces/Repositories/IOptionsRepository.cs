@@ -4,6 +4,6 @@ namespace fintech.API.Application.Interfaces.Repositories
 {
     public interface IOptionsRepository : IGenericRepository<Option>
     {
-        Task<Option?> GetByKey(string key);
+        Task<Option?> GetByKeyAsync(string key); 
     }
 }

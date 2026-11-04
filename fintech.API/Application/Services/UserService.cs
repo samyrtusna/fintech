@@ -9,7 +9,7 @@ namespace fintech.API.Application.Services
     public class UserService(IUserRepository userRepository) : IUserService
     {
 
-        public async Task<UserResponseDto> GetUserInformations (Guid userId)
+        public async Task<UserResponseDto> GetUserInformationsAsync(Guid userId) 
         {
             if (userId == Guid.Empty)
             {

@@ -1,66 +1,49 @@
 import type { FinancialTypes } from "./financialTransactionTypes";
 
-export interface FilteredAggregatesResponse {
-  date: Date;
-  totals: FinancialTotalsType[];
-  aggregates: CalculatedAggregatesType;
-  variations: AggregateVariationType;
-  aggregatesVariationsByMonth: AggregateVariationsByMonthType[];
-}
-
-export interface AggregatesFilter {
-  period: string;
-  date: Date;
-}
-
-export interface GlobalAggregatesResponse {
-  date: Date;
-  totalCashFlow: number;
-  totalInvestment: number;
-  totalSavings: number;
-  totalActiveDebt: number;
+export interface MonthlyAggregatesResponse {
+  aggregates: FinancialAggregatesType[];
+  periodicVariations: AggregateVariationsByMonthType[];
 }
 
 export interface AggregatesState {
-  globalAggregates: GlobalAggregatesResponse | null;
-  monthAggregates: FilteredAggregatesResponse | null;
+  globalAggregates: FinancialAggregatesType[] | null;
+  monthAggregates: MonthlyAggregatesResponse | null;
 }
 
-export interface FinancialTotalsType {
-  type: string;
+export interface FinancialAggregatesType {
+  period: Period;
+  periodType?: "MonthlyAggregate" | "YearlyAggregate" | "GlobalAggregate";
+  type?: FinancialTypes;
   name: string;
-  filter?: string;
-  amount: number;
+  amount: Money;
+  variation?: number;
 }
 
-export interface CalculatedAggregatesType {
-  netBalance: number;
-  netCashFlow: number;
-  totalInflow: number;
-  totalOutflow: number;
-  savingsRate: number;
-  essentialExpensesRatio: number;
-  expensesRatio: number;
-  investmentRatio: number;
-  debtRatio: number;
-  debtPaymentRatio: number;
-  interestBurdenRatio: number;
+interface Period {
+  startDate: Date;
+  endDate: Date;
 }
-export interface AggregateVariationType {
-  incomeVariation: number;
-  expensesVariation: number;
-  savingsVariation: number;
-  investmentVariation: number;
-  debtVariation: number;
-  netBalanceVariation: number;
-  netCashFlowVariation: number;
+
+interface Money {
+  amount: number;
+  currency: Currency;
+}
+
+interface Currency {
+  code: string;
+  symbol: string;
 }
 
 export interface AggregateVariationsByMonthType {
-  period: Date;
+  name: string;
+  values: AggregateVariationsType[];
+}
+
+interface AggregateVariationsType {
+  period: Period;
+  periodType: "MonthlyAggregate" | "YearlyAggregate" | "GlobalAggregate";
   type: FinancialTypes;
-  categoryName?: string;
-  amount: number;
+  amount: Money;
 }
 
 export interface ChartDataPoint {

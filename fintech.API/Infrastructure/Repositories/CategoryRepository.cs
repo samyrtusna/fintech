@@ -7,11 +7,11 @@ namespace fintech.API.Infrastructure.Repositories
 {
     public class CategoryRepository(AppDbContext context) : GenericRepository<Category>(context), ICategoryRepository
     {
-        public async Task<Category?> GetAsync(Guid id)
+        public async Task<Category> GetAsync(Guid id)
         {
             return await context.Categories
                 .Include(c => c.ParentCategory)
-                .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
+                .FirstAsync(c => c.Id == id && !c.IsDeleted);
         }
 
         public async Task<IEnumerable<Category>> GetByUserAsync(Guid userId) 

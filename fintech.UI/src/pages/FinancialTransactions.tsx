@@ -41,29 +41,71 @@ function FinancialTransactions() {
     (state) => state.financialAggregates.monthAggregates,
   );
 
+  const globalDebt = globalAggregates?.find(
+    (ag) => ag.name.toLowerCase() === "GlobalActiveDebt".toLowerCase(),
+  )?.amount.amount;
+  const globalInvestment = globalAggregates?.find(
+    (ag) => ag.name.toLowerCase() === "GlobalTotalInvestment".toLowerCase(),
+  )?.amount.amount;
+  const globalCashFlow = globalAggregates?.find(
+    (ag) => ag.name.toLowerCase() === "GlobalNetCashFlow".toLowerCase(),
+  )?.amount.amount;
+  const globalSavings = globalAggregates?.find(
+    (ag) => ag.name.toLowerCase() === "GlobalTotalSavings".toLowerCase(),
+  )?.amount.amount;
+
   const totalIncome =
-    monthAggregates?.totals.find((ag) => ag.name === "Income")?.amount ?? 0;
-  const incomeVariation = monthAggregates?.variations.incomeVariation ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalIncome".toLowerCase(),
+    )?.amount.amount ?? 0;
+  const incomeVariation =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalIncome".toLowerCase(),
+    )?.variation ?? 0;
 
   const totalExpense =
-    monthAggregates?.totals.find((ag) => ag.name === "Expense")?.amount ?? 0;
-  const expenseVariation = monthAggregates?.variations.expensesVariation ?? 0;
-  const expenseRatio = monthAggregates?.aggregates.expensesRatio ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalExpense".toLowerCase(),
+    )?.amount.amount ?? 0;
+  const expenseVariation =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalExpense".toLowerCase(),
+    )?.variation ?? 0;
+  const expenseRatio =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "ExpensesRatio".toLowerCase(),
+    )?.amount.amount ?? 0;
 
   const totalInvestment =
-    monthAggregates?.totals.find((ag) => ag.name === "Investment")?.amount ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalInvestment".toLowerCase(),
+    )?.amount.amount ?? 0;
   const investmentVariation =
-    monthAggregates?.variations.investmentVariation ?? 0;
-  const investmentRatio = monthAggregates?.aggregates.investmentRatio ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalInvestment".toLowerCase(),
+    )?.variation ?? 0;
+  const investmentRatio =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "InvestmentRatio".toLowerCase(),
+    )?.amount.amount ?? 0;
 
   const debt =
-    monthAggregates?.totals.find((ag) => ag.name === "ContractedLoan")
-      ?.amount ?? 0;
-  const debtVariation = monthAggregates?.variations.debtVariation ?? 0;
-  const debtRatio = monthAggregates?.aggregates.debtRatio ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalContractedLoans".toLowerCase(),
+    )?.amount.amount ?? 0;
+  const debtVariation =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalContractedLoans".toLowerCase(),
+    )?.variation ?? 0;
+  const debtRatio =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "DebtRatio".toLowerCase(),
+    )?.amount.amount ?? 0;
 
   const savings =
-    monthAggregates?.totals.find((ag) => ag.name === "Savings")?.amount ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalSavings".toLowerCase(),
+    )?.amount.amount ?? 0;
 
   const totalOthers =
     totalIncome - (totalExpense + totalInvestment + debt + savings);
@@ -113,15 +155,12 @@ function FinancialTransactions() {
   const [isEssential, setIsEssential] = useState(false);
   const symbol = userInformations?.userCurrencies.find(
     (c) => c.isDefault === true,
-  )?.currencySymbol;
+  )?.currency.symbol;
 
   const fetchMonthAggregates = useCallback(
     async (date: Date) => {
       try {
-        const aggregates = await financialAggregatesService.getByFilter({
-          period: "Monthly",
-          date: date,
-        });
+        const aggregates = await financialAggregatesService.getByMonth(date);
         dispatch(setMonthAggregates(aggregates));
       } catch (error) {
         toast.error(
@@ -256,10 +295,10 @@ function FinancialTransactions() {
     <div className="relative min-h-dvh h-full min-w-dvw ">
       <div className="flex justify-around w-full my-12 px-6">
         <GlobalAggregates
-          debtValue={globalAggregates?.totalActiveDebt}
-          investmentValue={globalAggregates?.totalInvestment}
-          cashFlowValue={globalAggregates?.totalCashFlow}
-          savingValue={globalAggregates?.totalSavings}
+          debtValue={globalDebt}
+          investmentValue={globalInvestment}
+          cashFlowValue={globalCashFlow}
+          savingValue={globalSavings}
           symbol={symbol!}
         />
       </div>

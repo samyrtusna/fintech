@@ -4,6 +4,6 @@ namespace fintech.API.Application.Interfaces.Services
 {
     public interface IUserService
     {
-        Task<UserResponseDto> GetUserInformations(Guid userId);
+        Task<UserResponseDto> GetUserInformationsAsync(Guid userId); 
     }
 }

@@ -1,9 +1,9 @@
 import { MdTrendingDown, MdTrendingUp } from "react-icons/md";
-import type { FinancialTotalsType } from "../types/financialAggregatesTypes";
+import type { FinancialAggregatesType } from "../types/financialAggregatesTypes";
 import PieCharts from "./PieChart";
 
 interface PropsType {
-  dataList: FinancialTotalsType[];
+  dataList: FinancialAggregatesType[];
   symbol: string;
   total: number;
   variation: number;
@@ -32,7 +32,7 @@ function PieChatCard(props: PropsType) {
 
   const pieChartData = (dataList ?? []).map((category, index) => ({
     name: category.name,
-    value: category.amount,
+    value: category.amount.amount,
     color: colors[index % colors.length],
   }));
   return (

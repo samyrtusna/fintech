@@ -10,10 +10,10 @@ namespace fintech.API.Application.Interfaces.Repositories
         Task<FinancialTransaction?> GetAsync(Guid id);
         Task<IEnumerable<FinancialTransaction>> GetByCategoryAsync(Guid categoryId); 
         Task<IEnumerable<FinancialTransaction>> GetByDayAsync(Guid userId, DateTime day, CancellationToken cancellationToken);
-        Task<List<FinancialTransaction>> GetByMonth(Guid userId, DateTime date, CancellationToken cancellationToken = default);
-        Task<List<FinancialTransaction>> GetByYear(Guid userId, DateTime date, CancellationToken cancellationToken = default);
-        Task<List<AggregateByPeriodDto>> GetByTypeByMonth(Guid userId, FinancialType type, CancellationToken cancellationToken = default);
-        Task<List<AggregateByPeriodDto>> GetByCategoryByMonth(Guid userId, string categoryName, CancellationToken cancellationToken = default);
+        Task<List<FinancialTransaction>> GetByMonthAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default);
+        Task<List<FinancialTransaction>> GetByYearAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default);
+        Task<List<AggregateByPeriodDto>> GetByTypeByMonthAsync(Guid userId, FinancialType type, CancellationToken cancellationToken = default);
+        Task<List<AggregateByPeriodDto>> GetByCategoryByMonthAsync(Guid userId, string categoryName, CancellationToken cancellationToken = default);
     }  
 } 
     

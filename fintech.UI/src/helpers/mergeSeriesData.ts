@@ -21,7 +21,7 @@ export function mergeSeriesData(
       ).toDateString();
 
       const monthLabel = new Date(
-        Date.UTC(item.month.getUTCFullYear(), item.month.getUTCMonth() + 1, 1),
+        Date.UTC(item.month.getUTCFullYear(), item.month.getUTCMonth(), 1),
       );
 
       if (!periodMap.has(dateKey)) {

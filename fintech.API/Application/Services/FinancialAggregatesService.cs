@@ -1,10 +1,13 @@
-﻿using fintech.API.Application.DTOs.FinancialAggregatesDtos;
-using fintech.API.Application.DTOs.FinancialTransactionDtos;
+﻿using fintech.API.Application.DTOs.ApiResponsesDtos;
+using fintech.API.Application.DTOs.FinancialAggregatesDtos;
 using fintech.API.Application.Exceptions;
 using fintech.API.Application.Interfaces.Repositories;
 using fintech.API.Application.Interfaces.Services;
+using fintech.API.Application.Mappings;
 using fintech.API.Domain.Entities;
 using fintech.API.Domain.Enums;
+using fintech.API.Domain.ValueObjects;
+
 
 namespace fintech.API.Application.Services
 {
@@ -14,261 +17,269 @@ namespace fintech.API.Application.Services
         ICurrencyConversions currencyConversions
         ) : IFinancialAggregatesService
     {
-        public async Task<GlobalAggregatesResponseDto> GetGlobalAggregates(Guid userId)
+        public async Task<ConfirmationResponseDto> CreateMonthlyAggregatesAsync(Guid userId, DateTime date)
         {
-            if(userId == Guid.Empty)
+            if (userId == Guid.Empty)
             {
-                throw new ArgumentException("User ID cannot be empty.");
+                throw new ArgumentException("User ID cannot be empty.", nameof(userId));
             }
-            var currentYear = DateTime.UtcNow;
-            var lastYear = DateTime.UtcNow.Year - 1;
-            var lastYearAggregates = await financialAggregatesRepository.GetFinancialAggregatesByYearAsync(userId, lastYear) ?? throw new NotFoundException("Failed to retrieve last year's aggregates") ;
-
-            var transactions = await financialTransactionRepository.GetByYear(userId, currentYear) ?? throw new NotFoundException("Failed to retrieve current year's transactions");
-
-            var convertedTransactions = await currencyConversions.ConvertTransactionBaseCurrency(userId, transactions) ?? throw new NotFoundException("Failed to convert current year's transactions to base currency");
-
-            
-
-            var lastYearConvertedAggregates = await currencyConversions.ConvertAggregateBaseCurrency(userId, lastYearAggregates) ?? throw new NotFoundException("Failed to convert last year's aggregates to base currency");
-
-            var currentTotalIncome = convertedTransactions.Where(t => t.Type == FinancialType.Income).Sum(t => t.BaseAmount);
-            var currentTotalExpense = convertedTransactions.Where(t => t.Type == FinancialType.Expense).Sum(t => t.BaseAmount);
-            var currentTotalInvestment = convertedTransactions.Where(t => t.Type == FinancialType.Investment).Sum(t => t.BaseAmount);
-            var currentTotalSavings = convertedTransactions.Where(t => t.Type == FinancialType.Savings).Sum(t => t.BaseAmount);
-            var currentTotalContractedLoans = convertedTransactions.Where(t => t.Type == FinancialType.ContractedLoan).Sum(t => t.BaseAmount);
-            var currentTotalInterestPayments = convertedTransactions.Where(t => t.Type == FinancialType.InterestPayment).Sum(t => t.BaseAmount);
-            var currentTotalPrincipalRepayments = convertedTransactions.Where(t => t.Type == FinancialType.PrincipalRepayment).Sum(t => t.BaseAmount);
-
-
-
-            var currentTotalActiveDebt = currentTotalContractedLoans - currentTotalPrincipalRepayments;
-            var currentYearNetCashFlow = financialCalculations.GetNetCashFlow(currentTotalIncome, currentTotalExpense, currentTotalInvestment, currentTotalSavings, currentTotalContractedLoans, currentTotalInterestPayments, currentTotalPrincipalRepayments);
-            
-            var lastYearNetCashFlow = lastYearConvertedAggregates.FirstOrDefault(a => a.Name == AggregateName.NetCashFlow)?.Value ?? 0;
-            var lastYearTotalInvestment = lastYearConvertedAggregates.FirstOrDefault(a => a.Name == AggregateName.TotalInvestment)?.Value ?? 0;
-            var lastYearTotalSavings = lastYearConvertedAggregates.FirstOrDefault(a => a.Name == AggregateName.TotalSavings)?.Value ?? 0;
-            var lastYearActiveDebt = lastYearConvertedAggregates.FirstOrDefault(a => a.Name == AggregateName.ActiveDebt)?.Value ?? 0;
-
-            var totalCashFlow = currentYearNetCashFlow + lastYearNetCashFlow;
-            var totalInvestments = currentTotalInvestment + lastYearTotalInvestment;
-            var totalSaving = currentTotalSavings + lastYearTotalSavings;
-            var totalActiveDebts = currentTotalActiveDebt + lastYearActiveDebt;
-
-            return new GlobalAggregatesResponseDto
+            if (date == DateTime.MinValue)
             {
-                Date = DateTime.UtcNow,
-                TotalCashFlow = totalCashFlow,
-                TotalInvestment = totalInvestments,
-                TotalSavings = totalSaving,
-                TotalActiveDebt = totalActiveDebts
+                throw new ArgumentException("A valid month must be provided.", nameof(date));
+            }
+            var thisMonthAggregates = await financialAggregatesRepository.GetFinancialAggregatesByMonthAsync(userId, date);
+            if(thisMonthAggregates.Count > 0)
+            {
+                throw new BadRequestException("The current month Aggregates already created.");
+            }
+
+            var monthlyAggregates = await CalculateMonthlyAggregatesAsync(userId, date); 
+            var globalAggregates = await GetGlobalAggregatesAsync(userId, date);
+
+            monthlyAggregates.AddRange(globalAggregates);
+
+
+            if(monthlyAggregates is not null && monthlyAggregates.Count > 0)
+            {
+                foreach (var aggregate in monthlyAggregates)
+                {
+                    var aggregateEntity = aggregate.MapToEntity(userId);
+
+                    await financialAggregatesRepository.AddAsync(aggregateEntity);
+                }
+                await financialAggregatesRepository.SaveChangesAsync();
+            }
+
+            return new ConfirmationResponseDto { 
+                Message = $"Monthly aggregate for month {date.Month}/{date.Year} succesfully created. "
             };
         }
 
-        public async Task<FinancialAggregatesResponseDto> GetAggregatesByFilter(Guid userId, FinancialAggregatesFilterDto dto)
+        public async Task<FinancialAggregatesResponseDto> GetMonthlyAggregatesAsync(Guid userId, DateTime date)
         {
-            ArgumentNullException.ThrowIfNull(dto);
-            if(userId == Guid.Empty)
+            if (userId == Guid.Empty)
             {
-                throw new ArgumentException("User ID cannot be empty.");
+                throw new ArgumentException("User ID cannot be empty.", nameof(userId));
             }
-            if (dto.AggregatesPeriod == TransactionPeriod.Monthly)
+            if (date == DateTime.MinValue)
             {
-                return await GetAggregatesPerMonth(userId, dto.Date);
-            }  
-            else
+                throw new ArgumentException("A valid month must be provided.", nameof(date));
+            }
+            
+            var thisMonthAggregates = await financialAggregatesRepository.GetFinancialAggregatesByMonthAsync(userId, date);
+            var aggregatesVariations = await GetAggregateVariationsByMonthAsync(userId);
+
+            if(thisMonthAggregates.Count > 0)
             {
-                throw new ArgumentException("Invalid period. Must be 'month' or 'year'.");
+                return new FinancialAggregatesResponseDto
+                {
+                    Aggregates = [..thisMonthAggregates.Select(ag => ag.MapToDto())],
+                    PeriodicVariations = aggregatesVariations
+                };
+            }else
+            {
+                var calculatedAggregates = await CalculateMonthlyAggregatesAsync(userId, date);
+
+                return new FinancialAggregatesResponseDto
+                {
+                    Aggregates = calculatedAggregates,
+                    PeriodicVariations = aggregatesVariations
+                };
             }
         }
 
-        private async Task<FinancialAggregatesResponseDto> GetAggregatesPerMonth(Guid userId, DateTime date)
+        public async Task<List<FinancialAggregateDto>> GetGlobalAggregatesAsync(Guid userId, DateTime date) 
         {
-            if(date == DateTime.MinValue)
-            {
-                throw new ArgumentException("Date cannot be the default value.");
-            }
-            if(userId == Guid.Empty)
+            if (userId == Guid.Empty)
             {
                 throw new ArgumentException("User ID cannot be empty.");
             }
-            var previousMonth = date.AddMonths(-1);
+            if (date == DateTime.MinValue)
+            {
+                throw new ArgumentException("A valid month must be provided.", nameof(date));
+            }
 
-            var currentMonthTransactions = await financialTransactionRepository.GetByMonth(userId, date) ?? throw new NotFoundException("Failed to retrieve current month's transactions");
-            var previousMonthTransactions = await financialTransactionRepository.GetByMonth(userId, previousMonth) ?? throw new NotFoundException("Failed to retrieve previous month's transactions");
+            var startDate = new DateOnly(date.Year, date.Month, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+            var period = new Period(startDate, endDate);
+            var lastMonth = date.AddMonths(-1);
 
-            var currentMonthConvertedTransactions = await currencyConversions.ConvertTransactionBaseCurrency(userId, currentMonthTransactions) ?? throw new NotFoundException("Failed to convert current month's transactions to base currency");
-            var previousMonthConvertedTransactions = await currencyConversions.ConvertTransactionBaseCurrency(userId, previousMonthTransactions) ?? throw new NotFoundException("Failed to convert previous month's transactions to base currency");
+            var lastMonthAggregates = await financialAggregatesRepository.GetFinancialAggregatesByMonthAsync(userId, lastMonth);
 
-            var currentTotals = CalculateTransactionTotals(currentMonthConvertedTransactions) ?? throw new NotFoundException("Failed to calculate current month's transaction totals");
-            var previousTotals = CalculateTransactionTotals(previousMonthConvertedTransactions) ?? throw new NotFoundException("Failed to calculate previous month's transaction totals");
+            var transactions = await financialTransactionRepository.GetByMonthAsync(userId, date);
 
-            var currentAggregates = CalculateAggregates(currentTotals);
-            var previousAggregates = CalculateAggregates(previousTotals);
+            var convertedTransactions = await currencyConversions.ConvertTransactionBaseCurrencyAsync(userId, transactions) ?? throw new NotFoundException("Failed to convert current month's transactions to base currency");
 
-            var variations = CalculateVarations(currentTotals, currentAggregates, previousTotals, previousAggregates);
+            var lastMonthConvertedAggregates = await currencyConversions.ConvertAggregateBaseCurrencyAsync(userId, lastMonthAggregates) ?? throw new NotFoundException("Failed to convert last year's aggregates to base currency");
 
-            var aggregatesVariationByMonth = await GetAggregatesByMonthPeriod(userId) ?? throw new NotFoundException("Failed to retrieve aggregates by month period");
+            var currency = new Currency(convertedTransactions.FirstOrDefault()?.BaseAmount?.Currency?.Code ?? "USD", convertedTransactions.FirstOrDefault()?.BaseAmount?.Currency?.Symbol ?? "$");
+
+            var CurrentAggregates = CalculateAggregatesByType(convertedTransactions);
+
+
+
+
+            var currentActiveDebt = CurrentAggregates.TotalContractedLoans - CurrentAggregates.TotalPrincipalRepayments;
+            var currentNetCashFlow =  financialCalculations.GetNetCashFlow(CurrentAggregates.TotalIncome, CurrentAggregates.TotalExpenses, CurrentAggregates.TotalInvestments, CurrentAggregates.TotalSavings, CurrentAggregates.TotalContractedLoans, CurrentAggregates.TotalInterestPayments, CurrentAggregates.TotalPrincipalRepayments);
+
+            var lastMonthNetCashFlow = lastMonthConvertedAggregates.FirstOrDefault(a => a.Name == AggregateName.GlobalNetCashFlow.ToString())?.Amount.Amount ?? 0;
+            var lastMonthTotalInvestment = lastMonthConvertedAggregates.FirstOrDefault(a => a.Name == AggregateName.GlobalTotalInvestment.ToString())?.Amount.Amount ?? 0;
+            var lastMonthTotalSavings = lastMonthConvertedAggregates.FirstOrDefault(a => a.Name == AggregateName.GlobalTotalSavings.ToString())?.Amount.Amount ?? 0;
+            var lastMonthActiveDebt = lastMonthConvertedAggregates.FirstOrDefault(a => a.Name == AggregateName.GlobalActiveDebt.ToString())?.Amount.Amount ?? 0;
+
+            var globalNetCashFlow = currentNetCashFlow + lastMonthNetCashFlow;
+            var globalTotalInvestments = CurrentAggregates.TotalInvestments + lastMonthTotalInvestment;
+            var globalTotalSaving = CurrentAggregates.TotalSavings + lastMonthTotalSavings;
+            var globalActiveDebt = currentActiveDebt + lastMonthActiveDebt;
 
             return
-                new FinancialAggregatesResponseDto
-                {
-                    Date = date,
-                    Totals = currentTotals,
-                    Aggregates = currentAggregates,
-                    Variations = variations,
-                    AggregatesVariationsByMonth = aggregatesVariationByMonth
-                };   
+            [
+                new() { Period = period, PeriodType= AggregateType.GlobalAggregate, Name = AggregateName.GlobalNetCashFlow.ToString(), Amount = new Money(globalNetCashFlow,currency)},
+                new() { Period = period,PeriodType= AggregateType.GlobalAggregate, Name = AggregateName.GlobalTotalInvestment.ToString(), Amount = new Money(globalTotalInvestments,currency)},
+                new() { Period = period, PeriodType= AggregateType.GlobalAggregate, Name = AggregateName.GlobalTotalSavings.ToString(), Amount = new Money(globalTotalSaving,currency)},
+                new() { Period = period, PeriodType= AggregateType.GlobalAggregate, Name = AggregateName.GlobalActiveDebt.ToString(), Amount = new Money(globalActiveDebt,currency)},
+            ];
         }
 
-
-        private static List<FinancialTotalDto> CalculateTransactionTotals( List<FinancialTransaction> transactions)
+        private async Task<List<FinancialAggregateDto>> CalculateMonthlyAggregatesAsync(Guid userId, DateTime month)
         {
-            ArgumentNullException.ThrowIfNull(transactions);
-            
-
-            var transactionsByType = transactions.GroupBy(t => t.Type).ToDictionary(g => g.Key, g => g.ToList());
-            var transactionsByCategory = transactions.GroupBy(t => t.Category.Name).ToDictionary(g => g.Key, g => g.ToList());
-
-            var totalImportantExpenses = transactions.Where(t => t.IsEssential && t.Type == FinancialType.Expense).Sum(t => t.BaseAmount);
-
-            var totals = new List<FinancialTotalDto>();
-
-            foreach (var item in transactionsByType)
+            if (userId == Guid.Empty)
             {
-                var dtoItem = new FinancialTotalDto
-                {
-                    Name = item.Key.ToString(),
-                    Filter = TotalType.ByType,
-                    Amount = item.Value.Sum(t => t.BaseAmount)
-                };
-                totals.Add(dtoItem);
+                throw new ArgumentException("User ID cannot be empty.", nameof(userId));
+            }
+            if(month == DateTime.MinValue)
+            {
+                throw new ArgumentException("A valid month must be provided.", nameof(month));
             }
 
-            foreach (var item in transactionsByCategory)
-            {
-                var dtoItem = new FinancialTotalDto
-                {
-                    Type = item.Value[0].Type,
-                    Name = item.Key,
-                    Filter = TotalType.ByCategory,
-                    Amount = item.Value.Sum(t => t.BaseAmount)
-                };
-                totals.Add(dtoItem);
-            }
+            var lastMonth = month.AddMonths(-1);
+            var transactions = await financialTransactionRepository.GetByMonthAsync(userId, month) ?? throw new NotFoundException("Failed to retrieve transactions for the specified month.");
+            var convertedTransactions = await currencyConversions.ConvertTransactionBaseCurrencyAsync(userId, transactions) ?? throw new NotFoundException("Failed to convert transactions to base currency.");
 
-            totals.Add(new FinancialTotalDto
-            {
-                Type = FinancialType.Expense,
-                Name = "Important Expenses",
-                Filter = TotalType.ByImportance,
-                Amount = totalImportantExpenses
-            });
+            var lastMonthAggregates = await financialAggregatesRepository.GetFinancialAggregatesByMonthAsync(userId, lastMonth) ?? throw new NotFoundException("Failed to retrieve monthly Aggregates for the specified month.");
 
-            return totals;
+            var startDate = new DateOnly(month.Year, month.Month, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+            var period = new Period(startDate, endDate);
+
+            return CalculateFinancialAggregates(userId, convertedTransactions, lastMonthAggregates, period);
         }
 
-        private CalculatedAggregatesDto CalculateAggregates(List<FinancialTotalDto> totals)
-        {
-            ArgumentNullException.ThrowIfNull(totals);
-
-            var totalIncome = GetTotal(FinancialType.Income, totals);
-            var totalExpenses = GetTotal(FinancialType.Expense, totals);
-            var totalInvestments = GetTotal(FinancialType.Investment, totals);
-            var totalSavings = GetTotal(FinancialType.Savings, totals);
-            var totalLoans = GetTotal(FinancialType.ContractedLoan, totals);
-            var totalInterestPayments = GetTotal(FinancialType.InterestPayment, totals);
-            var totalPrincipalRepayments = GetTotal(FinancialType.PrincipalRepayment, totals);
-            var totalImportantExpenses = totals.Where(t => t.Name == "Important Expenses").Select(t => t.Amount).FirstOrDefault();
-
-            var NetBalance = financialCalculations.GetNetBalance(totalIncome, totalExpenses );
-            var NetCashFlow = financialCalculations.GetNetCashFlow(totalIncome, totalExpenses, totalInvestments, totalSavings, totalLoans, totalInterestPayments, totalPrincipalRepayments);
-            var TotalInflow = financialCalculations.GetTotalInflow(totalIncome, totalLoans);
-            var TotalOutflow = financialCalculations.GetTotalOutflow(totalExpenses, totalInvestments, totalSavings, totalInterestPayments, totalPrincipalRepayments);
-            var SavingsRate = financialCalculations.GetSavingsRate(totalIncome, totalSavings);
-            var EssentialExpensesRatio = financialCalculations.GetEssentialExpensesRatio(totalIncome, totalImportantExpenses);
-            var ExpensesRatio = financialCalculations.GetExpensesRatio(totalIncome, totalExpenses);
-            var InvestmentRatio = financialCalculations.GetInvestmentRatio(totalIncome, totalInvestments);
-            var DebtRatio = financialCalculations.GetDebtRatio(totalIncome, totalLoans);
-            var DebtPaymentRatio = financialCalculations.GetDebtPaymentRatio(totalIncome, totalPrincipalRepayments, totalInterestPayments);
-            var InterestBurdenRatio = financialCalculations.GetInterestBurdenRatio(totalIncome, totalInterestPayments);
-
-            return new CalculatedAggregatesDto
-            {
-                NetBalance = NetBalance,
-                NetCashFlow = NetCashFlow,
-                TotalInflow = TotalInflow,
-                TotalOutflow = TotalOutflow,
-                SavingsRate = SavingsRate,
-                EssentialExpensesRatio = EssentialExpensesRatio,
-                ExpensesRatio = ExpensesRatio,
-                InvestmentRatio = InvestmentRatio,
-                DebtRatio = DebtRatio,
-                DebtPaymentRatio = DebtPaymentRatio,
-                InterestBurdenRatio = InterestBurdenRatio
-            };
-
-        }
-
-        private AggregateVariationDto CalculateVarations (List<FinancialTotalDto> currentTotals, CalculatedAggregatesDto currentAggregates, List<FinancialTotalDto> previousTotals, CalculatedAggregatesDto previousAggregates)
-        {
-            ArgumentNullException.ThrowIfNull(currentTotals);
-            ArgumentNullException.ThrowIfNull(previousTotals);
-            ArgumentNullException.ThrowIfNull(currentAggregates);
-            ArgumentNullException.ThrowIfNull(previousAggregates);
-
-            var currentTotalIncome = GetTotal(FinancialType.Income, currentTotals);
-            var previousTotalIncome = GetTotal(FinancialType.Income, previousTotals);
-            var currentTotalExpenses = GetTotal(FinancialType.Expense, currentTotals);
-            var previousTotalExpenses = GetTotal(FinancialType.Expense, previousTotals);
-            var currentTotalSavings = GetTotal(FinancialType.Savings, currentTotals);
-            var previousTotalSavings = GetTotal(FinancialType.Savings, previousTotals);
-            var currentTotalInvestments = GetTotal(FinancialType.Investment, currentTotals);
-            var previousTotalInvestments = GetTotal(FinancialType.Investment, previousTotals);
-            var currentContractedLoan = GetTotal(FinancialType.ContractedLoan, currentTotals);
-            var previousContractedLoan = GetTotal(FinancialType.ContractedLoan, previousTotals);
-
-            return new AggregateVariationDto
-            {
-                IncomeVariation = financialCalculations.GetIndicatorGrowth(previousTotalIncome, currentTotalIncome),
-                ExpensesVariation = financialCalculations.GetIndicatorGrowth(previousTotalExpenses, currentTotalExpenses),
-                SavingsVariation = financialCalculations.GetIndicatorGrowth(previousTotalSavings, currentTotalSavings),
-                InvestmentVariation = financialCalculations.GetIndicatorGrowth(previousTotalInvestments, currentTotalInvestments),
-                DebtVariation = financialCalculations.GetIndicatorGrowth(previousContractedLoan, currentContractedLoan),
-                NetBalanceVariation = financialCalculations.GetIndicatorGrowth(previousAggregates.NetBalance, currentAggregates.NetBalance),
-                NetCashFlowVariation = financialCalculations.GetIndicatorGrowth(previousAggregates.NetCashFlow, currentAggregates.NetCashFlow),
-            };
-        }
-
-        private async Task<List<AggregateByPeriodDto>> GetAggregatesByMonthPeriod(Guid userId)
+        private List<FinancialAggregateDto> CalculateFinancialAggregates(Guid userId, List<FinancialTransaction> transactions,List<FinancialAggregate> lastMonthAggregates, Period period)
         {
             if(userId == Guid.Empty)
             {
                 throw new ArgumentException("User ID cannot be empty.");
             }
-            var incomeMonthlyVariations = await financialTransactionRepository.GetByTypeByMonth(userId, FinancialType.Income);
-            var expenseMonthlyVariations = await financialTransactionRepository.GetByTypeByMonth(userId, FinancialType.Expense);
-            var savingsMonthlyVariations = await financialTransactionRepository.GetByTypeByMonth(userId, FinancialType.Savings);
-            var investmentMonthlyVariations = await financialTransactionRepository.GetByTypeByMonth(userId, FinancialType.Investment);
-            var contractedLoanMonthlyVariations = await financialTransactionRepository.GetByTypeByMonth(userId, FinancialType.ContractedLoan);
+            
+            var currency = new Currency(transactions.FirstOrDefault()?.BaseAmount?.Currency?.Code ?? "USD", transactions.FirstOrDefault()?.BaseAmount?.Currency?.Symbol ?? "$");
 
-            var salaryMonthlyVariations = await financialTransactionRepository.GetByCategoryByMonth(userId, "Salary");
+            var AggregatesByType = CalculateAggregatesByType(transactions);
 
-            return 
-                incomeMonthlyVariations
-                .Concat(expenseMonthlyVariations)
-                .Concat(savingsMonthlyVariations)
-                .Concat(investmentMonthlyVariations)
-                .Concat(contractedLoanMonthlyVariations)
-                .Concat(salaryMonthlyVariations)
-                .ToList();
+            var totalEssentialExpenses = transactions.Where(t => t.Type == FinancialType.Expense && t.IsEssential).Sum(t => t.BaseAmount.Amount);
+            var totalDiscretionaryExpenses = transactions.Where(t => t.Type == FinancialType.Expense && !t.IsEssential).Sum(t => t.BaseAmount.Amount);
 
+            var calculatedAggregates = new List<FinancialAggregateDto>
+                {
+                    new() { Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.TotalIncome.ToString(), Amount = new Money(AggregatesByType?.TotalIncome ?? 0, currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name == AggregateName.TotalIncome.ToString())?.Amount.Amount ?? 0,AggregatesByType?.TotalIncome ?? 0) },
+                    new() { Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.TotalExpense.ToString(), Amount = new Money(AggregatesByType?.TotalExpenses ?? 0, currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name == AggregateName.TotalExpense.ToString())?.Amount.Amount ?? 0, AggregatesByType?.TotalExpenses ?? 0) },
+                    new() { Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.TotalInvestment.ToString(), Amount = new Money(AggregatesByType ?.TotalInvestments ?? 0, currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name == AggregateName.TotalInvestment.ToString())?.Amount.Amount ?? 0, AggregatesByType?.TotalInvestments ?? 0) },
+                    new() { Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.TotalSavings.ToString(), Amount = new Money(AggregatesByType?.TotalSavings ?? 0, currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(Ag => Ag.Name == AggregateName.TotalSavings.ToString())?.Amount.Amount ?? 0, AggregatesByType?.TotalSavings ?? 0) },
+                    new() { Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.TotalContractedLoans.ToString(), Amount = new Money(AggregatesByType?.TotalContractedLoans ?? 0, currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name == AggregateName.TotalContractedLoans.ToString())?.Amount.Amount ?? 0, AggregatesByType?.TotalContractedLoans ?? 0) },
+                    new() { Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.TotalInterestPayments.ToString(), Amount = new Money(AggregatesByType?.TotalInterestPayments ?? 0, currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name == AggregateName.TotalInterestPayments.ToString())?.Amount.Amount ?? 0, AggregatesByType?.TotalInterestPayments ?? 0) },
+                    new() { Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.TotalPrincipalRepayments.ToString(), Amount = new Money(AggregatesByType?.TotalPrincipalRepayments ?? 0, currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name == AggregateName.TotalPrincipalRepayments.ToString())?.Amount.Amount ?? 0, AggregatesByType?.TotalPrincipalRepayments ?? 0) },
+                    new() {  Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.TotalEssentialExpenses.ToString(), Amount = new Money(totalEssentialExpenses, currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name == AggregateName.TotalEssentialExpenses.ToString())?.Amount.Amount ?? 0, totalEssentialExpenses) },
+                    new() { Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.NetBalance.ToString(), Amount = new Money(financialCalculations.GetNetBalance(AggregatesByType?.TotalIncome ?? 0, AggregatesByType?.TotalExpenses ?? 0), currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name == AggregateName.NetBalance.ToString())?.Amount.Amount ?? 0, financialCalculations.GetNetBalance(AggregatesByType?.TotalIncome?? 0, AggregatesByType?.TotalExpenses ?? 0)) },
+                    new() { Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.NetCashFlow.ToString(), Amount = new Money( financialCalculations.GetNetCashFlow(AggregatesByType?.TotalIncome ?? 0, AggregatesByType?.TotalExpenses ?? 0, AggregatesByType?.TotalInvestments ?? 0, AggregatesByType?.TotalSavings ?? 0, AggregatesByType?.TotalContractedLoans?? 0, AggregatesByType?.TotalInterestPayments ?? 0, AggregatesByType?.TotalPrincipalRepayments ?? 0), currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name == AggregateName.NetCashFlow.ToString())?.Amount.Amount ?? 0,financialCalculations.GetNetCashFlow(AggregatesByType ?.TotalIncome ?? 0, AggregatesByType ?.TotalExpenses ?? 0, AggregatesByType ?.TotalInvestments ?? 0, AggregatesByType ?.TotalSavings ?? 0, AggregatesByType ?.TotalContractedLoans ?? 0, AggregatesByType ?.TotalInterestPayments ?? 0, AggregatesByType ?.TotalPrincipalRepayments ?? 0) ) },
+                    new() {Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.TotalInflow.ToString(), Amount = new Money(financialCalculations.GetTotalInflow(AggregatesByType?.TotalIncome ?? 0, AggregatesByType ?.TotalContractedLoans ?? 0), currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name == AggregateName.TotalInflow.ToString())?.Amount.Amount ?? 0, financialCalculations.GetTotalInflow(AggregatesByType ?.TotalIncome ?? 0, AggregatesByType ?.TotalContractedLoans ?? 0))},
+                    new() {Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.TotalOutflow.ToString(), Amount = new Money(financialCalculations.GetTotalOutflow(AggregatesByType ?.TotalExpenses ?? 0, AggregatesByType ?.TotalInvestments ?? 0, AggregatesByType ?.TotalSavings ?? 0, AggregatesByType ?.TotalInterestPayments ?? 0, AggregatesByType ?.TotalPrincipalRepayments ?? 0), currency), Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name == AggregateName.TotalOutflow.ToString())?.Amount.Amount ?? 0, financialCalculations.GetTotalOutflow(AggregatesByType ?.TotalExpenses ?? 0, AggregatesByType ?.TotalInvestments ?? 0, AggregatesByType ?.TotalSavings ?? 0, AggregatesByType ?.TotalInterestPayments ?? 0, AggregatesByType ?.TotalPrincipalRepayments ?? 0))},
+                    new() { Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.SavingsRate.ToString(), Amount = new Money(financialCalculations.GetSavingsRate(AggregatesByType ?.TotalIncome ?? 0, AggregatesByType ?.TotalSavings ?? 0), null)},
+                    new() {Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.EssentialExpensesRatio.ToString(), Amount = new Money(financialCalculations.GetEssentialExpensesRatio(AggregatesByType ?.TotalIncome ?? 0, totalEssentialExpenses), null)},
+                    new() {Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.DiscretionaryExpensesRatio.ToString(), Amount = new Money(financialCalculations.GetDiscretionaryExpensesRatio(AggregatesByType ?.TotalIncome ?? 0, totalDiscretionaryExpenses), null)},
+                    new() {Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.DicretionaryToExpenseRatio.ToString(), Amount = new Money(financialCalculations.GetDiscretionaryToExpensesRatio(totalDiscretionaryExpenses, AggregatesByType ?.TotalExpenses ?? 0), null)},
+                    new() {Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.ExpensesRatio.ToString(), Amount = new Money(financialCalculations.GetExpensesRatio(AggregatesByType ?.TotalIncome ?? 0, AggregatesByType ?.TotalExpenses ?? 0), null)},
+                    new() {Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.InvestmentRatio.ToString(), Amount = new Money(financialCalculations.GetInvestmentRatio(AggregatesByType ?.TotalIncome ?? 0, AggregatesByType ?.TotalInvestments ?? 0), null)},
+                    new() {Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.DebtRatio.ToString(), Amount = new Money(financialCalculations.GetDebtRatio(AggregatesByType ?.TotalIncome ?? 0, AggregatesByType ?.TotalContractedLoans ?? 0), null)},
+                    new() {Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.DebtPaymentRatio.ToString(), Amount = new Money(financialCalculations.GetDebtPaymentRatio(AggregatesByType ?.TotalIncome ?? 0, AggregatesByType ?.TotalPrincipalRepayments ?? 0, AggregatesByType ?.TotalInterestPayments ?? 0), null)},
+                    new() {Period = period, PeriodType= AggregateType.MonthlyAggregate, Name = AggregateName.InterestBurdenRatio.ToString(), Amount = new Money(financialCalculations.GetInterestBurdenRatio(AggregatesByType ?.TotalIncome ?? 0, AggregatesByType ?.TotalInterestPayments ?? 0), null)},
+                };
+            var transactionsByCategory = transactions.GroupBy(t => t.Category.Name).ToDictionary(g => g.Key, g => g.ToList());
+            foreach (var group in transactionsByCategory)
+            {
+                var groupAggregate = new FinancialAggregateDto
+                {
+                    Period = period,
+                    PeriodType = AggregateType.MonthlyAggregate,
+                    Type = group.Value?[0].Type,
+                    Name = group.Key,
+                    Amount = new Money(group.Value?.Sum(t => t.BaseAmount.Amount) ?? 0, currency),
+                    Variation = financialCalculations.GetIndicatorGrowth(lastMonthAggregates?.FirstOrDefault(ag => ag.Name.ToString() == group.Key)?.Amount.Amount ?? 0, group.Value?.Sum(t => t.BaseAmount.Amount) ?? 0)
+                };
+                calculatedAggregates.Add(groupAggregate);
+            }
+
+            return calculatedAggregates;
         }
 
-        private static decimal GetTotal(FinancialType type, List<FinancialTotalDto> totals)
+
+        private async Task<List<AggregateVariationsDto>> GetAggregateVariationsByMonthAsync(Guid userId)
         {
-            return totals.Where(t => t.Name == type.ToString()).Select(t => t.Amount).FirstOrDefault();
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentException("User ID cannot be empty.");
+            }
+            var monthlyIncomeVariations = await currencyConversions.ConvertAggregateBaseCurrencyAsync(userId, await financialAggregatesRepository.GetFinancialAggregatesByNameAsync(userId, AggregateName.TotalIncome.ToString()));
+            var monthlyExpenseVariations = await currencyConversions.ConvertAggregateBaseCurrencyAsync(userId, await financialAggregatesRepository.GetFinancialAggregatesByNameAsync(userId, AggregateName.TotalExpense.ToString()));
+            var monthlySalaryVariations = await currencyConversions.ConvertAggregateBaseCurrencyAsync(userId, await financialAggregatesRepository.GetFinancialAggregatesByNameAsync(userId, "Salary"));
+            var monthlyInvestmentVariations = await currencyConversions.ConvertAggregateBaseCurrencyAsync(userId, await financialAggregatesRepository.GetFinancialAggregatesByNameAsync(userId, AggregateName.TotalInvestment.ToString()));
+            return
+            [
+                new() {Name = "Income Variations", Values = [..monthlyIncomeVariations.Select(ag => new AggregateVariationsValueByMonthDto
+                {
+                    Period = ag.Period,
+                    PeriodType = ag.PeriodType,
+                    Type = ag.Type,
+                    Amount = ag.Amount
+                })]},
+                new() {Name = "Expense Variations", Values = [..monthlyExpenseVariations.Select(ag => new AggregateVariationsValueByMonthDto
+                {
+                    Period = ag.Period,
+                    PeriodType = ag.PeriodType,
+                    Type = ag.Type,
+                    Amount = ag.Amount
+                })]},
+                new() {Name = "Salary Variations", Values = [..monthlySalaryVariations.Select(ag => new AggregateVariationsValueByMonthDto
+                {
+                    Period = ag.Period,
+                    PeriodType = ag.PeriodType,
+                    Type = ag.Type,
+                    Amount = ag.Amount
+                })]},
+                new() {Name = "Investment Variations", Values = [..monthlyInvestmentVariations.Select(ag => new AggregateVariationsValueByMonthDto
+                {
+                    Period = ag.Period,
+                    PeriodType = ag.PeriodType,
+                    Type = ag.Type,
+                    Amount = ag.Amount
+                })]},
+            ]; 
         }
+
+        private static AggregatesByTypeDto CalculateAggregatesByType(List<FinancialTransaction> transactions)
+        {
+
+            return new AggregatesByTypeDto
+            {
+                TotalIncome = transactions?.Where(tr => tr.Type == FinancialType.Income).Sum(tr => tr.BaseAmount.Amount) ?? 0,
+                TotalExpenses = transactions?.Where(tr => tr.Type == FinancialType.Expense).Sum(tr => tr.BaseAmount.Amount) ?? 0,
+                TotalInvestments = transactions?.Where(tr => tr.Type == FinancialType.Investment).Sum(tr => tr.BaseAmount.Amount) ?? 0,
+                TotalSavings = transactions?.Where(tr => tr.Type == FinancialType.Savings).Sum(tr => tr.BaseAmount.Amount) ?? 0,
+                TotalContractedLoans = transactions?.Where(tr => tr.Type == FinancialType.ContractedLoan).Sum(tr => tr.BaseAmount.Amount) ?? 0,
+                TotalInterestPayments = transactions?.Where(tr => tr.Type == FinancialType.InterestPayment).Sum(tr => tr.BaseAmount.Amount) ?? 0,
+                TotalPrincipalRepayments = transactions?.Where(tr => tr.Type == FinancialType.PrincipalRepayment).Sum(tr => tr.BaseAmount.Amount) ?? 0
+            };
+        }
+
          
     }
 }

@@ -10,10 +10,33 @@ namespace fintech.API.Infrastructure.EFcore.Configurations
         {
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Name).IsRequired();
-            builder.Property(x => x.Value).HasColumnType("decimal(18,2)");
-            builder.Property(x => x.Currency).IsRequired()
-                .HasMaxLength(3);
-            builder.HasIndex(x => x.Year);
+            builder.OwnsOne(x => x.Period, period =>
+            {
+                period.Property(p => p.StartDate)
+                    .HasColumnName("PeriodStartDate")
+                    .IsRequired();
+
+                period.Property(p => p.EndDate)
+                    .HasColumnName("PeriodEndDate")
+                    .IsRequired();
+            });
+            builder.OwnsOne(t => t.Amount, money =>
+            {
+                money.Property(m => m.Amount)
+                    .HasColumnName("Amount")
+                    .HasPrecision(18, 2);
+                money.OwnsOne(m => m.Currency, currency =>
+                {
+                    currency.Property(c => c.Code)
+                        .HasColumnName("CurrencyCode")
+                        .HasMaxLength(3);
+
+                    currency.Property(c => c.Symbol)
+                        .HasColumnName("CurrencySymbol")
+                        .HasMaxLength(3);                  
+                });
+                
+            });
         }
     }
 }

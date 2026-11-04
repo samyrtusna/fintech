@@ -8,19 +8,19 @@ import {
   createHorizontalChart,
 } from "recharts";
 
-export type LineConfig = {
-  dataKey: string;
+export type LineConfig<TData> = {
+  dataKey: keyof TData;
   name: string;
   stroke: string;
 };
 
 type ChartProps<TData> = {
   data: TData[];
-  lines: LineConfig[];
-  xAxisDataKey: string;
+  lines: LineConfig<TData>[];
+  xAxisDataKey: keyof TData;
 };
 
-export default function LinesChart<TData extends Record<string, any>>({
+export default function LinesChart<TData>({
   data,
   lines,
   xAxisDataKey,
@@ -46,6 +46,7 @@ export default function LinesChart<TData extends Record<string, any>>({
       margin={{ top: 10, right: 20, left: 20, bottom: 10 }}
     >
       <CartesianGrid strokeDasharray="3 3" />
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       <Typed.XAxis dataKey={xAxisDataKey as any} />
       <Typed.YAxis
         width="auto"
@@ -62,8 +63,9 @@ export default function LinesChart<TData extends Record<string, any>>({
       <Legend />
       {lines.map((line) => (
         <Typed.Line
-          key={line.dataKey}
+          key={String(line.dataKey)}
           type="monotone"
+          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           dataKey={line.dataKey as any}
           name={line.name}
           stroke={line.stroke}

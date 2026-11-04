@@ -1,4 +1,6 @@
-﻿using fintech.API.Application.Interfaces.Services;
+﻿using fintech.API.Application.DTOs.ApiResponsesDtos;
+using fintech.API.Application.DTOs.UserDtos;
+using fintech.API.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,9 +13,9 @@ namespace fintech.API.API.Controllers
     public class UserController(IUserService userService) : BaseController
     {
         [HttpGet("informations")]
-        public async Task<IActionResult> GetUserInformations()
+        public async Task<ActionResult<ApiResponsesDto<UserResponseDto>>> GetUserInformations()
         {
-            var userInformations = await userService.GetUserInformations(UserId);
+            var userInformations = await userService.GetUserInformationsAsync(UserId);
             return Ok(userInformations);
         }
     }
