@@ -5,10 +5,11 @@ namespace fintech.API.Application.Mappings
 {
     public static class CategoryMapper
     {
-        public static Category MapToEntity(this CategoryRequestDto dto)
+        public static Category MapToEntity(this CategoryRequestDto dto, Guid userId)
         {
             return new Category
             {
+                UserId = userId,
                 Name = dto.Name,
                 Type = dto.Type,
                 ParentCategoryId = dto.ParentCategoryId

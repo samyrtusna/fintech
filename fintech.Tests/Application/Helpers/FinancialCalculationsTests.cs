@@ -234,13 +234,13 @@ namespace fintech.Tests.Application.Helpers
         }
 
         [Fact]
-        public void IndicatorGrowth_Should_Return_Zero_When_Previous_Value_Is_Zero()
+        public void IndicatorGrowth_Should_Return_100_When_Previous_Value_Is_Zero()
         {
             var result = _calculations.GetIndicatorGrowth(
                 0m,
                 100m);
 
-            Assert.Equal(0m, result);
+            Assert.Equal(100m, result);
         }
     }
 }

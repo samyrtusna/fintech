@@ -17,27 +17,46 @@ namespace fintech.API.Infrastructure.EFcore.Configurations
                .HasConversion<string>()
                .IsRequired()
                .HasMaxLength(20);
-            builder.Property(t => t.Amount)
-                .IsRequired()
-                .HasColumnType("decimal(18,2)");
-            builder.Property(t => t.Currency)
-                .IsRequired()
-                .HasMaxLength(3);
-            builder.Property(t => t.CurrencySymbol)
-                .IsRequired()
-                .HasMaxLength(3);
+            builder.OwnsOne(t => t.Amount, money =>
+            {
+                money.Property(m => m.Amount)
+                    .HasColumnName("Amount")
+                    .HasPrecision(18, 2);
+                money.OwnsOne(m => m.Currency, currency =>
+                {
+                    currency.Property(c => c.Code)
+                        .HasColumnName("CurrencyCode")
+                        .HasMaxLength(3)
+                        .IsRequired();
+
+                    currency.Property(c => c.Symbol)
+                        .HasColumnName("CurrencySymbol")
+                        .HasMaxLength(3)
+                        .IsRequired();
+                });
+                
+            });
             builder.Property(t => t.ExchangeRate)
                 .IsRequired()
                 .HasColumnType("decimal(18,6)");
-            builder.Property(t => t.BaseAmount)
-                .IsRequired()
-                .HasColumnType("decimal(18,2)");
-            builder.Property(t => t.BaseCurrency)
-                .IsRequired()
-                .HasMaxLength(3);
-            builder.Property(t => t.BaseCurrencySymbol)
-                .IsRequired()
-                .HasMaxLength(3);
+            builder.OwnsOne(t => t.BaseAmount, money =>
+            {
+                money.Property(m => m.Amount)
+                    .HasColumnName("BaseAmount")
+                    .HasPrecision(18, 2);
+                money.OwnsOne(m => m.Currency, currency =>
+                {
+                    currency.Property(c => c.Code)
+                        .HasColumnName("BaseCurrencyCode")
+                        .HasMaxLength(3)
+                        .IsRequired();
+
+                    currency.Property(c => c.Symbol)
+                        .HasColumnName("BaseCurrencySymbol")
+                        .HasMaxLength(3)
+                        .IsRequired();
+                });              
+            });
             builder.Property(t => t.Description)
                 .HasMaxLength(30);
             builder.Property(t => t.IsEssential)

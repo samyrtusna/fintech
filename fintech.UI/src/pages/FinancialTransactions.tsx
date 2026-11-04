@@ -18,8 +18,6 @@ import {
   setGlobalAggregates,
   setMonthAggregates,
 } from "../state/slices/financialAggregatesSlice";
-import userService from "../API/Services/userService";
-import { setUserInformations } from "../state/slices/authSlice";
 import Dropdown from "../components/Dropdown";
 import TransactionCard from "../components/TransactionCard";
 import { IoMdAdd } from "react-icons/io";
@@ -43,58 +41,82 @@ function FinancialTransactions() {
     (state) => state.financialAggregates.monthAggregates,
   );
 
+  const globalDebt = globalAggregates?.find(
+    (ag) => ag.name.toLowerCase() === "GlobalActiveDebt".toLowerCase(),
+  )?.amount.amount;
+  const globalInvestment = globalAggregates?.find(
+    (ag) => ag.name.toLowerCase() === "GlobalTotalInvestment".toLowerCase(),
+  )?.amount.amount;
+  const globalCashFlow = globalAggregates?.find(
+    (ag) => ag.name.toLowerCase() === "GlobalNetCashFlow".toLowerCase(),
+  )?.amount.amount;
+  const globalSavings = globalAggregates?.find(
+    (ag) => ag.name.toLowerCase() === "GlobalTotalSavings".toLowerCase(),
+  )?.amount.amount;
+
   const totalIncome =
-    monthAggregates?.find((ag) => ag.name === "TotalIncome")?.value ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalIncome".toLowerCase(),
+    )?.amount.amount ?? 0;
   const incomeVariation =
-    monthAggregates?.find((ag) => ag.name === "TotalIncome")?.variation ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalIncome".toLowerCase(),
+    )?.variation ?? 0;
 
   const totalExpense =
-    monthAggregates?.find((ag) => ag.name === "TotalExpense")?.value ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalExpense".toLowerCase(),
+    )?.amount.amount ?? 0;
   const expenseVariation =
-    monthAggregates?.find((ag) => ag.name === "TotalExpense")?.variation ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalExpense".toLowerCase(),
+    )?.variation ?? 0;
+  const expenseRatio =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "ExpensesRatio".toLowerCase(),
+    )?.amount.amount ?? 0;
 
   const totalInvestment =
-    monthAggregates?.find((ag) => ag.name === "TotalInvestment")?.value ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalInvestment".toLowerCase(),
+    )?.amount.amount ?? 0;
   const investmentVariation =
-    monthAggregates?.find((ag) => ag.name === "TotalInvestment")?.variation ??
-    0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalInvestment".toLowerCase(),
+    )?.variation ?? 0;
+  const investmentRatio =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "InvestmentRatio".toLowerCase(),
+    )?.amount.amount ?? 0;
 
   const debt =
-    monthAggregates?.find((ag) => ag.name === "TotalContractedLoans")?.value ??
-    0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalContractedLoans".toLowerCase(),
+    )?.amount.amount ?? 0;
   const debtVariation =
-    monthAggregates?.find((ag) => ag.name === "TotalContractedLoans")
-      ?.variation ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalContractedLoans".toLowerCase(),
+    )?.variation ?? 0;
+  const debtRatio =
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "DebtRatio".toLowerCase(),
+    )?.amount.amount ?? 0;
 
   const savings =
-    monthAggregates?.find((ag) => ag.name === "TotalSavings")?.value ?? 0;
+    monthAggregates?.aggregates.find(
+      (ag) => ag.name.toLowerCase() === "TotalSavings".toLowerCase(),
+    )?.amount.amount ?? 0;
 
   const totalOthers =
     totalIncome - (totalExpense + totalInvestment + debt + savings);
 
   const pieChartData = [
-    { name: "Expenses", value: totalExpense },
-    { name: "Investments", value: totalInvestment },
-    { name: "Debt", value: debt },
-    { name: "Savings", value: savings },
-    { name: "Other", value: totalOthers },
+    { name: "Expenses", value: totalExpense, color: "#f3081c" },
+    { name: "Investments", value: totalInvestment, color: "#10f308" },
+    { name: "Debt", value: debt, color: "#f3ef08" },
+    { name: "Savings", value: savings, color: "#8108f3" },
+    { name: "Other", value: totalOthers, color: "#1447e6" },
   ];
-
-  const fetchUserInformations = useCallback(async () => {
-    if (userInformations !== null) {
-      return;
-    }
-    try {
-      const user = await userService.getUserAsync();
-      dispatch(setUserInformations(user));
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to fetch user information",
-      );
-    }
-  }, [userInformations, dispatch]);
 
   const fetchGlobalAggregates = useCallback(async () => {
     if (globalAggregates !== null) {
@@ -115,8 +137,7 @@ function FinancialTransactions() {
 
   useEffect(() => {
     fetchGlobalAggregates();
-    fetchUserInformations();
-  }, [fetchGlobalAggregates, fetchUserInformations]);
+  }, [fetchGlobalAggregates]);
 
   const months = generateMonths(userInformations!.createdAt);
 
@@ -134,15 +155,12 @@ function FinancialTransactions() {
   const [isEssential, setIsEssential] = useState(false);
   const symbol = userInformations?.userCurrencies.find(
     (c) => c.isDefault === true,
-  )?.currencySymbol;
+  )?.currency.symbol;
 
   const fetchMonthAggregates = useCallback(
     async (date: Date) => {
       try {
-        const aggregates = await financialAggregatesService.getByFilter({
-          period: "Monthly",
-          date: date,
-        });
+        const aggregates = await financialAggregatesService.getByMonth(date);
         dispatch(setMonthAggregates(aggregates));
       } catch (error) {
         toast.error(
@@ -238,7 +256,6 @@ function FinancialTransactions() {
         setIsTransactionsLoading(true);
         const fetchedTransactions =
           await financialTrascationService.getByFilterAsync(filter);
-
         dispatch(setFinancialTransactions(fetchedTransactions));
         if (fetchedTransactions.totalCount >= 10) {
           setPageChange(true);
@@ -278,10 +295,10 @@ function FinancialTransactions() {
     <div className="relative min-h-dvh h-full min-w-dvw ">
       <div className="flex justify-around w-full my-12 px-6">
         <GlobalAggregates
-          debtValue={globalAggregates?.totalActiveDebt}
-          investmentValue={globalAggregates?.totalInvestment}
-          cashFlowValue={globalAggregates?.totalCashFlow}
-          savingValue={globalAggregates?.totalSavings}
+          debtValue={globalDebt}
+          investmentValue={globalInvestment}
+          cashFlowValue={globalCashFlow}
+          savingValue={globalSavings}
           symbol={symbol!}
         />
       </div>
@@ -313,6 +330,7 @@ function FinancialTransactions() {
           <PeriodicAggregateCard
             title="Monthly Investment"
             aggregateValue={totalInvestment}
+            aggregateRatio={investmentRatio}
             aggregateVariation={investmentVariation}
             symbol={symbol!}
             isBaseElement={false}
@@ -337,7 +355,7 @@ function FinancialTransactions() {
                     className={`
                     ${t.transactionDate === arr[index - 1]?.transactionDate || updateTransaction !== "" ? "hidden" : "block"} text-sm`}
                   >
-                    {t.transactionDate}
+                    {t.transactionDate.toString()}
                   </div>
                 )}
                 <TransactionCard
@@ -448,6 +466,7 @@ function FinancialTransactions() {
           <PeriodicAggregateCard
             title="Monthly Expense"
             aggregateValue={totalExpense}
+            aggregateRatio={expenseRatio}
             aggregateVariation={expenseVariation}
             symbol={symbol!}
             isBaseElement={false}
@@ -456,6 +475,7 @@ function FinancialTransactions() {
           <PeriodicAggregateCard
             title="Monthly Debt"
             aggregateValue={debt}
+            aggregateRatio={debtRatio}
             aggregateVariation={debtVariation}
             symbol={symbol!}
             isBaseElement={false}
@@ -475,6 +495,7 @@ function FinancialTransactions() {
         <PeriodicAggregateCard
           title="Monthly Investment"
           aggregateValue={totalInvestment}
+          aggregateRatio={investmentRatio}
           aggregateVariation={investmentVariation}
           symbol={symbol!}
           isBaseElement={false}
@@ -483,6 +504,7 @@ function FinancialTransactions() {
         <PeriodicAggregateCard
           title="Monthly Expense"
           aggregateValue={totalExpense}
+          aggregateRatio={expenseRatio}
           aggregateVariation={expenseVariation}
           symbol={symbol!}
           isBaseElement={false}
@@ -491,6 +513,7 @@ function FinancialTransactions() {
         <PeriodicAggregateCard
           title="Monthly Debt"
           aggregateValue={debt}
+          aggregateRatio={debtRatio}
           aggregateVariation={debtVariation}
           symbol={symbol!}
           isBaseElement={false}
@@ -511,45 +534,23 @@ function FinancialTransactions() {
               </div>
 
               <div className="w-full md:w-1/4 mt-4 text-sm space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="text-red-500 font-semibold">● Expenses</span>
-                  <span>
-                    {symbol}
-                    {totalExpense.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-green-500 font-semibold">
-                    ● Investments
-                  </span>
-                  <span>
-                    {symbol}
-                    {totalInvestment.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-yellow-500 font-semibold">● Debt</span>
-                  <span>
-                    {symbol}
-                    {debt.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-fuchsia-500 font-semibold">
-                    ● Savings
-                  </span>
-                  <span>
-                    {symbol}
-                    {debt.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-blue-500 font-semibold">● Other</span>
-                  <span>
-                    {symbol}
-                    {totalOthers.toFixed(2)}
-                  </span>
-                </div>
+                {pieChartData.map((pie) => (
+                  <div
+                    key={pie.name}
+                    className="flex justify-between items-center"
+                  >
+                    <span
+                      style={{ color: pie.color }}
+                      className="font-semibold"
+                    >
+                      ● {pie.name}
+                    </span>
+                    <span className="text-text-muted">
+                      {symbol}
+                      {pie.value.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

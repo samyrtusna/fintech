@@ -92,20 +92,20 @@ namespace fintech.Tests.API.Controllers
         {
             // Arrange
             var categories = new List<CategoryResponseDto>
-    {
-        new CategoryResponseDto
-        {
-            Id = Guid.NewGuid(),
-            Name = "Salary",
-            Type = FinancialType.Income
-        },
-        new CategoryResponseDto
-        {
-            Id = Guid.NewGuid(),
-            Name = "Groceries",
-            Type = FinancialType.Expense
-        }
-    };
+            {
+                new CategoryResponseDto
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Salary",
+                    Type = FinancialType.Income
+                },
+                new CategoryResponseDto
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Groceries",
+                    Type = FinancialType.Expense
+                }
+            };
 
             _categoryServiceMock
                 .Setup(x => x.GetAllCategoriesAsync(_userId))
@@ -228,21 +228,25 @@ namespace fintech.Tests.API.Controllers
         }
 
         [Fact]
-        public async Task DeleteCategoryAsync_ValidId_ReturnsNoContent()
+        public async Task DeleteCategoryAsync_ValidId_ReturnsOkWithConfirmation()
         {
             var categoryId = Guid.NewGuid();
 
+            var confirmation = new ConfirmationResponseDto
+            {
+                Message = "Category has been deleted successfully."
+            };
+
             _categoryServiceMock
                 .Setup(x => x.DeleteCategoryAsync(categoryId, _userId))
-                .Returns(Task.CompletedTask);
+                .ReturnsAsync(confirmation);
 
             var result = await _controller.DeleteCategoryAsync(categoryId);
 
-            Assert.IsType<NoContentResult>(result);
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
 
-            var noContentResult = (NoContentResult)result;
-
-            Assert.Equal(204, noContentResult.StatusCode);
+            Assert.Equal(200, okResult.StatusCode);
+            Assert.Same(confirmation, okResult.Value);
 
             _categoryServiceMock.Verify(
                 x => x.DeleteCategoryAsync(categoryId, _userId),

@@ -1,46 +1,57 @@
-type AggregateName =
-  | "NetBalance"
-  | "NetCashFlow"
-  | "TotalInvestment"
-  | "TotalSavings"
-  | "TctiveDebt"
-  | "TotalIncome"
-  | "TotalExpense"
-  | "TotalContractedLoans"
-  | "TotalInterestPayments"
-  | "TotalPrincipalRepayments"
-  | "TopSpendingCategory"
-  | "TotalInflow"
-  | "TotalOutflow"
-  | "SavingsRate"
-  | "EssentialExpensesRatio"
-  | "ExpensesRatio"
-  | "InvestmentRatio"
-  | "DebtRatio"
-  | "DebtPaymentRatio"
-  | "InterestBurdenRatio";
+import type { FinancialTypes } from "./financialTransactionTypes";
 
-export interface FilteredAggregatesResponse {
-  date: Date;
-  name: AggregateName;
-  value: number;
-  variation: number;
-}
-
-export interface AggregatesFilter {
-  period: string;
-  date: Date;
-}
-
-export interface GlobalAggregatesResponse {
-  date: Date;
-  totalCashFlow: number;
-  totalInvestment: number;
-  totalSavings: number;
-  totalActiveDebt: number;
+export interface MonthlyAggregatesResponse {
+  aggregates: FinancialAggregatesType[];
+  periodicVariations: AggregateVariationsByMonthType[];
 }
 
 export interface AggregatesState {
-  globalAggregates: GlobalAggregatesResponse | null;
-  monthAggregates: FilteredAggregatesResponse[] | null;
+  globalAggregates: FinancialAggregatesType[] | null;
+  monthAggregates: MonthlyAggregatesResponse | null;
+}
+
+export interface FinancialAggregatesType {
+  period: Period;
+  periodType?: "MonthlyAggregate" | "YearlyAggregate" | "GlobalAggregate";
+  type?: FinancialTypes;
+  name: string;
+  amount: Money;
+  variation?: number;
+}
+
+interface Period {
+  startDate: Date;
+  endDate: Date;
+}
+
+interface Money {
+  amount: number;
+  currency: Currency;
+}
+
+interface Currency {
+  code: string;
+  symbol: string;
+}
+
+export interface AggregateVariationsByMonthType {
+  name: string;
+  values: AggregateVariationsType[];
+}
+
+interface AggregateVariationsType {
+  period: Period;
+  periodType: "MonthlyAggregate" | "YearlyAggregate" | "GlobalAggregate";
+  type: FinancialTypes;
+  amount: Money;
+}
+
+export interface ChartDataPoint {
+  month: Date;
+  amount: number;
+}
+
+export interface FormattedChartData {
+  key: string;
+  value: ChartDataPoint[];
 }

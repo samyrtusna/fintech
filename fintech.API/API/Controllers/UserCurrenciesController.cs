@@ -1,4 +1,5 @@
-﻿using fintech.API.Application.DTOs.UserCurrenciesDtos;
+﻿using fintech.API.Application.DTOs.ApiResponsesDtos;
+using fintech.API.Application.DTOs.UserCurrenciesDtos;
 using fintech.API.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,14 +13,14 @@ namespace fintech.API.API.Controllers
     public class UserCurrenciesController(IUserCurrenciesService userCurrenciesService) : BaseController
     {
         [HttpPost]
-        public async Task<IActionResult> AddUserCurrency( [FromBody] UserCurrenciesDto dto)
+        public async Task<ActionResult<ApiResponsesDto<UserCurrenciesDto>>> AddUserCurrency( [FromBody] UserCurrenciesDto dto)
         {
             var newUserCurrency = await userCurrenciesService.AddUserCurrencyAsync(UserId, dto);
             return CreatedAtAction(nameof(GetUserCurrencies), newUserCurrency);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUserCurrencies()
+        public async Task<ActionResult<ApiResponsesDto<IEnumerable<UserCurrenciesDto>>>> GetUserCurrencies()
         {
             var userCurrencies = await userCurrenciesService.GetUserCurrenciesAsync(UserId);
             return Ok(userCurrencies);

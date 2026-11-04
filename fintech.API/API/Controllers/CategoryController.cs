@@ -13,7 +13,7 @@ namespace fintech.API.API.Controllers
     public class CategoryController(ICategoryService categoryService) : BaseController
     {
         [HttpPost]
-        public async Task<ActionResult<CategoryResponseDto>> CreateCategoryAsync(CategoryRequestDto dto)
+        public async Task<ActionResult<ApiResponsesDto<CategoryResponseDto>>> CreateCategoryAsync(CategoryRequestDto dto)
         {
             var result = await categoryService.CreateCategoryAsync(dto, UserId);
 
@@ -21,38 +21,38 @@ namespace fintech.API.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CategoryResponseDto>>> GetAllCategoriesAsync() 
+        public async Task<ActionResult<ApiResponsesDto<IEnumerable<CategoryResponseDto>>>> GetAllCategoriesAsync() 
         {
             var result = await categoryService.GetAllCategoriesAsync(UserId);
             return Ok(result);
         }
 
         [HttpGet("{id}", Name = "GetCategoryById")]
-        public async Task<ActionResult<CategoryResponseDto>> GetCategoryByIdAsync(Guid id) 
+        public async Task<ActionResult<ApiResponsesDto<CategoryResponseDto>>> GetCategoryByIdAsync(Guid id) 
         {
             var result = await categoryService.GetCategoryByIdAsync(id, UserId);
             return Ok(result);
         }
 
         [HttpPost("{id}")]
-        public async Task<ActionResult<ConfirmationResponseDto>> SetCategoryEssentialAsync(Guid id,UserCategorySettingsRequestDto dto) 
+        public async Task<ActionResult<ApiResponsesDto<ConfirmationResponseDto>>> SetCategoryEssentialAsync(Guid id,UserCategorySettingsRequestDto dto) 
         {
             var result = await categoryService.SetCategoryEssentialAsync(dto,id, UserId);
             return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<CategoryResponseDto>> UpdateCategoryAsync(Guid id, UpdateCategoryRequestDto dto)
+        public async Task<ActionResult<ApiResponsesDto<CategoryResponseDto>>> UpdateCategoryAsync(Guid id, UpdateCategoryRequestDto dto)
         {
             var result = await categoryService.UpdateCategoryAsync(id, dto, UserId);
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteCategoryAsync(Guid id)
+        public async Task<ActionResult<ApiResponsesDto<ConfirmationResponseDto>>> DeleteCategoryAsync(Guid id)
         {
-            await categoryService.DeleteCategoryAsync(id, UserId);
-            return NoContent();
+            var result = await categoryService.DeleteCategoryAsync(id, UserId);
+            return Ok(result);
         }
     }
 }

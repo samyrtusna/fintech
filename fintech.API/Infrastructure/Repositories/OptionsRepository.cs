@@ -7,8 +7,8 @@ namespace fintech.API.Infrastructure.Repositories
 {
     public class OptionsRepository(AppDbContext context) : GenericRepository<Option>(context), IOptionsRepository
     {
-        public async Task<Option?> GetByKey (string key)
-        {
+        public async Task<Option?> GetByKeyAsync (string key)
+        { 
             return await context.Options
                 .Where(o => o.Key == key)
                 .FirstOrDefaultAsync();

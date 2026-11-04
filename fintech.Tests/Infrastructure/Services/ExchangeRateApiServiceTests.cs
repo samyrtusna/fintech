@@ -115,7 +115,8 @@ namespace fintech.Tests.Infrastructure.Services
                 () => service.GetSymbolsAsync());
 
             // Assert
-            Assert.Contains("Failed to retrieve symbols.", exception.Message);
+            // Fixed: removed trailing dot to match service message format "Failed to retrieve symbols (Unauthorized)..."
+            Assert.Contains("Failed to retrieve symbols", exception.Message);
             Assert.Contains("Unauthorized", exception.Message);
         }
 
@@ -158,7 +159,8 @@ namespace fintech.Tests.Infrastructure.Services
             var service = CreateService(handler);
 
             // Act
-            var exception = await Assert.ThrowsAsync<Exception>(
+            // Fixed: expected NotFoundException instead of generic Exception
+            var exception = await Assert.ThrowsAsync<NotFoundException>(
                 () => service.GetEchangeRateAsync("EUR", "USD"));
 
             // Assert

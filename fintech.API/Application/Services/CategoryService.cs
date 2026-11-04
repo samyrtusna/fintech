@@ -32,9 +32,8 @@ namespace fintech.API.Application.Services
                 throw new BadRequestException($"A category with the name '{dto.Name}' already exists.");
             }
 
-            var category = dto.MapToEntity();
+            var category = dto.MapToEntity(userId);
 
-            category.UserId = userId;
 
             await categoryRepository.AddAsync(category);
             await categoryRepository.SaveChangesAsync();
@@ -103,7 +102,7 @@ namespace fintech.API.Application.Services
             return category.MapToResponseDto();
         }
 
-        public async Task DeleteCategoryAsync(Guid categoryId, Guid userId) 
+        public async Task<ConfirmationResponseDto> DeleteCategoryAsync(Guid categoryId, Guid userId) 
         {
             if (categoryId == Guid.Empty)
             {
@@ -130,6 +129,11 @@ namespace fintech.API.Application.Services
             }
             category.IsDeleted = true;
             await categoryRepository.SaveChangesAsync();
+
+            return new ConfirmationResponseDto
+            {
+                Message = $"Category '{category.Name}' has been successfully deleted."
+            };
         }
 
         public async Task<ConfirmationResponseDto> SetCategoryEssentialAsync(UserCategorySettingsRequestDto dto,Guid categoryId,  Guid userId)

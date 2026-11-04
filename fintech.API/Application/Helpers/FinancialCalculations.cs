@@ -34,6 +34,16 @@ namespace fintech.API.Application.Helpers
             return totalIncome == 0 ? 0 : (totalEssentialExpenses / totalIncome) * 100; 
         }
 
+        public decimal GetDiscretionaryExpensesRatio(decimal totalIncome, decimal totalDiscretionaryExpenses)
+        {
+            return totalIncome == 0 ? 0 : (totalDiscretionaryExpenses / totalIncome) * 100;
+        } 
+
+        public decimal GetDiscretionaryToExpensesRatio(decimal totalDiscretionaryExpenses, decimal totalEssentialExpenses)
+        {
+            return totalEssentialExpenses == 0 ? 0 : (totalDiscretionaryExpenses / totalEssentialExpenses) * 100;
+        }
+
         public decimal GetExpensesRatio (decimal totalIncome, decimal totalExpenses) 
         { 
             return totalIncome == 0 ? 0 : (totalExpenses / totalIncome) * 100;
@@ -61,7 +71,7 @@ namespace fintech.API.Application.Helpers
 
         public decimal GetIndicatorGrowth(decimal previousValue, decimal currentValue)
         {
-            return previousValue == 0 ? 0 : Math.Round(((currentValue - previousValue) / previousValue) * 100, 2, MidpointRounding.AwayFromZero);
+            return previousValue == 0 ? 100 : Math.Round(((currentValue - previousValue) / previousValue) * 100, 2, MidpointRounding.AwayFromZero);
         }
     } 
 }

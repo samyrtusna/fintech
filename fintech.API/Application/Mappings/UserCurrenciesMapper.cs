@@ -1,17 +1,19 @@
 ﻿using fintech.API.Application.DTOs.CategoryDtos;
 using fintech.API.Application.DTOs.UserCurrenciesDtos;
 using fintech.API.Domain.Entities;
+using fintech.API.Domain.ValueObjects;
+using System.Linq.Expressions;
 
 namespace fintech.API.Application.Mappings
 {
     public static class UserCurrenciesMapper
     {
-        public static UserCurrency MapToEntity(this UserCurrenciesDto dto)
+        public static UserCurrency MapToEntity(this UserCurrenciesDto dto, Guid userId)
         {
             return new UserCurrency
             {
-                CurrencySymbol = dto.CurrencySymbol,
-                CurrencyCode = dto.CurrencyCode,
+                UserId = userId,
+                Currency = new Currency (dto.Currency.Code, dto.Currency.Symbol),
                 IsDefault = dto.IsDefault
             };
         }
@@ -20,8 +22,7 @@ namespace fintech.API.Application.Mappings
         {
             return new UserCurrenciesDto
             {
-                CurrencySymbol = userCurrency.CurrencySymbol,
-                CurrencyCode = userCurrency.CurrencyCode,
+                Currency = new Currency (userCurrency.Currency.Code, userCurrency.Currency.Symbol),
                 IsDefault = userCurrency.IsDefault
             };
         }

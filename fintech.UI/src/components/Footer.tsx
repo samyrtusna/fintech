@@ -52,7 +52,7 @@ function Footer() {
           <h2 className="text-xl font-bold mb-2">Contact</h2>
           <div className="flex items-center pb-1">
             <MdLocationPin />
-            <h3 className="pl-2 text-sm">55 lot Bekkar, Tizi-Ouzou</h3>
+            <h3 className="pl-2 text-sm">Bp 15000 Tizi-Ouzou</h3>
           </div>
           <div className="flex items-center pb-1">
             <MdOutlineEmail />

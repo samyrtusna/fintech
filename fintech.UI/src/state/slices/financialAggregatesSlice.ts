@@ -1,8 +1,8 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
   AggregatesState,
-  FilteredAggregatesResponse,
-  GlobalAggregatesResponse,
+  FinancialAggregatesType,
+  MonthlyAggregatesResponse,
 } from "../../types/financialAggregatesTypes";
 
 const initialState: AggregatesState = {
@@ -16,13 +16,13 @@ export const financialAggregatesSlice = createSlice({
   reducers: {
     setGlobalAggregates: (
       state,
-      action: PayloadAction<GlobalAggregatesResponse>,
+      action: PayloadAction<FinancialAggregatesType[]>,
     ) => {
       state.globalAggregates = action.payload;
     },
     setMonthAggregates: (
       state,
-      action: PayloadAction<FilteredAggregatesResponse[]>,
+      action: PayloadAction<MonthlyAggregatesResponse>,
     ) => {
       state.monthAggregates = action.payload;
     },

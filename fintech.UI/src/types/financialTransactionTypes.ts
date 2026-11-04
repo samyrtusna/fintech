@@ -1,3 +1,5 @@
+import type { Currency } from "./authTypes";
+
 export const FinancialTypes = {
   Income: "Income",
   Expense: "Expense",
@@ -17,9 +19,7 @@ export interface UpdateTransactionRequest {
 }
 export interface NewTransactionRequest extends UpdateTransactionRequest {
   categoryId: string;
-  amount: number;
-  currency: string;
-  currencySymbol: string;
+  amount: Money;
   transactionDate?: Date;
 }
 
@@ -27,14 +27,10 @@ export interface GetTransactionResponse {
   id: string;
   type: FinancialTypes;
   exchangeRate: number;
-  baseAmount: number;
+  baseAmount: Money;
   categoryName: string;
   categoryId: string;
-  amount: number;
-  currency: string;
-  currencySymbol: string;
-  baseCurrency: string;
-  baseCurrencySymbol: string;
+  amount: Money;
   transactionDate: string;
   description?: string;
   isEssential?: boolean;
@@ -65,7 +61,8 @@ export interface TransactionState {
 }
 
 export interface MonthItem {
-  key: string;
+  shortLabel: string;
+  longLabel: string;
   value: Date;
 }
 
@@ -78,4 +75,9 @@ export interface FinancialTransactionProps {
 export interface UpdateStateType {
   description: string;
   isEssential: boolean;
+}
+
+export interface Money {
+  amount: number;
+  currency: Currency;
 }

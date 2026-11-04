@@ -18,7 +18,7 @@ namespace fintech.API.API.Middlewares
             }
             catch (ApiException ex)
             {
-                logger.LogWarning(ex, "API error (status {StatusCode}): {Message}", ex.StatusCode, ex.Message);
+                logger.LogError(ex, "API error (status {StatusCode}): {Message}", ex.StatusCode, ex.Message);
                 await WriteResponse(context, ex.StatusCode, ex.Message);
             }
             catch (Exception ex)

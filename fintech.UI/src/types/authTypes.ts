@@ -28,8 +28,7 @@ export interface DecodedTokenType {
 }
 
 interface CurrencyType {
-  currencyCode: string;
-  currencySymbol: string;
+  currency: Currency;
   isDefault: boolean;
 }
 
@@ -44,4 +43,9 @@ export interface UserIformations {
 export interface UserState {
   accessToken: string | null;
   userInformations: UserIformations | null;
+}
+
+export interface Currency {
+  code: string;
+  symbol: string;
 }

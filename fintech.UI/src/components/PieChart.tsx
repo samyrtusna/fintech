@@ -1,4 +1,3 @@
-// PieChart.tsx
 import {
   Pie,
   PieChart,
@@ -9,8 +8,17 @@ import {
 import type { PieLabelRenderProps, PieSectorShapeProps } from "recharts";
 
 const RADIAN = Math.PI / 180;
-// Assign meaningful colors: Expenses (Red), Investments (Green), Debt (Yellow), Other (Blue)
-const COLORS = ["#EF4444", "#22C55E", "#EAB308", "#d946ef", "#3B82F6"];
+
+interface PieChartData {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface PieChartsProps {
+  data: PieChartData[];
+  isAnimationActive?: boolean;
+}
 
 const renderCustomizedLabel = ({
   cx,
@@ -55,10 +63,12 @@ const MyCustomPie = (props: PieSectorShapeProps) => {
   } else {
     fillOpacity = 1;
   }
+
+  const color = (props.payload as PieChartData).color;
   return (
     <Sector
       {...props}
-      fill={COLORS[props.index % COLORS.length]}
+      fill={color}
       stroke="none"
       fillOpacity={fillOpacity}
       style={{ transition: "fill-opacity 0.3s ease" }}
@@ -66,15 +76,7 @@ const MyCustomPie = (props: PieSectorShapeProps) => {
   );
 };
 
-interface PieChartProps {
-  data: Array<{ name: string; value: number }>;
-  isAnimationActive?: boolean;
-}
-
-export default function PieCharts({
-  data,
-  isAnimationActive = true,
-}: PieChartProps) {
+function PieCharts({ data, isAnimationActive = true }: PieChartsProps) {
   return (
     <PieChart
       style={{
@@ -87,12 +89,15 @@ export default function PieCharts({
     >
       <Pie
         data={data}
+        dataKey="value"
+        nameKey="name"
         labelLine={false}
         label={renderCustomizedLabel}
-        dataKey="value"
         isAnimationActive={isAnimationActive}
         shape={MyCustomPie}
       />
     </PieChart>
   );
 }
+
+export default PieCharts;

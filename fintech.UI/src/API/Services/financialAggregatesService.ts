@@ -1,14 +1,14 @@
 import type {
-  AggregatesFilter,
-  FilteredAggregatesResponse,
-  GlobalAggregatesResponse,
+  FinancialAggregatesType,
+  MonthlyAggregatesResponse,
 } from "../../types/financialAggregatesTypes";
 import http from "./http";
 
-const getGlobalAggregates = async (): Promise<GlobalAggregatesResponse> => {
+const getGlobalAggregates = async (): Promise<FinancialAggregatesType[]> => {
   try {
-    return await http.get<GlobalAggregatesResponse, undefined>(
+    return await http.get<FinancialAggregatesType[], { date: Date }>(
       "financialAggregates/global",
+      { date: new Date() },
     );
   } catch (error) {
     if (error instanceof Error) {
@@ -22,13 +22,13 @@ const getGlobalAggregates = async (): Promise<GlobalAggregatesResponse> => {
   }
 };
 
-const getByFilter = async (
-  aggregatesFilter: AggregatesFilter,
-): Promise<FilteredAggregatesResponse[]> => {
+const getByMonth = async (
+  monthDate: Date,
+): Promise<MonthlyAggregatesResponse> => {
   try {
-    return await http.get<FilteredAggregatesResponse[], AggregatesFilter>(
-      "financialAggregates/filter",
-      aggregatesFilter,
+    return await http.get<MonthlyAggregatesResponse, { date: Date }>(
+      "financialAggregates/month",
+      { date: monthDate },
     );
   } catch (error) {
     if (error instanceof Error) {
@@ -42,4 +42,4 @@ const getByFilter = async (
   }
 };
 
-export default { getByFilter, getGlobalAggregates };
+export default { getByMonth, getGlobalAggregates };

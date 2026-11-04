@@ -21,6 +21,7 @@ import financialAggregatesService from "../API/Services/financialAggregatesServi
 import { setGlobalAggregates } from "../state/slices/financialAggregatesSlice";
 import { IoChevronBack } from "react-icons/io5";
 import { FaRegMoneyBillAlt } from "react-icons/fa";
+import { financialTransactionSchema } from "../formik/financialTransactionSchema";
 
 function NewFinancialTransaction() {
   //
@@ -34,19 +35,22 @@ function NewFinancialTransaction() {
     FinancialTypes.PrincipalRepayment,
   ];
 
-  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const user = useAppSelector((state) => state.authUser.userInformations);
 
   const [currencyOptions, setCurrencyOptions] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const amount = 0.01;
+  const currency = {
+    code: "",
+    symbol: "",
+  };
 
   const initialValues: NewTransactionRequest = {
     categoryId: "",
-    amount: 0.01,
-    currency: "",
-    currencySymbol: "",
+    amount: { amount, currency },
     transactionDate: new Date(),
     description: "",
     isEssential: true,
@@ -73,12 +77,15 @@ function NewFinancialTransaction() {
     try {
       setIsLoading(true);
       const selectedCurrency = user?.userCurrencies.find(
-        (c) => c.currencyCode === values.currency,
+        (c) => c.currency.code === values.amount.currency.code,
       );
-
+      const currency = {
+        code: values.amount.currency.code,
+        symbol: selectedCurrency!.currency.symbol,
+      };
       const request: NewTransactionRequest = {
         ...values,
-        currencySymbol: selectedCurrency?.currencySymbol ?? "",
+        amount: { amount: values.amount.amount, currency: currency },
       };
       await financialTrascationService.addAsync(request);
       fetchGlobalAggregates();
@@ -96,6 +103,7 @@ function NewFinancialTransaction() {
 
   const formik = useFormik<NewTransactionRequest>({
     initialValues,
+    validationSchema: financialTransactionSchema,
     onSubmit: handleSubmit,
   });
 
@@ -127,13 +135,16 @@ function NewFinancialTransaction() {
 
   useEffect(() => {
     const currencies = user?.userCurrencies ?? [];
+    setCurrencies(currencies.map((c) => c.currency.code));
 
-    setCurrencies(currencies.map((c) => c.currencyCode));
     const defaultCurrency = currencies.find((c) => c.isDefault);
     if (defaultCurrency) {
-      formik.setFieldValue("currency", defaultCurrency.currencyCode);
+      formik.setFieldValue("amount.currency", {
+        code: defaultCurrency.currency.code,
+        symbol: defaultCurrency.currency.symbol,
+      });
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const filtered = categories.filter(
@@ -228,10 +239,10 @@ function NewFinancialTransaction() {
               <h2>Amount</h2>
               <input
                 type="number"
-                name="amount"
+                name="amount.amount"
                 min={0.01}
                 step="0.01"
-                value={formik.values.amount}
+                value={formik.values.amount.amount}
                 onChange={formik.handleChange}
                 className="w-full md:w-45  p-2 bg-bg-surface border-thin border-border-subtle shadow-card rounded-sm outline-0"
               />
@@ -243,18 +254,25 @@ function NewFinancialTransaction() {
                 className={`w-full md:w-45 p-2 bg-bg-surface  border-thin border-border-subtle shadow-card cursor-pointer ${currencyOptions ? "rounded-t-sm" : "rounded-sm"}`}
                 onClick={() => setCurrencyOptions((prev) => !prev)}
               >
-                {formik.values.currency}
+                {formik.values.amount.currency.code}
               </button>
               {currencyOptions && (
                 <div className="absolute w-full md:w-45 z-50">
                   {currencies
-                    .filter((c) => c !== formik.values.currency)
+                    .filter((c) => c !== formik.values.amount.currency.code)
                     .map((c, index, arr) => (
                       <button
                         type="button"
                         key={c}
                         onClick={() => {
-                          formik.setFieldValue("currency", c);
+                          const selectedUserCurrency =
+                            user?.userCurrencies.find(
+                              (uc) => uc.currency.code === c,
+                            );
+                          formik.setFieldValue("amount.currency", {
+                            code: c,
+                            symbol: selectedUserCurrency?.currency.symbol ?? "",
+                          });
                           setCurrencyOptions(false);
                         }}
                         className={`w-full p-2 bg-bg-surface hover:bg-btn-standard border-x-thin border-b-thin border-border-subtle cursor-pointer ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}

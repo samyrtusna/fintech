@@ -117,10 +117,10 @@ function TransactionCard<T extends GetTransactionResponse>(
               className={`flex ${updateTransaction === transaction.id ? "w-full px-2 py-1 border-thin border-border-subtle rounded-sm bg-bg-contrast" : "float-end"}`}
             >
               <h3 className="font-bold text-green-500 ">
-                {transaction.currencySymbol}
+                {transaction.amount.currency.symbol}
               </h3>{" "}
               <h3 className="font-bold ml-1">
-                {FormatAmount(transaction.amount)}
+                {FormatAmount(transaction.amount.amount)}
               </h3>
             </div>
           </div>
@@ -162,14 +162,14 @@ function TransactionCard<T extends GetTransactionResponse>(
                   <>
                     {" "}
                     <h3 className="font-bold text-green-500">
-                      {transaction.baseCurrencySymbol}
+                      {transaction.baseAmount.currency.symbol}
                     </h3>{" "}
                     <h3 className="ml-1">
-                      {FormatAmount(transaction.baseAmount)}
+                      {FormatAmount(transaction.baseAmount.amount)}
                     </h3>
                   </>
                 ) : updateTransaction === transaction.id ? (
-                  FormatAmount(transaction.amount)
+                  FormatAmount(transaction.amount.amount)
                 ) : (
                   ""
                 )}
