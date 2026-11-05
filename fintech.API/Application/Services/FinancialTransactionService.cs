@@ -54,7 +54,7 @@ namespace fintech.API.Application.Services
             newTransaction.BaseAmount = new Money(amount, currency);
             newTransaction.IsEssential = dto.IsEssential ?? categorySetting?.IsEssential ?? false;
 
-            var globalAggregates = await financialAggregatesService.GetGlobalAggregatesAsync(userId, DateTime.UtcNow);
+            var globalAggregates = await financialAggregatesService.GetGlobalAggregatesAsync(userId, DateTime.UtcNow, CancellationToken.None);
 
 
             if(newTransaction.Type != FinancialType.Income && newTransaction.Type != FinancialType.ContractedLoan && amount > globalAggregates.FirstOrDefault(ag => ag.Name == AggregateName.GlobalNetCashFlow.ToString())!.Amount.Amount)

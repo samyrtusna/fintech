@@ -13,21 +13,21 @@ namespace fintech.API.API.Controllers
     {
         [HttpPost]
         public async Task<ActionResult<ApiResponsesDto<ConfirmationResponseDto>>> CreateMonthlyAggregates([FromBody]DateTime date) {
-            var results = await financialAggregatesService.CreateMonthlyAggregatesAsync(UserId, date);
+            var results = await financialAggregatesService.CreateMonthlyAggregatesAsync(UserId, date, CancellationToken.None);
             return Ok(results);
         }
 
         [HttpGet("month")]
         public async Task<ActionResult<ApiResponsesDto<FinancialAggregatesResponseDto>>> GetMonthlyAggregates([FromQuery]DateTime date)
         {
-            var results = await financialAggregatesService.GetMonthlyAggregatesAsync(UserId, date);
+            var results = await financialAggregatesService.GetMonthlyAggregatesAsync(UserId, date, CancellationToken.None);
             return Ok(results);
         }
 
         [HttpGet("global")]
         public async Task<ActionResult<ApiResponsesDto<List<FinancialAggregateDto>>>> GetGlobalAggregates([FromQuery] DateTime date)
         {
-            var results = await financialAggregatesService.GetGlobalAggregatesAsync(UserId, date);
+            var results = await financialAggregatesService.GetGlobalAggregatesAsync(UserId, date, CancellationToken.None);
             return Ok(results);
         }
     }
