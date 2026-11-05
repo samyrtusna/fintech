@@ -56,7 +56,7 @@ function Footer() {
           </div>
           <div className="flex items-center pb-1">
             <MdOutlineEmail />
-            <h3 className="pl-2 text-sm">samirTysna@gmail.com</h3>
+            <h3 className="pl-2 text-sm">samirtysna@gmail.com</h3>
           </div>
           <div className="flex items-center">
             <FaPhoneAlt className="size-3" />
