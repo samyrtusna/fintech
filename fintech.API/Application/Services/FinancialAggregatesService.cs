@@ -15,9 +15,9 @@ namespace fintech.API.Application.Services
         IFinancialCalculations financialCalculations,
         IFinancialTransactionRepository financialTransactionRepository,
         ICurrencyConversions currencyConversions
-        ) : IFinancialAggregatesService
+        ) : IFinancialAggregatesService 
     {
-        public async Task<ConfirmationResponseDto> CreateMonthlyAggregatesAsync(Guid userId, DateTime date)
+        public async Task<ConfirmationResponseDto> CreateMonthlyAggregatesAsync(Guid userId, DateTime date, CancellationToken cancellationToken)
         {
             if (userId == Guid.Empty)
             {
@@ -27,14 +27,14 @@ namespace fintech.API.Application.Services
             {
                 throw new ArgumentException("A valid month must be provided.", nameof(date));
             }
-            var thisMonthAggregates = await financialAggregatesRepository.GetFinancialAggregatesByMonthAsync(userId, date);
+            var thisMonthAggregates = await financialAggregatesRepository.GetFinancialAggregatesByMonthAsync(userId, date, cancellationToken);
             if(thisMonthAggregates.Count > 0)
             {
                 throw new BadRequestException("The current month Aggregates already created.");
             }
 
             var monthlyAggregates = await CalculateMonthlyAggregatesAsync(userId, date); 
-            var globalAggregates = await GetGlobalAggregatesAsync(userId, date);
+            var globalAggregates = await GetGlobalAggregatesAsync(userId, date, cancellationToken);
 
             monthlyAggregates.AddRange(globalAggregates);
 
@@ -45,9 +45,9 @@ namespace fintech.API.Application.Services
                 {
                     var aggregateEntity = aggregate.MapToEntity(userId);
 
-                    await financialAggregatesRepository.AddAsync(aggregateEntity);
+                    await financialAggregatesRepository.AddAsync(aggregateEntity, cancellationToken);
                 }
-                await financialAggregatesRepository.SaveChangesAsync();
+                await financialAggregatesRepository.SaveChangesAsync(cancellationToken);
             }
 
             return new ConfirmationResponseDto { 
@@ -55,7 +55,7 @@ namespace fintech.API.Application.Services
             };
         }
 
-        public async Task<FinancialAggregatesResponseDto> GetMonthlyAggregatesAsync(Guid userId, DateTime date)
+        public async Task<FinancialAggregatesResponseDto> GetMonthlyAggregatesAsync(Guid userId, DateTime date, CancellationToken cancellationToken)
         {
             if (userId == Guid.Empty)
             {
@@ -66,7 +66,7 @@ namespace fintech.API.Application.Services
                 throw new ArgumentException("A valid month must be provided.", nameof(date));
             }
             
-            var thisMonthAggregates = await financialAggregatesRepository.GetFinancialAggregatesByMonthAsync(userId, date);
+            var thisMonthAggregates = await financialAggregatesRepository.GetFinancialAggregatesByMonthAsync(userId, date, cancellationToken);
             var aggregatesVariations = await GetAggregateVariationsByMonthAsync(userId);
 
             if(thisMonthAggregates.Count > 0)
@@ -88,7 +88,7 @@ namespace fintech.API.Application.Services
             }
         }
 
-        public async Task<List<FinancialAggregateDto>> GetGlobalAggregatesAsync(Guid userId, DateTime date) 
+        public async Task<List<FinancialAggregateDto>> GetGlobalAggregatesAsync(Guid userId, DateTime date, CancellationToken cancellationToken)
         {
             if (userId == Guid.Empty)
             {
@@ -104,9 +104,9 @@ namespace fintech.API.Application.Services
             var period = new Period(startDate, endDate);
             var lastMonth = date.AddMonths(-1);
 
-            var lastMonthAggregates = await financialAggregatesRepository.GetFinancialAggregatesByMonthAsync(userId, lastMonth);
+            var lastMonthAggregates = await financialAggregatesRepository.GetGlobalAggregatesByMonthAsync(userId, lastMonth, cancellationToken);
 
-            var transactions = await financialTransactionRepository.GetByMonthAsync(userId, date);
+            var transactions = await financialTransactionRepository.GetByMonthAsync(userId, date, cancellationToken);
 
             var convertedTransactions = await currencyConversions.ConvertTransactionBaseCurrencyAsync(userId, transactions) ?? throw new NotFoundException("Failed to convert current month's transactions to base currency");
 
