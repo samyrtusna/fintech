@@ -18,7 +18,7 @@ function Dropdown<
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="relative w-full ">
+    <div className="relative w-full">
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}

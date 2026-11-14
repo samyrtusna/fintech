@@ -7,6 +7,8 @@ import Register from "./pages/Register";
 import ProtectedRoute from "./providers/protectedRoute";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
+import Budgets from "./pages/Budgets";
+import NewBudget from "./pages/NewBudget";
 
 const Routes = () => {
   return (
@@ -24,7 +26,7 @@ const Routes = () => {
           }
         />
         <Route
-          path="/financialTransactions/newFinancialTransaction"
+          path="/financialTransactions/new"
           element={
             <ProtectedRoute>
               <NewFinancialTransaction />
@@ -40,6 +42,22 @@ const Routes = () => {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/budget"
+          element={
+            <ProtectedRoute>
+              <Budgets />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/budget/new"
+          element={
+            <ProtectedRoute>
+              <NewBudget />
             </ProtectedRoute>
           }
         />

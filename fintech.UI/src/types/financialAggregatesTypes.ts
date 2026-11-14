@@ -19,17 +19,17 @@ export interface FinancialAggregatesType {
   variation?: number;
 }
 
-interface Period {
-  startDate: Date;
-  endDate: Date;
+export interface Period {
+  startDate: string;
+  endDate: string;
 }
 
-interface Money {
+export interface Money {
   amount: number;
   currency: Currency;
 }
 
-interface Currency {
+export interface Currency {
   code: string;
   symbol: string;
 }

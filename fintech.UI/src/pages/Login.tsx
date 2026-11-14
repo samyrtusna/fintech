@@ -75,7 +75,7 @@ function Login() {
           <IconComponent icon={IoChevronBack} />
         </Link>
         <div className="flex flex-col items-center mt-10">
-          <div className="h-25 py-5 my-5">
+          <div className="h-24 my-5 flex items-center justify-center">
             <Logo className="text-6xl font-bold ml-2" />
           </div>
           <div className="flex flex-col items-center w-full py-5">

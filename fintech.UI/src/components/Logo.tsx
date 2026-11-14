@@ -1,11 +1,12 @@
 function Logo({ className }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className="flex justify-center items-center h-full ">
-      <div className=" h-11/12 aspect-square p-1 rounded-full bg-bg-secondary flex items-center justify-center">
+    <div className="flex justify-center items-center h-full">
+      {/* Fixed explicit sizing (e.g., h-16 w-16) or responsive sizing for the icon container */}
+      <div className="h-14 w-14 p-1 rounded-full bg-bg-secondary flex items-center justify-center overflow-hidden">
         <img
-          src="/logo.png"
+          src="/Logo.png"
           alt="App Logo"
-          className=" object-cover"
+          className="w-full h-full object-cover"
         />
       </div>
       <h1 className={className}>Finance_it</h1>
@@ -14,4 +15,3 @@ function Logo({ className }: React.HTMLAttributes<HTMLDivElement>) {
 }
 
 export default Logo;
-// todo change the color of the h1
