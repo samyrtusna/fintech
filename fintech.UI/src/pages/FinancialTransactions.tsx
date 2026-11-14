@@ -26,6 +26,7 @@ import { AiOutlineTransaction } from "react-icons/ai";
 import PieCharts from "../components/PieChart";
 import PeriodicAggregateCard from "../components/PeriodicAggregateCard";
 import ScrollReveal from "../components/ScrollReveal";
+import SwitchButton from "../components/SwitchButton";
 
 function FinancialTransactions() {
   const dispatch = useAppDispatch();
@@ -405,7 +406,7 @@ function FinancialTransactions() {
               className={` h-10 aspect-square group bg-blue-500 hover:bg-blue-600 rounded-sm ${updateTransaction === "" ? "absolute -top-8 right-6 md:right-[27%] lg:right-[30%]" : "hidden"}`}
             >
               <Link
-                to="newFinancialTransaction"
+                to="new"
                 className="flex w-full h-full justify-center items-center rounded-sm shadow-card"
               >
                 <IoMdAdd className="size-10 text-bg-contrast" />
@@ -417,16 +418,10 @@ function FinancialTransactions() {
             <div
               className={`flex ${updateTransaction === "" ? "absolute -top-8 left-6 md:left-[27%] lg:left-[30%]" : "hidden"}`}
             >
-              <div className="flex justify-between h-8 w-16 rounded-full bg-bg-contrast p-1 border-thin border-border-subtle">
-                <div
-                  onClick={() => setShowDate((prev) => !prev)}
-                  className={`h-full aspect-square rounded-full bg-btn-disabled cursor-pointer ${showDate ? "opacity-0" : "opacity-100"}`}
-                ></div>
-                <div
-                  onClick={() => setShowDate((prev) => !prev)}
-                  className={`h-full aspect-square rounded-full bg-bg-surface cursor-pointer ${showDate ? "opacity-100" : "opacity-0"}`}
-                ></div>
-              </div>
+              <SwitchButton
+                handleClick={() => setShowDate((prev) => !prev)}
+                showDate={showDate}
+              />
             </div>
           </div>
         ) : (

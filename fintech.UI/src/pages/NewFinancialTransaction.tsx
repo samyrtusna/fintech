@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   FinancialTypes,
   type NewTransactionRequest,
@@ -22,9 +22,9 @@ import { setGlobalAggregates } from "../state/slices/financialAggregatesSlice";
 import { IoChevronBack } from "react-icons/io5";
 import { FaRegMoneyBillAlt } from "react-icons/fa";
 import { financialTransactionSchema } from "../formik/financialTransactionSchema";
+import CurrencyDropdown from "../components/CurrencyDropdown";
 
 function NewFinancialTransaction() {
-  //
   const types: FinancialTypes[] = [
     FinancialTypes.Income,
     FinancialTypes.Expense,
@@ -40,7 +40,6 @@ function NewFinancialTransaction() {
 
   const user = useAppSelector((state) => state.authUser.userInformations);
 
-  const [currencyOptions, setCurrencyOptions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const amount = 0.01;
   const currency = {
@@ -107,37 +106,31 @@ function NewFinancialTransaction() {
     onSubmit: handleSubmit,
   });
 
-  const fetchCategories = async () => {
-    return await categoryService.getAllAsync();
-  };
+  const fetchCategories = useCallback(async () => {
+    try {
+      const categories = await categoryService.getAllAsync();
+      dispatch(setCategories(categories));
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to fetch categories",
+      );
+    }
+  }, [dispatch]);
 
   const categories = useAppSelector((state) => state.categories.items);
   const [selectedType, setSelectedType] = useState<FinancialTypes>(types[0]);
   const [filteredCategories, setFilteredCategories] = useState<
     GetCategoryResponse[]
   >([]);
-  const [currencies, setCurrencies] = useState<string[]>([]);
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
 
   useEffect(() => {
-    const loadCategories = async () => {
-      if (categories.length == 0) {
-        try {
-          const categories = await fetchCategories();
-          dispatch(setCategories(categories));
-        } catch (error) {
-          console.error("Failed to fetch categories:", error);
-        }
-      }
-    };
-    loadCategories();
-  }, [dispatch]);
+    fetchCategories();
+  }, [fetchCategories]);
 
   useEffect(() => {
-    const currencies = user?.userCurrencies ?? [];
-    setCurrencies(currencies.map((c) => c.currency.code));
-
-    const defaultCurrency = currencies.find((c) => c.isDefault);
+    const userCurrencies = user?.userCurrencies ?? [];
+    const defaultCurrency = userCurrencies.find((c) => c.isDefault);
     if (defaultCurrency) {
       formik.setFieldValue("amount.currency", {
         code: defaultCurrency.currency.code,
@@ -157,10 +150,21 @@ function NewFinancialTransaction() {
     }
   }, [selectedType]);
 
+  const handleCurrencyChange = (code: string) => {
+    const selectedUserCurrency = user?.userCurrencies.find(
+      (uc) => uc.currency.code === code,
+    );
+    formik.setFieldValue("amount.currency", {
+      code: code,
+      symbol: selectedUserCurrency?.currency.symbol ?? "",
+    });
+  };
+
   const toggleShowCalendar = () => setShowCalendar((prev) => !prev);
   if (isLoading) {
     return <Spinner />;
   }
+
   return (
     <div className="w-dvw flex justify-center md:p-5">
       <div className="w-full lg:w-10/12 xl:w-7/12 p-5 bg-bg-muted border-thin border-border-subtle rounded-sm shadow-card ">
@@ -244,44 +248,15 @@ function NewFinancialTransaction() {
                 step="0.01"
                 value={formik.values.amount.amount}
                 onChange={formik.handleChange}
-                className="w-full md:w-45  p-2 bg-bg-surface border-thin border-border-subtle shadow-card rounded-sm outline-0"
+                className="w-full md:w-45  p-2 bg-bg-surface border-thin border-border-subtle shadow-card rounded-sm outline-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
               />
             </div>
             <div className="relative mb-6 md:mb-0">
               <h2>Currency</h2>
-              <button
-                type="button"
-                className={`w-full md:w-45 p-2 bg-bg-surface  border-thin border-border-subtle shadow-card cursor-pointer ${currencyOptions ? "rounded-t-sm" : "rounded-sm"}`}
-                onClick={() => setCurrencyOptions((prev) => !prev)}
-              >
-                {formik.values.amount.currency.code}
-              </button>
-              {currencyOptions && (
-                <div className="absolute w-full md:w-45 z-50">
-                  {currencies
-                    .filter((c) => c !== formik.values.amount.currency.code)
-                    .map((c, index, arr) => (
-                      <button
-                        type="button"
-                        key={c}
-                        onClick={() => {
-                          const selectedUserCurrency =
-                            user?.userCurrencies.find(
-                              (uc) => uc.currency.code === c,
-                            );
-                          formik.setFieldValue("amount.currency", {
-                            code: c,
-                            symbol: selectedUserCurrency?.currency.symbol ?? "",
-                          });
-                          setCurrencyOptions(false);
-                        }}
-                        className={`w-full p-2 bg-bg-surface hover:bg-btn-standard border-x-thin border-b-thin border-border-subtle cursor-pointer ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                </div>
-              )}
+              <CurrencyDropdown
+                currencyFieldValue={formik.values.amount.currency.code}
+                handleOptionButtonClick={handleCurrencyChange}
+              />
             </div>
             <div className="relative">
               <h2>Transaction date</h2>

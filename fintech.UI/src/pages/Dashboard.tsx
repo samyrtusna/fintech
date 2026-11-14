@@ -50,7 +50,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchMonthAggregates(selectedMonth.value);
-  }, [fetchMonthAggregates, selectedMonth.value]);
+  }, [fetchMonthAggregates, selectedMonth]);
 
   // Key metrics
   const totalIncome =
@@ -80,19 +80,19 @@ const Dashboard = () => {
   //     (ag) => ag.name.toLowerCase() === "TotalInvestment".toLowerCase(),
   //   )?.variation ?? 0;
 
-  const netCashFlow =
-    monthAggregates?.aggregates.find(
-      (ag) => ag.name.toLowerCase() === "NetCashFlow".toLowerCase(),
-    )?.amount.amount ?? 0;
+  // const netCashFlow =
+  //   monthAggregates?.aggregates.find(
+  //     (ag) => ag.name.toLowerCase() === "NetCashFlow".toLowerCase(),
+  //   )?.amount.amount ?? 0;
   // const netCashFlowVariation =
   //   monthAggregates?.aggregates.find(
   //     (ag) => ag.name.toLowerCase() === "NetCashFlow".toLowerCase(),
   //   )?.variation ?? 0;
 
-  const netBalance =
-    monthAggregates?.aggregates.find(
-      (ag) => ag.name.toLowerCase() === "NetBalance".toLowerCase(),
-    )?.amount.amount ?? 0;
+  // const netBalance =
+  //   monthAggregates?.aggregates.find(
+  //     (ag) => ag.name.toLowerCase() === "NetBalance".toLowerCase(),
+  //   )?.amount.amount ?? 0;
   // const netBalanceVariation =
   //   monthAggregates?.aggregates.find(
   //     (ag) => ag.name.toLowerCase() === "NetBalance".toLowerCase(),
@@ -196,40 +196,18 @@ const Dashboard = () => {
 
   return (
     <div className="w-full mx-auto p-4 md:p-6 space-y-6 bg-bg-primary text-text-primary">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-form-bg p-6 border border-border-subtle rounded-md shadow-card">
-        <div>
-          <h1 className="text-2xl font-bold">Monthly Financial Overview</h1>
-          <div className="flex">
-            <p className="text-sm text-text-surface mt-2 mr-1">
-              Performance summary for{" "}
-            </p>
-            <div className="w-[40%] pt-1">
-              <Dropdown<MonthItem>
-                selectedValue={selectedMonth}
-                options={months}
-                onSelect={(selected) => handleMonthClick(selected)}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-4">
-          <div className="px-4 py-2 bg-bg-muted border border-border-subtle rounded-sm">
-            <span className="text-sm text-text-secondary block">
-              Net Balance
-            </span>
-            <span className="text-lg font-bold text-green-500">
-              {symbol}
-              {netBalance?.toFixed(2)}
-            </span>
-          </div>
-          <div className="px-4 py-2 bg-bg-muted border border-border-subtle rounded-sm">
-            <span className="text-sm text-text-secondary block">
-              Net Cash Flow
-            </span>
-            <span className="text-lg font-bold text-blue-500">
-              {symbol}
-              {netCashFlow?.toFixed(2)}
-            </span>
+      <div className="flex flex-col md:flex-row  md:justify-between items-center gap-4 bg-form-bg p-6 border border-border-subtle rounded-md shadow-card">
+        <h1 className="text-xl md:text-2xl font-bold">Financial Overview</h1>
+        <div className="md:w-1/2 md:flex md:justify-end">
+          <p className="text-sm text-text-surface mt-2 md:mr-1">
+            Performance summary for{" "}
+          </p>
+          <div className="md:w-[30%] pt-1">
+            <Dropdown<MonthItem>
+              selectedValue={selectedMonth}
+              options={months}
+              onSelect={(selected) => handleMonthClick(selected)}
+            />
           </div>
         </div>
       </div>

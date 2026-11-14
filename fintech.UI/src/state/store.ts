@@ -3,6 +3,7 @@ import authUserReducer from "./slices/authSlice";
 import transactionsReducer from "./slices/financialTransactionSlice";
 import categoriesReducer from "./slices/categorySlice";
 import financialAggregatesReducer from "./slices/financialAggregatesSlice";
+import budgetReducer from "./slices/budgetSlice";
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     transactions: transactionsReducer,
     categories: categoriesReducer,
     financialAggregates: financialAggregatesReducer,
+    budgets: budgetReducer,
   },
   devTools: import.meta.env.MODE !== "production",
 });
