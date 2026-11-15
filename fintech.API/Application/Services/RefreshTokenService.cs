@@ -47,11 +47,11 @@ namespace fintech.API.Application.Services
                 await refreshTokenRepository.SaveChangesAsync();
                 throw new UnauthorizedException("Refresh token has expired.");
             }
-            if (existingToken.IsRevoked)
-            {
-                await RevokeAllTokensAsync(existingToken.UserId);
-                throw new UnauthorizedException("Token reuse detected.");
-            }
+            //if (existingToken.IsRevoked)
+            //{
+            //    await RevokeAllTokensAsync(existingToken.UserId);
+            //    throw new UnauthorizedException("Token reuse detected.");
+            //}
 
             var newRefreshToken = jwtService.GenerateRefreshToken();
             var newHashedToken = tokenHasher.HashToken(newRefreshToken);

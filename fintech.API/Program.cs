@@ -2,6 +2,7 @@ using fintech.API.API.Middlewares;
 using fintech.API.Application.Interfaces.Services;
 using fintech.API.Application.Services;
 using fintech.API.Application.Validators.AuthDtosValidators;
+using fintech.API.Infrastructure.BackgroundSrvices;
 using fintech.API.Infrastructure.DataSeeders;
 using fintech.API.Infrastructure.EFcore.ContextDb;
 using fintech.API.Infrastructure.Services;
@@ -68,6 +69,8 @@ builder.Services.Scan(scan => scan
     .AddClasses()
     .AsMatchingInterface()
     .WithScopedLifetime());
+
+builder.Services.AddHostedService<MonthlyBackgroundService>();
 
 
 builder.Services.AddCors(options =>

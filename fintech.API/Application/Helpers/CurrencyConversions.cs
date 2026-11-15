@@ -51,5 +51,53 @@ namespace fintech.API.Application.Helpers
             }
             return financialAggregates;
         }
+
+        public async Task<List<Budget>> ConvertBudgetToBaseCurrencyAsync(Guid userId, List<Budget> budgets)
+        {
+            ArgumentNullException.ThrowIfNull(budgets);
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentException("User ID cannot be empty.", nameof(userId));
+            }
+            var baseCurrency = await userCurrenciesRepository.GetDefaultCurrencyAsync(userId) ?? throw new NotFoundException("User has no base currency yet!");
+
+            foreach (Budget budget in budgets)
+            {
+                if (budget?.Amount == null) continue;
+
+                decimal amount = budget.Amount.Amount;
+                if (budget.Amount.Currency?.Code != null &&
+                    !string.Equals(budget.Amount.Currency.Code, baseCurrency.Currency.Code, StringComparison.OrdinalIgnoreCase))
+                {
+                    var exchangeRate = await exchangeRateApiService.GetEchangeRateAsync(budget.Amount.Currency.Code, baseCurrency.Currency.Code);
+                    amount = budget.Amount.Amount * exchangeRate;
+                }
+
+                var currency = new Currency(baseCurrency.Currency.Code, baseCurrency.Currency.Symbol);
+                budget.Amount = new Money(amount, currency);
+            }
+            return budgets;
+        }
+
+        public async Task<Money> ConvertToBaseCurrencyAsync(Guid userId, Money money)
+        {
+            ArgumentNullException.ThrowIfNull(money);
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentException("User ID cannot be empty.", nameof(userId));
+            }
+            var baseCurrency = await userCurrenciesRepository.GetDefaultCurrencyAsync(userId) ?? throw new NotFoundException("User has no base currency yet!");
+
+            decimal amount = money.Amount;
+            if (money.Currency?.Code != null &&
+                !string.Equals(money.Currency.Code, baseCurrency.Currency.Code, StringComparison.OrdinalIgnoreCase))
+            {
+                var exchangeRate = await exchangeRateApiService.GetEchangeRateAsync(money.Currency.Code, baseCurrency.Currency.Code);
+                amount = money.Amount * exchangeRate;
+            }
+
+            var currency = new Currency(baseCurrency.Currency.Code, baseCurrency.Currency.Symbol);
+            return new Money(amount, currency);
+        }
     }
 }

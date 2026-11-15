@@ -3,6 +3,7 @@ using fintech.API.Application.DTOs.FinancialTransactionDtos;
 using fintech.API.Application.Interfaces.Repositories;
 using fintech.API.Domain.Entities;
 using fintech.API.Domain.Enums;
+using fintech.API.Domain.ValueObjects;
 using fintech.API.Infrastructure.EFcore.ContextDb;
 using Microsoft.EntityFrameworkCore;
 
@@ -64,26 +65,21 @@ namespace fintech.API.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<AggregateByPeriodDto>> GetByTypeByMonthAsync (Guid userId, FinancialType type, CancellationToken cancellationToken = default)
+        public async Task<List<FinancialTransaction>> GetByTypeByMonthAsync (Guid userId, FinancialType type, DateTime date,  CancellationToken cancellationToken = default)
         {
             return await context.FinancialTransactions
                 .Where(t => t.UserId == userId &&
                 t.Type == type &&
+                t.TransactionDate.Year == date.Year &&
+                t.TransactionDate.Month == date.Month &&
                 !t.IsDeleted)
                 .AsNoTracking()
-                .GroupBy(t => new { t.TransactionDate.Year, t.TransactionDate.Month })
-                .Select(g => new AggregateByPeriodDto
-                {
-                    Period = new DateTime(g.Key.Year, g.Key.Month, 1),
-                    Type = type,
-                    Amount = g.Sum(x => x.BaseAmount.Amount)
-                })
                 .ToListAsync(cancellationToken);
         }
 
         public async Task<List<AggregateByPeriodDto>>GetByCategoryByMonthAsync (Guid userId, string categoryName, CancellationToken cancellationToken = default)
         {
-            return await context.FinancialTransactions
+            return await context.FinancialTransactions 
                 .Where(t => t.UserId == userId &&
                 t.Category.Name == categoryName &&
                 !t.IsDeleted)
@@ -96,6 +92,19 @@ namespace fintech.API.Infrastructure.Repositories
                     CategoryName = g.First().Category.Name,
                     Amount = g.Sum(x => x.BaseAmount.Amount)
                 })
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<FinancialTransaction>> GetTotalCategoryByMonthAsync(Guid userId, string categoryName, DateTime date, CancellationToken cancellationToken = default)
+        {
+            return await context.FinancialTransactions
+                .Where(t =>
+                    t.UserId == userId &&
+                    t.Category.Name == categoryName &&
+                    t.TransactionDate.Year == date.Year &&
+                    t.TransactionDate.Month == date.Month &&
+                    !t.IsDeleted)
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
     }
