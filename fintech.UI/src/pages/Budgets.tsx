@@ -35,6 +35,7 @@ function Budgets() {
   const [selectedMonth, setSelectedMonth] = useState<MonthItem>(months[0]);
   const [updateBuget, setUpdateBudget] = useState("");
   const [updateGlobalBudget, setUpdateGlobalBudget] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState<string | null>(null);
 
   const initialValues: UpdateBudgetType = {
     amount: 0.01,
@@ -165,7 +166,7 @@ function Budgets() {
                 ) : (
                   <>
                     <button
-                      onClick={() => handleDelete(globalBudget.id)}
+                      onClick={() => setBudgetToDelete(globalBudget.id)}
                       className="h-8 aspect-square flex justify-center items-center rounded-full p-1 mr-2 hover:bg-bg-secondary text-xl text-red-500 cursor-pointer"
                     >
                       <RiDeleteBin6Line />
@@ -272,7 +273,7 @@ function Budgets() {
                 ) : (
                   <>
                     <button
-                      onClick={() => handleDelete(b.id)}
+                      onClick={() => setBudgetToDelete(b.id)}
                       className="h-8 aspect-square flex justify-center items-center rounded-full p-1 mr-2 hover:bg-bg-secondary text-xl text-red-500 cursor-pointer"
                     >
                       <RiDeleteBin6Line />
@@ -375,6 +376,41 @@ function Budgets() {
           />
         </div>
       </div>
+      {budgetToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-lg border border-border-subtle bg-bg-muted p-6 shadow-xl">
+            <h2 className="text-lg font-bold mb-3">Delete budget?</h2>
+
+            <p className="text-sm text-text-secondary mb-6">
+              Are you sure you want to delete the{" "}
+              <span className="font-bold">
+                {budgets?.find((b) => b.id === budgetToDelete)?.categoryName ??
+                  "Global"}
+              </span>{" "}
+              budget? This action cannot be undone.
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setBudgetToDelete(null)}
+                className="px-4 py-2 rounded-md bg-bg-secondary hover:opacity-80 cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={async () => {
+                  await handleDelete(budgetToDelete);
+                  setBudgetToDelete(null);
+                }}
+                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 cursor-pointer"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
