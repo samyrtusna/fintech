@@ -35,6 +35,7 @@ function Budgets() {
   const [selectedMonth, setSelectedMonth] = useState<MonthItem>(months[0]);
   const [updateBuget, setUpdateBudget] = useState("");
   const [updateGlobalBudget, setUpdateGlobalBudget] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState<string | null>(null);
 
   const initialValues: UpdateBudgetType = {
     amount: 0.01,
@@ -111,7 +112,7 @@ function Budgets() {
   useEffect(() => {
     const monthDate = selectedMonth.value.toISOString();
     fetchMonthBudgets({ month: monthDate });
-  }, [fetchMonthBudgets, selectedMonth]);
+  }, [selectedMonth]);
 
   const handleMonthClick = (month: MonthItem) => {
     setSelectedMonth(month);
@@ -151,109 +152,110 @@ function Budgets() {
       </div>
 
       <ScrollReveal>
-        {" "}
-        <div className="w-full flex flex-col gap-y-5 p-4 border-thin border-border-subtle rounded-md bg-bg-contrast">
-          {categoryBudgets && categoryBudgets.length == 0 && (
-            <div className="w-full flex justify-end mb-5">
-              {updateGlobalBudget ? (
-                <button
-                  onClick={() => setUpdateGlobalBudget(false)}
-                  className={`h-8 aspect-square justify-center items-center rounded-full p-1 hover:bg-bg-secondary cursor-pointer`}
-                >
-                  <IoMdClose className="size-6" />
-                </button>
-              ) : (
+        {globalBudget && (
+          <div className="w-full flex flex-col gap-y-5 p-4 border-thin border-border-subtle rounded-md bg-bg-contrast">
+            {categoryBudgets && categoryBudgets.length == 0 && (
+              <div className="w-full flex justify-end mb-5">
+                {updateGlobalBudget ? (
+                  <button
+                    onClick={() => setUpdateGlobalBudget(false)}
+                    className={`h-8 aspect-square justify-center items-center rounded-full p-1 hover:bg-bg-secondary cursor-pointer`}
+                  >
+                    <IoMdClose className="size-6" />
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setBudgetToDelete(globalBudget.id)}
+                      className="h-8 aspect-square flex justify-center items-center rounded-full p-1 mr-2 hover:bg-bg-secondary text-xl text-red-500 cursor-pointer"
+                    >
+                      <RiDeleteBin6Line />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUpdateGlobalBudget(true);
+                        formik.setFieldValue(
+                          "amount",
+                          globalBudget.amount.amount,
+                        );
+                        formik.setFieldValue("currency", {
+                          code: globalBudget.amount.currency.code,
+                          symbol: globalBudget.amount.currency.symbol,
+                        });
+                      }}
+                      className={
+                        "h-8 aspect-square flex justify-center items-center rounded-full p-1 hover:bg-bg-secondary cursor-pointer"
+                      }
+                    >
+                      <CiEdit className="size-6" />
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+            <div className="flex justify-between">
+              <h3 className="font-bold">Total Budgets</h3>
+              <h3>{globalBudget.budgetConsumptionPercentage.toFixed()}%</h3>
+            </div>
+            <div className="flex justify-between">
+              {!updateGlobalBudget ? (
                 <>
-                  <button
-                    onClick={() => handleDelete(globalBudget!.id)}
-                    className="h-8 aspect-square flex justify-center items-center rounded-full p-1 mr-2 hover:bg-bg-secondary text-xl text-red-500 cursor-pointer"
-                  >
-                    <RiDeleteBin6Line />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setUpdateGlobalBudget(true);
-                      formik.setFieldValue(
-                        "amount",
-                        globalBudget!.amount.amount,
-                      );
-                      formik.setFieldValue("currency", {
-                        code: globalBudget!.amount.currency.code,
-                        symbol: globalBudget!.amount.currency.symbol,
-                      });
-                    }}
-                    className={
-                      "h-8 aspect-square flex justify-center items-center rounded-full p-1 hover:bg-bg-secondary cursor-pointer"
-                    }
-                  >
-                    <CiEdit className="size-6" />
-                  </button>
+                  <h3>
+                    <span className="font-bold text-green-500 ">
+                      {globalBudget.amount.currency.symbol}
+                    </span>
+                    {globalBudget.amount.amount.toFixed(2)}
+                  </h3>
+                  <h3>
+                    <span className="font-bold text-green-500 ">
+                      {globalBudget.amount.currency.symbol}
+                    </span>
+                    {globalBudget.budgetConsumption}
+                  </h3>
                 </>
+              ) : (
+                <form
+                  onSubmit={formik.handleSubmit}
+                  className="w-full"
+                >
+                  <div className="w-full flex justify-between mb-5 items-center">
+                    <div className="w-28">
+                      <input
+                        type="number"
+                        name="amount"
+                        min={0.01}
+                        step="0.01"
+                        value={formik.values.amount}
+                        onChange={formik.handleChange}
+                        placeholder={globalBudget.amount.amount.toString()}
+                        className="w-full p-2 rounded-sm border border-width-thin border-input-border bg-bg-secondary [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
+
+                    <div className="w-28">
+                      <CurrencyDropdown
+                        currencyFieldValue={formik.values.currency.code}
+                        handleOptionButtonClick={handleCurrencyChange}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    label={formik.isSubmitting ? "Updating..." : "Edit"}
+                    background="bg-btn-standard"
+                    hoverBg="hover:bg-btn-standard-hover"
+                    textColor="text-white"
+                    disabled={
+                      !formik.dirty || !formik.isValid || formik.isSubmitting
+                    }
+                  />
+                </form>
               )}
             </div>
-          )}
-          <div className="flex justify-between">
-            <h3 className="font-bold">Total Budgets</h3>
-            <h3>{globalBudget?.budgetConsumptionPercentage.toFixed()}%</h3>
           </div>
-          <div className="flex justify-between">
-            {!updateGlobalBudget ? (
-              <>
-                <h3>
-                  <span className="font-bold text-green-500 ">
-                    {globalBudget!.amount.currency.symbol}
-                  </span>
-                  {globalBudget!.amount.amount.toFixed(2)}
-                </h3>
-                <h3>
-                  <span className="font-bold text-green-500 ">
-                    {globalBudget!.amount.currency.symbol}
-                  </span>
-                  {globalBudget!.budgetConsumption}
-                </h3>
-              </>
-            ) : (
-              <form
-                onSubmit={formik.handleSubmit}
-                className="w-full"
-              >
-                <div className="w-full flex justify-between mb-5 items-center">
-                  <div className="w-28">
-                    <input
-                      type="number"
-                      name="amount"
-                      min={0.01}
-                      step="0.01"
-                      value={formik.values.amount}
-                      onChange={formik.handleChange}
-                      placeholder={globalBudget!.amount.amount.toString()}
-                      className="w-full p-2 rounded-sm border border-width-thin border-input-border bg-bg-secondary [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                    />
-                  </div>
-
-                  <div className="w-28">
-                    <CurrencyDropdown
-                      currencyFieldValue={formik.values.currency.code}
-                      handleOptionButtonClick={handleCurrencyChange}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  label={formik.isSubmitting ? "Updating..." : "Edit"}
-                  background="bg-btn-standard"
-                  hoverBg="hover:bg-btn-standard-hover"
-                  textColor="text-white"
-                  disabled={
-                    !formik.dirty || !formik.isValid || formik.isSubmitting
-                  }
-                />
-              </form>
-            )}
-          </div>
-        </div>
+        )}
       </ScrollReveal>
 
       <div>
@@ -271,7 +273,7 @@ function Budgets() {
                 ) : (
                   <>
                     <button
-                      onClick={() => handleDelete(b.id)}
+                      onClick={() => setBudgetToDelete(b.id)}
                       className="h-8 aspect-square flex justify-center items-center rounded-full p-1 mr-2 hover:bg-bg-secondary text-xl text-red-500 cursor-pointer"
                     >
                       <RiDeleteBin6Line />
@@ -374,6 +376,41 @@ function Budgets() {
           />
         </div>
       </div>
+      {budgetToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-lg border border-border-subtle bg-bg-muted p-6 shadow-xl">
+            <h2 className="text-lg font-bold mb-3">Delete budget?</h2>
+
+            <p className="text-sm text-text-secondary mb-6">
+              Are you sure you want to delete the{" "}
+              <span className="font-bold">
+                {budgets?.find((b) => b.id === budgetToDelete)?.categoryName ??
+                  "Global"}
+              </span>{" "}
+              budget? This action cannot be undone.
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setBudgetToDelete(null)}
+                className="px-4 py-2 rounded-md bg-bg-secondary hover:opacity-80 cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={async () => {
+                  await handleDelete(budgetToDelete);
+                  setBudgetToDelete(null);
+                }}
+                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 cursor-pointer"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
