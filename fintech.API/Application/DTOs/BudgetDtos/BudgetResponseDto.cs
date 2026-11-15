@@ -1,4 +1,4 @@
-﻿using fintech.API.Domain.Entities;
+﻿using fintech.API.Application.DTOs.CategoryDtos;
 using fintech.API.Domain.Enums;
 using fintech.API.Domain.ValueObjects;
 
@@ -11,6 +11,8 @@ namespace fintech.API.Application.DTOs.BudgetDtos
         public BudgetType Type { get; set; }
         public Money Amount { get; set; } = null!;
         public Period Period { get; set; } = null!;
-        public Category? Category { get; set; }
+        public string? CategoryName { get; set; }
+        public decimal BudgetConsumption { get; set; }
+        public decimal BudgetConsumptionPercentage { get; set; }
     }
 }

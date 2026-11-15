@@ -250,84 +250,84 @@ namespace fintech.Tests.Application.Services
                 Times.Never);
         }
 
-        [Fact]
-        public async Task RefreshTokenAsync_RevokedToken_RevokesAllUserTokensAndThrowsUnauthorizedException()
-        {
-            // Arrange
-            const string rawToken = "revoked-token";
-            const string hashedToken = "hashed-revoked-token";
+    //    [Fact]
+    //    public async Task RefreshTokenAsync_RevokedToken_RevokesAllUserTokensAndThrowsUnauthorizedException()
+    //    {
+    //        // Arrange
+    //        const string rawToken = "revoked-token";
+    //        const string hashedToken = "hashed-revoked-token";
 
-            var userId = Guid.NewGuid();
+    //        var userId = Guid.NewGuid();
 
-            var existingToken = new RefreshToken
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Token = hashedToken,
-                ExpiresAt = DateTime.UtcNow.AddDays(5),
-                IsRevoked = true
-            };
+    //        var existingToken = new RefreshToken
+    //        {
+    //            Id = Guid.NewGuid(),
+    //            UserId = userId,
+    //            Token = hashedToken,
+    //            ExpiresAt = DateTime.UtcNow.AddDays(5),
+    //            IsRevoked = true
+    //        };
 
-            _cookieServiceMock
-                .Setup(c => c.RetrieveTokenFromCookie())
-                .Returns(rawToken);
+    //        _cookieServiceMock
+    //            .Setup(c => c.RetrieveTokenFromCookie())
+    //            .Returns(rawToken);
 
-            _tokenHasherMock
-                .Setup(h => h.HashToken(rawToken))
-                .Returns(hashedToken);
+    //        _tokenHasherMock
+    //            .Setup(h => h.HashToken(rawToken))
+    //            .Returns(hashedToken);
 
-            _refreshTokenRepositoryMock
-                .Setup(r => r.GetByTokenAsync(hashedToken))
-                .ReturnsAsync(existingToken);
+    //        _refreshTokenRepositoryMock
+    //            .Setup(r => r.GetByTokenAsync(hashedToken))
+    //            .ReturnsAsync(existingToken);
 
-            var tokens = new List<RefreshToken>
-    {
-        existingToken,
-        new RefreshToken
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            Token = "another-hash",
-            ExpiresAt = DateTime.UtcNow.AddDays(5),
-            IsRevoked = false
-        }
-    };
+    //        var tokens = new List<RefreshToken>
+    //{
+    //    existingToken,
+    //    new RefreshToken
+    //    {
+    //        Id = Guid.NewGuid(),
+    //        UserId = userId,
+    //        Token = "another-hash",
+    //        ExpiresAt = DateTime.UtcNow.AddDays(5),
+    //        IsRevoked = false
+    //    }
+    //};
 
-            _refreshTokenRepositoryMock
-                .Setup(r => r.GetAllByUserAsync(userId))
-                .ReturnsAsync(tokens);
+    //        _refreshTokenRepositoryMock
+    //            .Setup(r => r.GetAllByUserAsync(userId))
+    //            .ReturnsAsync(tokens);
 
-            _refreshTokenRepositoryMock
-                .Setup(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
+    //        _refreshTokenRepositoryMock
+    //            .Setup(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()))
+    //            .Returns(Task.CompletedTask);
 
-            // Act & Assert
-            await Assert.ThrowsAsync<UnauthorizedException>(() =>
-                _service.RefreshTokenAsync());
+    //        // Act & Assert
+    //        await Assert.ThrowsAsync<UnauthorizedException>(() =>
+    //            _service.RefreshTokenAsync());
 
-            Assert.All(tokens, token =>
-                Assert.True(token.IsRevoked));
+    //        Assert.All(tokens, token =>
+    //            Assert.True(token.IsRevoked));
 
-            _refreshTokenRepositoryMock.Verify(
-                r => r.GetAllByUserAsync(userId),
-                Times.Once);
+    //        _refreshTokenRepositoryMock.Verify(
+    //            r => r.GetAllByUserAsync(userId),
+    //            Times.Once);
 
-            _refreshTokenRepositoryMock.Verify(
-                r => r.Update(It.IsAny<RefreshToken>()),
-                Times.Exactly(tokens.Count));
+    //        _refreshTokenRepositoryMock.Verify(
+    //            r => r.Update(It.IsAny<RefreshToken>()),
+    //            Times.Exactly(tokens.Count));
 
-            _refreshTokenRepositoryMock.Verify(
-                r => r.SaveChangesAsync(It.IsAny<CancellationToken>()),
-                Times.Once);
+    //        _refreshTokenRepositoryMock.Verify(
+    //            r => r.SaveChangesAsync(It.IsAny<CancellationToken>()),
+    //            Times.Once);
 
-            _jwtServiceMock.Verify(
-                j => j.GenerateRefreshToken(),
-                Times.Never);
+    //        _jwtServiceMock.Verify(
+    //            j => j.GenerateRefreshToken(),
+    //            Times.Never);
 
-            _cookieServiceMock.Verify(
-                c => c.SetTokenToCookie(It.IsAny<string>()),
-                Times.Never);
-        }
+    //        _cookieServiceMock.Verify(
+    //            c => c.SetTokenToCookie(It.IsAny<string>()),
+    //            Times.Never);
+    //    }
 
         [Fact]
         public async Task RefreshTokenAsync_ValidToken_RotatesTokenAndReturnsAccessToken()

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace fintech.API.Infrastructure.BackgroundSrvices
 {
-    public class MonthlyBackgroundService(IServiceProvider serviceProvider, ILogger logger) : BackgroundService
+    public class MonthlyBackgroundService(IServiceProvider serviceProvider, ILogger<MonthlyBackgroundService> logger) : BackgroundService
     {
         private bool _hasRunThisMonth = false;
 

@@ -47,7 +47,7 @@ namespace fintech.API.Application.Services
 
                     await financialAggregatesRepository.AddAsync(aggregateEntity, cancellationToken);
                 }
-                await financialAggregatesRepository.SaveChangesAsync(cancellationToken);
+                //await financialAggregatesRepository.SaveChangesAsync(cancellationToken);
             }
 
             return new ConfirmationResponseDto { 
