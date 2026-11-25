@@ -1,5 +1,5 @@
 import type {
-  BudgetParamType,
+  MonthParamType,
   GetBudgetResponse,
   NewBudgetRequest,
   UpdateBudgetType,
@@ -27,10 +27,10 @@ const addAsync = async (
 };
 
 const getByMonthAsync = async (
-  month: BudgetParamType,
+  month: MonthParamType,
 ): Promise<GetBudgetResponse[]> => {
   try {
-    return await http.get<GetBudgetResponse[], BudgetParamType>(
+    return await http.get<GetBudgetResponse[], MonthParamType>(
       "budget/byMonth",
       month,
     );

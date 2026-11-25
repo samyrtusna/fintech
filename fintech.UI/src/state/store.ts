@@ -4,6 +4,7 @@ import transactionsReducer from "./slices/financialTransactionSlice";
 import categoriesReducer from "./slices/categorySlice";
 import financialAggregatesReducer from "./slices/financialAggregatesSlice";
 import budgetReducer from "./slices/budgetSlice";
+import goalReducer from "./slices/goalSlice";
 
 const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
     categories: categoriesReducer,
     financialAggregates: financialAggregatesReducer,
     budgets: budgetReducer,
+    goals: goalReducer,
   },
   devTools: import.meta.env.MODE !== "production",
 });

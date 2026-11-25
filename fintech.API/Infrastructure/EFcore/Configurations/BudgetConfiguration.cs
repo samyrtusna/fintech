@@ -40,6 +40,9 @@ namespace fintech.API.Infrastructure.EFcore.Configurations
                     .HasColumnName("PeriodEndDate")
                     .IsRequired();
             });
+            builder.Property(b => b.BudgetConsumption)
+                .HasPrecision(18, 2)
+                .IsRequired();
             builder.Property(b => b.IsActive)
                 .IsRequired();
             builder.Property(b => b.CreatedAt)

@@ -9,6 +9,8 @@ import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import Budgets from "./pages/Budgets";
 import NewBudget from "./pages/NewBudget";
+import Goals from "./pages/Goals";
+import NewGoal from "./pages/NewGoal";
 
 const Routes = () => {
   return (
@@ -58,6 +60,22 @@ const Routes = () => {
           element={
             <ProtectedRoute>
               <NewBudget />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/goal"
+          element={
+            <ProtectedRoute>
+              <Goals />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/goal/new"
+          element={
+            <ProtectedRoute>
+              <NewGoal />
             </ProtectedRoute>
           }
         />
