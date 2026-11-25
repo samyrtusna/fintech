@@ -18,7 +18,7 @@ export interface BudgetSliceState {
   budgets: GetBudgetResponse[] | null;
 }
 
-export interface BudgetParamType {
+export interface MonthParamType {
   month: string;
 }
 

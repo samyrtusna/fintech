@@ -19,5 +19,6 @@ namespace fintech.API.Infrastructure.EFcore.ContextDb
         public DbSet<FinancialAggregate> FinancialAggregates { get; set; }
         public DbSet<UserCurrency> UserCurrencies { get; set; } 
         public DbSet<Budget> Budgets { get; set; }
+        public DbSet<Goals> Goals { get; set; }
     }
 }

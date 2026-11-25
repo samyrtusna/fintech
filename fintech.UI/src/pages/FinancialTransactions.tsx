@@ -108,15 +108,11 @@ function FinancialTransactions() {
       (ag) => ag.name.toLowerCase() === "TotalSavings".toLowerCase(),
     )?.amount.amount ?? 0;
 
-  const totalOthers =
-    totalIncome - (totalExpense + totalInvestment + debt + savings);
-
   const pieChartData = [
     { name: "Expenses", value: totalExpense, color: "#f3081c" },
     { name: "Investments", value: totalInvestment, color: "#10f308" },
     { name: "Debt", value: debt, color: "#f3ef08" },
     { name: "Savings", value: savings, color: "#8108f3" },
-    { name: "Other", value: totalOthers, color: "#1447e6" },
   ];
 
   const fetchGlobalAggregates = useCallback(async () => {
@@ -521,7 +517,7 @@ function FinancialTransactions() {
         >
           <div className="w-full h-fit px-10 border-thin border-border-subtle rounded-md bg-bg-contrast shadow-card ">
             <h3 className="text-xl font-bold mt-5 text-center">
-              Income Breakdown
+              Outflow Breakdown
             </h3>
             <div className="w-full flex flex-col md:flex-row justify-between items-center">
               <div className="w-2/3 md:w-1/3 flex flex-col items-center">
@@ -557,4 +553,4 @@ function FinancialTransactions() {
 
 export default FinancialTransactions;
 // TODO:add an interface to allow a user to set it's currencies
-// TODO:add a a div at the bottom to give advices
+// TODO:add a div at the bottom to give advices

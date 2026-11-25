@@ -1,4 +1,4 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import IconComponent from "./IconComponent";
 import useTheme from "../hooks/useTheme";
 import { useAppSelector } from "../state/stateHooks";
@@ -9,10 +9,17 @@ import { AiOutlineTransaction } from "react-icons/ai";
 import { GoGoal } from "react-icons/go";
 import { IoSunnyOutline } from "react-icons/io5";
 import { LuMoonStar } from "react-icons/lu";
+import { useState } from "react";
 
 function Navbar() {
   const { theme, toggleTheme } = useTheme();
+
   const accessToken = useAppSelector((state) => state.authUser.accessToken);
+
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+  const navigate = useNavigate();
+
   const iconLinks = [
     { icon: IoMdHome, to: "/" },
     { icon: FaChartPie, to: "/dashboard" },
@@ -53,14 +60,39 @@ function Navbar() {
             <IconComponent icon={FaUser} />
           </NavLink>
         ) : (
-          <NavLink
-            to="#"
-            className={({ isActive }) =>
-              `h-8 w-8 flex justify-center items-center-safe ${isActive ? "bg-bg-muted scale-110 rounded-sm" : "bg-bg-surface rounded-xl"}`
-            }
-          >
-            {initials}
-          </NavLink>
+          <div className="relative">
+            <NavLink
+              to="#"
+              onClick={() => setShowUserDropdown(!showUserDropdown)}
+              className={({ isActive }) =>
+                `h-8 w-8 flex justify-center items-center-safe ${isActive ? "bg-bg-muted scale-110 rounded-sm" : "bg-bg-surface rounded-xl"}`
+              }
+            >
+              {initials}
+            </NavLink>
+            <div
+              className={`z-20 w-40 rounded-md ${showUserDropdown ? "absolute" : "hidden"}`}
+            >
+              <button
+                onClick={() => {
+                  navigate("#");
+                  setShowUserDropdown(false);
+                }}
+                className="w-full p-2 bg-bg-surface hover:bg-dropdown-bg border-thin border-border-subtle rounded-t-sm "
+              >
+                Category
+              </button>
+              <button
+                onClick={() => {
+                  navigate("#");
+                  setShowUserDropdown(false);
+                }}
+                className="w-full p-2  bg-bg-surface hover:bg-dropdown-bg border-thin border-border-subtle rounded-b-sm "
+              >
+                Currency
+              </button>
+            </div>
+          </div>
         )}{" "}
         {iconLinks.map((link) => (
           <NavLink
@@ -113,11 +145,36 @@ function Navbar() {
         <div
           className={`${accessToken ? "absolute" : "hidden"} top-0 left-10 h-12 w-12`}
         >
-          <Link to="#">
-            <div className="w-full h-full bg-bg-muted rounded-full shadow-card font-bold flex justify-center items-center">
+          <Link
+            to="#"
+            onClick={() => setShowUserDropdown(!showUserDropdown)}
+          >
+            <div className="relative w-full h-full bg-bg-muted rounded-full shadow-card font-bold flex justify-center items-center">
               {initials}
             </div>
           </Link>
+          <div
+            className={`z-20 w-40 rounded-md ${showUserDropdown ? "absolute" : "hidden"}`}
+          >
+            <button
+              onClick={() => {
+                navigate("#");
+                setShowUserDropdown(false);
+              }}
+              className="w-full p-2 bg-bg-surface hover:bg-dropdown-bg border-thin border-border-subtle rounded-t-sm "
+            >
+              Category
+            </button>
+            <button
+              onClick={() => {
+                navigate("#");
+                setShowUserDropdown(false);
+              }}
+              className="w-full p-2  bg-bg-surface hover:bg-dropdown-bg border-thin border-border-subtle rounded-b-sm "
+            >
+              Currency
+            </button>
+          </div>
         </div>
       </div>
     </>

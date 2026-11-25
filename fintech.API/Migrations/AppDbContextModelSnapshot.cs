@@ -28,6 +28,10 @@ namespace finetech.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("BudgetConsumption")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
                     b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid");
 
@@ -169,6 +173,47 @@ namespace finetech.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("FinancialTransactions");
+                });
+
+            modelBuilder.Entity("fintech.API.Domain.Entities.Goals", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("GoalProgress")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("TargetType")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Goals");
                 });
 
             modelBuilder.Entity("fintech.API.Domain.Entities.Option", b =>
@@ -589,6 +634,88 @@ namespace finetech.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("fintech.API.Domain.Entities.Goals", b =>
+                {
+                    b.HasOne("fintech.API.Domain.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.OwnsOne("fintech.API.Domain.ValueObjects.Period", "Period", b1 =>
+                        {
+                            b1.Property<Guid>("GoalsId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<DateOnly>("EndDate")
+                                .HasColumnType("date")
+                                .HasColumnName("PeriodEndDate");
+
+                            b1.Property<DateOnly>("StartDate")
+                                .HasColumnType("date")
+                                .HasColumnName("PeriodStartDate");
+
+                            b1.HasKey("GoalsId");
+
+                            b1.ToTable("Goals");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GoalsId");
+                        });
+
+                    b.OwnsOne("fintech.API.Domain.ValueObjects.Money", "TargetAmount", b1 =>
+                        {
+                            b1.Property<Guid>("GoalsId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("Amount");
+
+                            b1.HasKey("GoalsId");
+
+                            b1.ToTable("Goals");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GoalsId");
+
+                            b1.OwnsOne("fintech.API.Domain.ValueObjects.Currency", "Currency", b2 =>
+                                {
+                                    b2.Property<Guid>("MoneyGoalsId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<string>("Code")
+                                        .IsRequired()
+                                        .HasMaxLength(3)
+                                        .HasColumnType("character varying(3)")
+                                        .HasColumnName("CurrencyCode");
+
+                                    b2.Property<string>("Symbol")
+                                        .IsRequired()
+                                        .HasMaxLength(3)
+                                        .HasColumnType("character varying(3)")
+                                        .HasColumnName("CurrencySymbol");
+
+                                    b2.HasKey("MoneyGoalsId");
+
+                                    b2.ToTable("Goals");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("MoneyGoalsId");
+                                });
+
+                            b1.Navigation("Currency");
+                        });
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Period")
+                        .IsRequired();
+
+                    b.Navigation("TargetAmount")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("fintech.API.Domain.Entities.RefreshToken", b =>
