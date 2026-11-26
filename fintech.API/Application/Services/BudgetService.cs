@@ -13,7 +13,8 @@ namespace fintech.API.Application.Services
     public class BudgetService(ICategoryRepository categoryRepository,
         IFinancialTransactionRepository financialTransactionRepository,
         ICurrencyConversions currencyConversions,
-        IBudgetRepository budgetRepository) : IBudgetService
+        IBudgetRepository budgetRepository,
+        IUserRepository userRepository) : IBudgetService
     {
         public async Task<BudgetResponseDto> CreateNewBudgetAsync(Guid userId, BudgetRequestDto dto)
         {
@@ -34,7 +35,11 @@ namespace fintech.API.Application.Services
                     throw new BadRequestException("Budgets can only be created for expense categories.");
                 }
             }
-            //TODO: Add other business rules for budget creation.
+            var newBudget = new Budget { };
+            var user = await userRepository.GetUserByIdAsync(userId);
+            var userBaseCurrency = user!.UserCurrencies.FirstOrDefault(c => c.IsDefault);
+            var month = new DateTime(dto.Period.StartDate.Year, dto.Period.StartDate.Month, 1);
+         
             var existingBudget = await budgetRepository.GetByPeriodAsync(userId, dto.CategoryId!.Value, dto.Period);
             if (existingBudget != null)
             {
@@ -46,45 +51,70 @@ namespace fintech.API.Application.Services
                 var categoryBudgetExists = monthBudgets.Any(b => b.Type == BudgetType.ByCategory);
                 var globalBudget = monthBudgets.FirstOrDefault(b => b.Type == BudgetType.Global);
 
-                if(globalBudget is not null && !categoryBudgetExists)
+                var dtoConvertedAmount = await currencyConversions.ConvertToBaseCurrencyAsync(userId, dto.Amount);
+                
+
+                var categoryTransactions = await financialTransactionRepository.GetTotalCategoryByMonthAsync(userId, dto.CategoryId!.Value, month);
+                var convertedCategoryTransactions = await currencyConversions.ConvertTransactionBaseCurrencyAsync(userId, categoryTransactions);
+
+                var budgetConsumption = convertedCategoryTransactions.Sum(t => t.Amount.Amount);
+
+                if (globalBudget is not null && !categoryBudgetExists)
                 {
-                    globalBudget.Amount = await currencyConversions.ConvertToBaseCurrencyAsync(userId, dto.Amount);
+                    globalBudget.Amount = dtoConvertedAmount;
+                    globalBudget.BudgetConsumption = budgetConsumption;
+                    
                     budgetRepository.Update(globalBudget);
+
                 }else if(globalBudget is not null && categoryBudgetExists)
                 {
-                    var dtoConvertedAmount= await currencyConversions.ConvertToBaseCurrencyAsync(userId, dto.Amount);
-                    var convertedGlobalBudget = await currencyConversions.ConvertBudgetToBaseCurrencyAsync(userId, [globalBudget]);
-                    
-                    var budgetAmount = convertedGlobalBudget[0].Amount.Amount;
-                    var newAmount = budgetAmount + dtoConvertedAmount.Amount;
-                    var newCurrency = convertedGlobalBudget[0].Amount.Currency;
+                    var convertedGlobalBudget = await currencyConversions.ConvertToBaseCurrencyAsync(userId, globalBudget!.Amount);
+
+                    var newAmount = convertedGlobalBudget.Amount + dtoConvertedAmount.Amount;
+                    var newCurrency = convertedGlobalBudget.Currency;
                     var amount = new Money(newAmount, newCurrency);
                     globalBudget.Amount = amount;
+                    globalBudget.BudgetConsumption += budgetConsumption;
                     budgetRepository.Update(globalBudget);
+
+                    if (monthBudgets[0].Amount.Currency!.Code != userBaseCurrency!.Currency.Code)
+                    {
+                        foreach (var budget in monthBudgets)
+                        {
+                            if (budget.Type == BudgetType.ByCategory)
+                            {
+                                budget.Amount = await currencyConversions.ConvertToBaseCurrencyAsync(userId, budget.Amount);
+                                budgetRepository.Update(budget);
+                            }
+                        }
+                    }
                 }
                 else
                 {
-                    var dtoConvertedAmount = await currencyConversions.ConvertToBaseCurrencyAsync(userId, dto.Amount);
+                    var ConvertedDtoAmount = await currencyConversions.ConvertToBaseCurrencyAsync(userId, dto.Amount);
 
-                    var newBudget = new Budget
+                    var newGlobalBudget = new Budget
                     {
                         UserId = userId,
                         Type = BudgetType.Global,
-                        Amount = dtoConvertedAmount,
+                        Amount = ConvertedDtoAmount,
+                        BudgetConsumption = budgetConsumption,
                         Period = new Period(
                         dto.Period.StartDate,
                         dto.Period.EndDate
                     )
                     };
-                    await budgetRepository.AddAsync(newBudget);
+                    
+                    await budgetRepository.AddAsync(newGlobalBudget); 
                 }
-
+                newBudget = dto.MapToEntity(userId);
+                newBudget.Amount = await currencyConversions.ConvertToBaseCurrencyAsync(userId, dto.Amount);
+                newBudget.BudgetConsumption = budgetConsumption;
+                await budgetRepository.AddAsync(newBudget);
+                await budgetRepository.SaveChangesAsync();
             }
-            var budget = dto.MapToEntity(userId);
-            await budgetRepository.AddAsync(budget);
-            await budgetRepository.SaveChangesAsync();
-
-            return budget.MapToResponseDto();
+            //TODO: add Global budget creation logic.
+            return newBudget.MapToResponseDto();
         }
 
         public async Task<List<BudgetResponseDto>> GetBudgetsByMonthAsync(Guid userId, DateTime month)
@@ -97,35 +127,15 @@ namespace fintech.API.Application.Services
             var endDate = startDate.AddMonths(1).AddDays(-1);
             var period = new Period(startDate, endDate);
             var fetchedBudgets = await budgetRepository.GetAllByMonthAsync(userId, period);
-            var convertedBudgets = await currencyConversions.ConvertBudgetToBaseCurrencyAsync(userId, fetchedBudgets);
+            
             var budgets = new List<BudgetResponseDto>();
-            foreach (var budget in convertedBudgets)
+            foreach (var budget in fetchedBudgets)
             {
-                if(budget.Type == BudgetType.ByCategory)
-                {
-                    var categoryTransactions = await financialTransactionRepository.GetTotalCategoryByMonthAsync(userId, budget.Category!.Name, month);
-                    var ConvertedCategoryTransactions = await currencyConversions.ConvertTransactionBaseCurrencyAsync(userId, categoryTransactions);
+                var BudgetConsumptionPercentage = budget.Amount.Amount > 0 ? (budget.BudgetConsumption / budget.Amount.Amount) * 100 : 0;
 
-                    var BudgetConsumption = ConvertedCategoryTransactions.Sum(t => t.Amount.Amount);
-                    var BudgetConsumptionPercentage = budget.Amount.Amount > 0 ? (BudgetConsumption / budget.Amount.Amount) * 100 : 0;
-
-                    var budgetResponseDto = budget.MapToResponseDto();
-                    budgetResponseDto.BudgetConsumption = BudgetConsumption;
-                    budgetResponseDto.BudgetConsumptionPercentage = BudgetConsumptionPercentage;
-                    budgets.Add(budgetResponseDto);
-                }else
-                {
-                    var expenseTransactions = await financialTransactionRepository.GetByTypeByMonthAsync(userId, FinancialType.Expense, month);
-                    var convertedExpenseTransactions = await currencyConversions.ConvertTransactionBaseCurrencyAsync(userId, expenseTransactions);
-                    var totalExpenses = convertedExpenseTransactions.Sum(t => t.Amount.Amount);
-                    var BudgetConsumptionPercentage = budget.Amount.Amount > 0 ? (totalExpenses / budget.Amount.Amount) * 100 : 0;
-
-                    var budgetResponseDto = budget.MapToResponseDto();
-                    budgetResponseDto.BudgetConsumption = totalExpenses;
-                    budgetResponseDto.BudgetConsumptionPercentage = BudgetConsumptionPercentage;
-                    budgets.Add(budgetResponseDto);
-                }
-                
+                var budgetResponseDto = budget.MapToResponseDto();
+                budgetResponseDto.BudgetConsumptionPercentage = BudgetConsumptionPercentage;
+                budgets.Add(budgetResponseDto);                
             }
             return budgets;
         }
@@ -154,15 +164,10 @@ namespace fintech.API.Application.Services
             {
                 throw new BadRequestException($"Budget with ID {id} is not active.");
             }
-            var convertedBudget = await currencyConversions.ConvertBudgetToBaseCurrencyAsync(userId, [budget]);
-            var categoryTransactions = await financialTransactionRepository.GetTotalCategoryByMonthAsync(userId, budget.Category!.Name, budget.Period.StartDate.ToDateTime(TimeOnly.MinValue));
-            var ConvertedCategoryTransactions = await currencyConversions.ConvertTransactionBaseCurrencyAsync(userId, categoryTransactions);
 
-            var BudgetConsumption = ConvertedCategoryTransactions.Sum(t => t.Amount.Amount);
-            var BudgetConsumptionPercentage = convertedBudget[0].Amount.Amount > 0 ? (BudgetConsumption / convertedBudget[0].Amount.Amount) * 100 : 0;
+            var BudgetConsumptionPercentage = budget.Amount.Amount > 0 ? (budget.BudgetConsumption / budget.Amount.Amount) * 100 : 0;
 
             var budgetResponseDto = budget.MapToResponseDto();
-            budgetResponseDto.BudgetConsumption = BudgetConsumption;
             budgetResponseDto.BudgetConsumptionPercentage = BudgetConsumptionPercentage;
 
             return budgetResponseDto;
@@ -194,8 +199,24 @@ namespace fintech.API.Application.Services
             {
                 throw new BadRequestException($"Budget with ID {id} is not active.");
             }
+            var monthBudgets = await budgetRepository.GetAllByMonthAsync(userId, budget.Period);
+            var categoryBudgetExists = monthBudgets.Any(b => b.Type == BudgetType.ByCategory);
+            if(budget.Type == BudgetType.Global && categoryBudgetExists)
+            {
+                throw new BadRequestException("Cannot update global budget in this case");
+            }
+            var convertedAmount = await currencyConversions.ConvertToBaseCurrencyAsync(userId, amount);
 
-            budget.Amount = amount;
+            if (budget.Type == BudgetType.ByCategory)
+            {
+                var globalBudget = monthBudgets.FirstOrDefault(b => b.Type == BudgetType.Global);
+                var newGlobalAmount = globalBudget!.Amount.Amount - budget.Amount.Amount + convertedAmount.Amount;
+                var currency = new Currency(globalBudget.Amount.Currency!.Code, globalBudget.Amount.Currency.Symbol);
+                globalBudget.Amount = new Money(newGlobalAmount, currency);
+                budgetRepository.Update(globalBudget);
+            }
+
+            budget.Amount = convertedAmount;
             ;
             budgetRepository.Update(budget);
             await budgetRepository.SaveChangesAsync();
@@ -220,6 +241,30 @@ namespace fintech.API.Application.Services
             if (budget.IsDeleted)
             {
                 throw new UnauthorizedException($"Budget with ID {id} has already been deleted.");
+            }
+            var monthBudgets = await budgetRepository.GetAllByMonthAsync(userId, budget.Period);
+            var budgetsByCategory = monthBudgets.Where(b => b.Type == BudgetType.ByCategory).ToList();
+            if (budget.Type == BudgetType.Global && budgetsByCategory.Count > 0) 
+            {
+                throw new BadRequestException("Cannot delete global budget in this case");
+            }
+
+            if (budget.Type == BudgetType.ByCategory)
+            {
+                var globalBudget = monthBudgets.FirstOrDefault(b => b.Type == BudgetType.Global);
+                if(budgetsByCategory.Count == 1)
+                {
+                    globalBudget!.IsDeleted = true;
+                    budgetRepository.Update(globalBudget);
+                }
+                else
+                {
+                    var newGlobalAmount = globalBudget!.Amount.Amount - budget.Amount.Amount;
+                    var currency = new Currency(globalBudget.Amount.Currency!.Code, globalBudget.Amount.Currency.Symbol);
+                    globalBudget.Amount = new Money(newGlobalAmount, currency);
+                    globalBudget.BudgetConsumption -= budget.BudgetConsumption;
+                    budgetRepository.Update(globalBudget);
+                }               
             }
             budget.IsDeleted = true;
             budgetRepository.Update(budget);

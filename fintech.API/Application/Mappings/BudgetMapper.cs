@@ -26,7 +26,8 @@ namespace fintech.API.Application.Mappings
                 Type = entity.Type,
                 Amount = entity.Amount,
                 Period = entity.Period,
-                CategoryName = entity.Category?.Name
+                CategoryName = entity.Category?.Name,
+                BudgetConsumption = entity.BudgetConsumption
             };
         }
     }

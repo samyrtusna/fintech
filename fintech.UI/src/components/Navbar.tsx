@@ -1,4 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { MdCurrencyExchange } from "react-icons/md";
 import IconComponent from "./IconComponent";
 import useTheme from "../hooks/useTheme";
 import { useAppSelector } from "../state/stateHooks";
@@ -7,7 +8,8 @@ import { IoMdHome } from "react-icons/io";
 import { FaChartPie, FaUser, FaWallet } from "react-icons/fa";
 import { AiOutlineTransaction } from "react-icons/ai";
 import { GoGoal } from "react-icons/go";
-import { IoSunnyOutline } from "react-icons/io5";
+import { IoChevronForward, IoSunnyOutline } from "react-icons/io5";
+import { BsCardChecklist } from "react-icons/bs";
 import { LuMoonStar } from "react-icons/lu";
 import { useState } from "react";
 
@@ -161,18 +163,26 @@ function Navbar() {
                 navigate("#");
                 setShowUserDropdown(false);
               }}
-              className="w-full p-2 bg-bg-surface hover:bg-dropdown-bg border-thin border-border-subtle rounded-t-sm "
+              className="inline-flex items-center justify-between w-full p-2  bg-bg-surface hover:bg-dropdown-bg border-thin border-border-subtle rounded-t-sm cursor-pointer"
             >
-              Category
+              <BsCardChecklist className="text-orange-500" />
+              {"  "}
+              <span className="text-sm">Category</span>
+
+              <IoChevronForward />
             </button>
             <button
               onClick={() => {
                 navigate("#");
                 setShowUserDropdown(false);
               }}
-              className="w-full p-2  bg-bg-surface hover:bg-dropdown-bg border-thin border-border-subtle rounded-b-sm "
+              className="inline-flex items-center justify-between w-full p-2  bg-bg-surface hover:bg-dropdown-bg border-thin border-border-subtle rounded-b-sm cursor-pointer"
             >
-              Currency
+              <MdCurrencyExchange className="text-green-500" />
+              {"  "}
+              <span className="text-sm">Currency</span>
+
+              <IoChevronForward />
             </button>
           </div>
         </div>
