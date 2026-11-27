@@ -124,60 +124,70 @@ function NewGoal() {
     });
   };
   return (
-    <div className="w-dvw flex justify-center">
-      <div className="w-full flex flex-col gap-y-5 sm:w-1/2 p-5 bg-bg-muted border-thin border-border-subtle sm:rounded-sm shadow-card">
-        <div className="flex mb-5 mr-5 justify-between items-center">
+    <div className="w-dvw flex justify-center p-4 md:p-6 text-text-primary">
+      <div className="w-full flex flex-col gap-y-5 sm:w-2/3 lg:w-1/2 p-5 md:p-6 bg-form-bg border-thin border-border-subtle rounded-md shadow-card">
+        <div className="flex pb-4 border-b-thin border-border-subtle justify-between items-center">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex justify-center items-center h-10 aspect-square md:mx-2 rounded-full bg-bg-primary hover:bg-navbar-bg"
+            className="flex justify-center items-center h-9 aspect-square md:mx-2 rounded-full bg-bg-surface hover:bg-bg-muted border-thin border-border-subtle shadow-subtle cursor-pointer"
           >
-            <IoChevronBack className="stroke-text-surface" />
+            <IoChevronBack className="text-text-primary" />
           </button>
-          <h1>New Goal</h1>
-          <GoGoal className="size-5 text-grey-500" />
+          <h1 className="text-lg md:text-xl font-bold text-text-primary">
+            New Goal
+          </h1>
+          <div className="p-2 rounded-sm bg-bg-muted text-emerald-600 dark:text-emerald-400">
+            <GoGoal className="size-4" />
+          </div>
         </div>
         <form
           onSubmit={formik.handleSubmit}
-          className="w-full flex flex-col gap-y-5"
+          className="w-full flex flex-col gap-y-4"
         >
-          <div className="flex flex-col sm:flex-row sm:justify-between">
-            <div>
-              <h3>Title</h3>
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 p-4 rounded-md bg-bg-secondary/70 border-thin border-border-subtle">
+            <div className="w-full">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Title
+              </h3>
               <input
                 type="text"
                 name="title"
                 value={formik.values.title}
                 onChange={formik.handleChange}
                 placeholder="goal title"
-                className="w-full p-2 rounded-sm border border-width-thin border-input-border bg-bg-secondary [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                className="w-full py-2 px-3 text-sm text-text-primary placeholder:text-text-muted rounded-sm border-thin border-input-border bg-input-bg outline-0 focus:border-accent"
               />
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row sm:justify-between">
-            <div className="w-full sm:w-1/3">
-              <h3>Type</h3>
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 p-4 rounded-md bg-bg-secondary/70 border-thin border-border-subtle">
+            <div className="w-full sm:w-1/2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Type
+              </h3>
               <button
                 type="button"
                 onChange={formik.handleChange}
-                className="w-full py-2 bg-bg-surface border-thin border-border-subtle shadow-card rounded-sm cursor-pointer"
+                className="w-full py-2 px-3 text-sm font-medium text-text-primary bg-bg-surface hover:bg-bg-muted border-thin border-border-subtle shadow-subtle rounded-sm cursor-pointer"
               >
                 ByCategory
               </button>
             </div>
-            <div className="w-full mb-5 sm:w-1/3 sm:mb-0">
-              <h3>Category</h3>
+            <div className="w-full sm:w-1/2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Category
+              </h3>
               <select
                 name="categoryId"
                 value={formik.values.categoryId}
                 onChange={formik.handleChange}
-                className="w-full  appearance-none text-center p-2  bg-bg-surface rounded-sm border-thin border-border-subtle shadow-card cursor-pointer outline-0"
+                className="w-full appearance-none text-center py-2 px-3 text-sm font-medium text-text-primary bg-input-bg hover:bg-bg-muted rounded-sm border-thin border-input-border shadow-subtle cursor-pointer outline-0 focus:border-accent"
               >
                 {goalCategories.map((c, index, arr) => (
                   <option
                     key={c.id}
                     value={c.id}
-                    className={`w-full p-2 ${index === arr.length - 1 && "rounded-b-sm"}`}
+                    className={`w-full p-2 bg-dropdown-bg text-text-primary ${index === arr.length - 1 && "rounded-b-sm"}`}
                   >
                     {c.name}
                   </option>
@@ -185,9 +195,11 @@ function NewGoal() {
               </select>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row sm:justify-between">
-            <div className="w-full mb-5 sm:w-1/3 sm:mb-0">
-              <h3>Amount</h3>
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 p-4 rounded-md bg-bg-secondary/70 border-thin border-border-subtle">
+            <div className="w-full sm:w-1/2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Amount
+              </h3>
               <input
                 type="number"
                 name="targetAmount.amount"
@@ -195,11 +207,13 @@ function NewGoal() {
                 step="0.01"
                 value={formik.values.targetAmount.amount}
                 onChange={formik.handleChange}
-                className="w-full p-2 bg-bg-surface border-thin border-border-subtle shadow-card rounded-sm outline-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                className="w-full py-2 px-3 text-sm font-semibold text-text-primary bg-input-bg border-thin border-input-border shadow-subtle rounded-sm outline-0 focus:border-accent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
               />
             </div>
-            <div className="w-full sm:w-1/3">
-              <h3>Currency</h3>
+            <div className="w-full sm:w-1/2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Currency
+              </h3>
               <CurrencyDropdown
                 currencyFieldValue={formik.values.targetAmount.currency.code}
                 handleOptionButtonClick={handleCurrencyChange}
@@ -207,7 +221,7 @@ function NewGoal() {
               />
             </div>
           </div>
-          <div>
+          <div className="pt-1">
             <Button
               label="Submit"
               type="submit"

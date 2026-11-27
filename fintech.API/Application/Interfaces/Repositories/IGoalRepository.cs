@@ -6,7 +6,7 @@ namespace fintech.API.Application.Interfaces.Repositories
     public interface IGoalRepository: IGenericRepository<Goals>
     {
         Task<Goals?> GetByPeriodAsync(Guid userId, Guid categoryId, Period period);
-        Task<List<Goals>> GetAllByMonthAsync(Guid userId, Period period);
+        Task<List<Goals>> GetAllByMonthAsync(Guid userId, DateTime date);
         Task<Goals?> GetGoalByIdAsync(Guid id);
     }
 }

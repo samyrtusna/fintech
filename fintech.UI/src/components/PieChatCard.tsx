@@ -37,18 +37,18 @@ function PieChatCard(props: PropsType) {
   }));
   return (
     <div className="w-full space-y-5 my-auto">
-      <div className="flex flex-col md:flex-row md:items-baseline w-full items-center md:gap-2 justify-center">
+      <div className="flex flex-col md:flex-row md:items-baseline w-full items-center md:gap-3 justify-center">
         <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
           Total {aggregate}
         </span>
-        <div className="flex gap-4 ">
-          <div className="text-3xl font-extrabold">
+        <div className="flex items-baseline gap-3">
+          <div className="text-3xl font-extrabold text-text-primary">
             {symbol}
             {total?.toFixed(2)}
           </div>
           {variation !== null && (
             <div
-              className={`mt-4 flex items-center gap-1 text-xs font-medium ${variation! >= 0 ? "text-green-500" : "text-red-500"}`}
+              className={`flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${variation! >= 0 ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-red-500/15 text-red-500"}`}
             >
               {variation! >= 0 ? (
                 <MdTrendingUp className="size-4" />
@@ -56,22 +56,22 @@ function PieChatCard(props: PropsType) {
                 <MdTrendingDown className="size-4" />
               )}
               <span>
-                {variation! > 0 ? `+${variation}%` : `-${variation}%`}{" "}
+                {variation! > 0 ? `+${variation}%` : `-${variation}%`}
               </span>
             </div>
           )}
         </div>
       </div>
-      <div className="flex flex-col md:flex-row justify-between items-center w-full ">
-        <div className="max-w-70 w-full md:w-1/2 md:px-5">
+      <div className="flex flex-col md:flex-row justify-between items-center w-full gap-4">
+        <div className="max-w-70 w-full md:w-1/2 md:px-4">
           <PieCharts data={pieChartData} />
         </div>
 
-        <div className="w-full px-6 md:px-0 md:w-1/2 md:ml-5 text-xs space-y-1">
+        <div className="w-full p-3.5 rounded-md bg-bg-muted/70 border-thin border-border-subtle md:w-1/2 text-xs space-y-2">
           {pieChartData.map((pie) => (
             <div
               key={pie.name}
-              className="flex justify-between items-center"
+              className="flex justify-between items-center py-0.5"
             >
               <span
                 style={{ color: pie.color }}
@@ -79,7 +79,7 @@ function PieChatCard(props: PropsType) {
               >
                 ● {pie.name}
               </span>
-              <span className="text-text-muted">
+              <span className="font-medium text-text-primary">
                 {symbol}
                 {pie.value.toFixed(2)}
               </span>

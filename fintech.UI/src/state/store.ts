@@ -15,7 +15,7 @@ const store = configureStore({
     budgets: budgetReducer,
     goals: goalReducer,
   },
-  devTools: import.meta.env.MODE !== "production",
+  // devTools: import.meta.env.MODE !== "production",
 });
 
 export default store;

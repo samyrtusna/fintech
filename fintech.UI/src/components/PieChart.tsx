@@ -46,7 +46,7 @@ const renderCustomizedLabel = ({
       fill="white"
       textAnchor={x > ncx ? "start" : "end"}
       dominantBaseline="central"
-      className="text-xs font-bold"
+      className="text-xs font-bold drop-shadow-xs"
     >
       {`${((percent ?? 1) * 100).toFixed(0)}%`}
     </text>
@@ -69,7 +69,8 @@ const MyCustomPie = (props: PieSectorShapeProps) => {
     <Sector
       {...props}
       fill={color}
-      stroke="none"
+      stroke="var(--bg-surface)"
+      strokeWidth={2}
       fillOpacity={fillOpacity}
       style={{ transition: "fill-opacity 0.3s ease" }}
     />

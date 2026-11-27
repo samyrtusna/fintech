@@ -29,13 +29,13 @@ function CurrencyDropdown(props: PropsType) {
     <div className={`relative ${className}`}>
       <button
         type="button"
-        className={`w-full p-2 bg-bg-surface border-thin border-border-subtle shadow-card cursor-pointer ${currencyOptions ? "rounded-t-sm" : "rounded-sm"}`}
+        className={`w-full px-3 py-2 text-sm font-medium text-text-primary bg-bg-surface hover:bg-bg-secondary border-thin border-border-subtle shadow-subtle cursor-pointer ${currencyOptions ? "rounded-t-sm" : "rounded-sm"}`}
         onClick={() => setCurrencyOptions((prev) => !prev)}
       >
         {currencyFieldValue || "Select Currency"}
       </button>
       {currencyOptions && (
-        <div className="absolute w-full z-50">
+        <div className="absolute w-full z-50 bg-dropdown-bg shadow-card rounded-b-sm overflow-hidden">
           {currencies
             .filter((c) => c !== currencyFieldValue)
             .map((c, index, arr) => (
@@ -46,7 +46,7 @@ function CurrencyDropdown(props: PropsType) {
                   handleOptionButtonClick(c);
                   setCurrencyOptions(false);
                 }}
-                className={`w-full p-2 bg-bg-surface hover:bg-btn-standard border-x-thin border-b-thin border-border-subtle cursor-pointer ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}
+                className={`w-full px-3 py-2 text-sm text-text-primary bg-dropdown-bg hover:bg-bg-muted border-x-thin border-b-thin border-border-subtle cursor-pointer ${index === arr.length - 1 ? "rounded-b-sm" : ""}`}
               >
                 {c}
               </button>

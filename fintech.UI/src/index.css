@@ -3,12 +3,13 @@
 /* Base Setup */
 @layer base {
   * {
-    @apply transition-colors duration-300 ease-in-out;
+    @apply transition-colors duration-200 ease-in-out;
   }
 
   body {
     color: var(--text-primary);
     background: var(--bg-primary);
+    background-attachment: fixed;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -27,19 +28,21 @@
   @keyframes slow-drift {
     0%,
     100% {
-      transform: translateY(-10%);
+      transform: translateY(-6%);
     }
     50% {
-      transform: translateY(10%);
+      transform: translateY(6%);
     }
   }
-  /* 4 Background Colors */
+
+  /* Background Surfaces */
   --color-bg-primary: var(--bg-primary);
   --color-bg-secondary: var(--bg-secondary);
   --color-bg-surface: var(--bg-surface);
   --color-bg-muted: var(--bg-muted);
   --color-bg-contrast: var(--bg-contrast);
-  /* 4 Text Colors */
+
+  /* Text Tokens */
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-surface: var(--text-surface);
@@ -67,6 +70,11 @@
   --color-input-border: var(--input-border);
   --color-dropdown-bg: var(--dropdown-bg);
 
+  /* Accent & Chart Tokens */
+  --color-accent: var(--accent-primary);
+  --color-accent-soft: var(--accent-soft);
+  --color-pie-chart: var(--pie-chart);
+
   /* Table */
   --color-table-head-bg: var(--table-head-bg);
   --color-table-head-text: var(--table-head-text);
@@ -80,108 +88,122 @@
   --radius-sm: 0.375rem;
   --radius-md: 0.75rem;
   --shadow-subtle:
-    0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+    0 1px 2px 0 rgb(15 23 42 / 0.06), 0 1px 3px 0 rgb(15 23 42 / 0.04);
   --shadow-card:
-    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    0 10px 25px -5px rgb(15 23 42 / 0.08), 0 4px 10px -6px rgb(15 23 42 / 0.04);
 }
 
 /* ==========================================================================
-   LIGHT MODE THEME
-   Primary Accent: oklch(0.623 0.188 259.8)
+   LIGHT MODE THEME — Blue-Centered Modern Palette
    ========================================================================== */
 :root,
 .light {
-  /* 4 Background Colors */
   --bg-primary: radial-gradient(
-    circle at 20% 10%,
-    oklch(97% 0.014 254.604),
-    oklch(88.2% 0.059 254.128) 45%,
-    oklch(89.4% 0.057 293.283)
+    circle at 15% 8%,
+    oklch(97.5% 0.012 252) 0%,
+    oklch(94.5% 0.025 254) 48%,
+    oklch(91.5% 0.042 258) 100%
   );
-  --bg-secondary: oklch(92.8% 0.006 264.531);
-  --bg-surface: oklch(80.9% 0.105 251.813);
-  --bg-muted: oklch(88.2% 0.059 254.128);
-  --bg-contrast: oklch(94.3% 0.029 294.588);
+  --bg-secondary: oklch(95.5% 0.018 253);
+  --bg-surface: oklch(99.5% 0.004 250);
+  --bg-muted: oklch(92.5% 0.032 254);
+  --bg-contrast: oklch(94.5% 0.028 255);
 
-  /* 4 Text Colors */
-  --text-primary: oklch(13% 0.028 261.692);
-  --text-secondary: oklch(48.8% 0.243 264.376);
-  --text-surface: oklch(37.3% 0.034 259.733);
-  --text-muted: oklch(70.7% 0.165 254.624);
+  /* High-contrast blue & slate text */
+  --text-primary: oklch(18% 0.035 258);
+  --text-secondary: oklch(43% 0.165 258);
+  --text-surface: oklch(26% 0.045 256);
+  --text-muted: oklch(48% 0.045 256);
 
-  /* Standard Button */
-  --btn-standard: #155dfb;
-  --btn-standard-hover: oklch(48.8% 0.243 264.376);
-  --btn-standard-text: oklch(0.995 0 0);
+  /* Blue Primary Actions */
+  --accent-primary: oklch(54.6% 0.215 258.5);
+  --accent-soft: oklch(54.6% 0.215 258.5 / 0.12);
+  --btn-standard: oklch(54.6% 0.215 258.5);
+  --btn-standard-hover: oklch(47.5% 0.21 260);
+  --btn-standard-text: oklch(99% 0.002 250);
 
-  /* Danger Button */
+  /* Danger Actions */
   --btn-danger: oklch(57.7% 0.245 27.325);
   --btn-danger-hover: oklch(50.5% 0.213 27.518);
-  --btn-danger-text: oklch(0.995 0 0);
-  --pie-chart: #8108f3;
+  --btn-danger-text: oklch(99% 0.002 250);
+  --pie-chart: oklch(54.6% 0.215 258.5);
 
-  /* Disabled Button */
-  --btn-disabled: oklch(70.7% 0.022 261.325);
-  --btn-disabled-hover: oklch(55.1% 0.027 264.364);
-  --btn-disabled-text: oklch(13% 0.028 261.692);
+  /* Disabled State */
+  --btn-disabled: oklch(88% 0.015 255);
+  --btn-disabled-hover: oklch(84% 0.018 255);
+  --btn-disabled-text: oklch(52% 0.025 256);
 
-  /* Specific Components */
-  --navbar-bg: oklch(70.7% 0.165 254.624);
-  --form-bg: oklch(70.7% 0.165 254.624);
-  --input-bg: oklch(88.2% 0.059 254.128);
-  --input-border: oklch(0.85 0.03 250);
-  --dropdown-bg: oklch(70.7% 0.165 254.624);
+  /* Component Surfaces */
+  --navbar-bg: oklch(98.5% 0.012 253 / 0.88);
+  --form-bg: oklch(99% 0.006 252);
+  --input-bg: oklch(96.5% 0.014 254);
+  --input-border: oklch(82% 0.045 255);
+  --dropdown-bg: oklch(99% 0.006 252);
 
-  /* Border */
-  --border-subtle: oklch(70.7% 0.022 261.325);
+  /* Table */
+  --table-head-bg: oklch(92% 0.035 255);
+  --table-head-text: oklch(24% 0.05 258);
+  --table-row-bg: oklch(99% 0.004 250);
+  --table-row-alt-bg: oklch(96% 0.016 254);
+  --table-border: oklch(85% 0.035 255);
+
+  /* Borders */
+  --border-subtle: oklch(83% 0.04 255);
 }
 
 /* ==========================================================================
-   DARK MODE THEME
-   Primary Dark Focal Base: oklch(0.208 0.027 257.4)
+   DARK MODE THEME — Amber-Centered Modern Palette
    ========================================================================== */
 .dark {
-  /* 4 Background Colors */
-  --bg-primary: oklch(13% 0.028 261.692);
   --bg-primary: radial-gradient(
-    circle at 20% 10%,
-    oklch(27.8% 0.033 256.848),
-    oklch(13% 0.028 261.692) 45%,
-    oklch(20.579% 0.05108 50.804)
+    circle at 18% 8%,
+    oklch(21% 0.025 260) 0%,
+    oklch(14.5% 0.02 262) 52%,
+    oklch(17.5% 0.042 62) 100%
   );
-  --bg-secondary: oklch(21% 0.034 264.665);
-  --bg-surface: oklch(27.9% 0.077 45.635);
-  --bg-muted: oklch(41.4% 0.112 45.904);
-  --bg-contrast: oklch(44.6% 0.03 256.802);
+  --bg-secondary: oklch(18.5% 0.022 258);
+  --bg-surface: oklch(22.5% 0.026 256);
+  --bg-muted: oklch(27% 0.042 66);
+  --bg-contrast: oklch(26% 0.042 66);
 
-  /* 4 Text Colors */
-  --text-primary: oklch(98.5% 0.002 247.839);
-  --text-secondary: oklch(66.6% 0.179 58.318);
-  --text-surface: oklch(87.9% 0.169 91.605);
-  --text-muted: oklch(87.9% 0.169 91.605);
+  /* Crisp light text + warm amber accents */
+  --text-primary: oklch(96.5% 0.008 80);
+  --text-secondary: oklch(78% 0.165 74);
+  --text-surface: oklch(90% 0.015 80);
+  --text-muted: oklch(72% 0.025 255);
 
-  /* Standard Button */
-  --btn-standard: oklch(66.6% 0.179 58.318);
-  --btn-standard-hover: oklch(76.9% 0.188 70.08);
-  --btn-standard-text: oklch(98.5% 0.002 247.839);
+  /* Amber Primary Actions */
+  --accent-primary: oklch(72% 0.175 68);
+  --accent-soft: oklch(72% 0.175 68 / 0.15);
+  --btn-standard: oklch(72% 0.175 68);
+  --btn-standard-hover: oklch(78% 0.18 72);
+  --btn-standard-text: oklch(16% 0.03 55);
 
-  /* Danger Button */
-  --btn-danger: oklch(0.58 0.2 25);
-  --btn-danger-hover: oklch(0.66 0.19 25);
+  /* Danger Actions */
+  --btn-danger: oklch(58% 0.21 25);
+  --btn-danger-hover: oklch(64% 0.21 25);
   --btn-danger-text: oklch(98.5% 0.002 247.839);
+  --pie-chart: oklch(72% 0.175 68);
 
-  /* Disabled Button */
-  --btn-disabled: oklch(37.3% 0.034 259.733); /* Subtle dark fill */
-  --btn-disabled-hover: oklch(44.6% 0.03 256.802);
-  --btn-disabled-text: oklch(13% 0.028 261.692); /* Low contrast gray */
+  /* Disabled State */
+  --btn-disabled: oklch(28% 0.018 258);
+  --btn-disabled-hover: oklch(32% 0.02 258);
+  --btn-disabled-text: oklch(55% 0.02 258);
 
-  /* Specific Components */
-  --navbar-bg: oklch(66.6% 0.179 58.318); /* Glassy deep navy */
-  --form-bg: oklch(0.28 0.032 257.4); /* Elevated Surface Card */
-  --input-bg: oklch(0.16 0.025 257.4); /* Dark recessed input */
-  --input-border: oklch(0.38 0.035 257.4); /* Subtle input border */
-  --dropdown-bg: oklch(0.28 0.032 257.4); /* Elevated Surface Dropdown */
+  /* Component Surfaces */
+  --navbar-bg: oklch(20% 0.025 258 / 0.88);
+  --form-bg: oklch(21.5% 0.025 258);
+  --input-bg: oklch(16.5% 0.02 260);
+  --input-border: oklch(34% 0.045 68);
+  --dropdown-bg: oklch(22.5% 0.028 258);
 
-  /* Border */
-  --border-subtle: oklch(0.35 0.035 257.4);
+  /* Table */
+  --table-head-bg: oklch(26.5% 0.04 66);
+  --table-head-text: oklch(86% 0.14 74);
+  --table-row-bg: oklch(20.5% 0.022 258);
+  --table-row-alt-bg: oklch(23.5% 0.026 258);
+  --table-border: oklch(32% 0.032 258);
+
+  /* Borders */
+  --border-subtle: oklch(33% 0.035 258);
 }

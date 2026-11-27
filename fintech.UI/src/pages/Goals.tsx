@@ -4,7 +4,7 @@ import Dropdown from "../components/Dropdown";
 import type { MonthItem } from "../types/financialTransactionTypes";
 import generateMonths from "../helpers/generateMonths";
 import { useAppSelector } from "../state/stateHooks";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ScrollReveal from "../components/ScrollReveal";
@@ -20,6 +20,9 @@ import { toast } from "sonner";
 import type { UpdateGoalType } from "../types/goalTypes";
 import { useFormik, type FormikHelpers } from "formik";
 import { updateGoalSchema } from "../formik/updateGoalSchema";
+import userService from "../API/Services/userService";
+import { setUserInformations } from "../state/slices/authSlice";
+import Spinner from "../components/Spinner";
 
 function Goals() {
   const userInformations = useAppSelector(
@@ -30,14 +33,46 @@ function Goals() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const months = generateMonths(userInformations!.createdAt);
+  const fetchUserInformations = useCallback(async () => {
+    if (userInformations !== null) {
+      return;
+    }
+    try {
+      const fetchedUserInformations = await userService.getUserAsync();
+      dispatch(setUserInformations(fetchedUserInformations));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch user informations",
+      );
+    }
+  }, [dispatch, userInformations]);
 
-  const [selectedMonth, setSelectedMonth] = useState<MonthItem>(months[0]);
+  useEffect(() => {
+    fetchUserInformations();
+  }, [fetchUserInformations]);
+
+  const createdAt = userInformations?.createdAt;
+
+  const months: MonthItem[] = useMemo(() => {
+    return createdAt ? generateMonths(createdAt) : [];
+  }, [createdAt]);
+
+  const [selectedMonth, setSelectedMonth] = useState<MonthItem | undefined>(
+    undefined,
+  );
   const [updateGoal, setUpdateGoal] = useState("");
   const [goalToDelete, setGoalToDelete] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (months.length > 0 && !selectedMonth) {
+      setSelectedMonth(months[0]);
+    }
+  }, [months, selectedMonth]);
+
   const isCurrentMonth =
-    selectedMonth.value.getFullYear() === new Date().getFullYear() &&
+    selectedMonth?.value.getFullYear() === new Date().getFullYear() &&
     selectedMonth.value.getMonth() === new Date().getMonth() + 1;
 
   const initialValues: UpdateGoalType = {
@@ -52,6 +87,9 @@ function Goals() {
     values: UpdateGoalType,
     props: FormikHelpers<UpdateGoalType>,
   ) => {
+    if (!selectedMonth) {
+      return;
+    }
     try {
       const selectedCurrency = userInformations?.userCurrencies.find(
         (c) => c.currency.code === values.targetAmount?.currency.code,
@@ -117,8 +155,10 @@ function Goals() {
   );
 
   useEffect(() => {
-    const monthDate = selectedMonth.value.toISOString();
-    fetchMonthGoals({ month: monthDate });
+    const monthDate = selectedMonth?.value.toISOString();
+    if (monthDate) {
+      fetchMonthGoals({ month: monthDate });
+    }
   }, [selectedMonth]);
 
   const handleMonthClick = (month: MonthItem) => {
@@ -140,15 +180,25 @@ function Goals() {
     fetchMonthGoals({ month: new Date().toISOString() });
   };
 
+  if (!userInformations || !selectedMonth) {
+    return (
+      <div className="flex min-h-dvh w-full justify-center items-center">
+        <Spinner />
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full mx-auto p-4 md:p-6 space-y-6 bg-bg-primary text-text-primary">
-      <div className="flex flex-col md:flex-row md:justify-between items-center gap-4 bg-form-bg p-6 border border-border-subtle rounded-md shadow-card">
-        <h1 className="text-xl md:text-2xl font-bold">Goals</h1>
-        <div className="md:w-1/2 md:flex md:justify-end">
-          <p className="text-sm text-text-surface mt-2 md:mr-1">
-            Goal summary for{" "}
+    <div className="w-full mx-auto p-4 md:p-6 space-y-6 text-text-primary">
+      <div className="flex flex-col md:flex-row md:justify-between items-center gap-4 bg-form-bg p-6 border-thin border-border-subtle rounded-md shadow-card">
+        <h1 className="text-xl md:text-2xl font-bold text-text-primary">
+          Goals
+        </h1>
+        <div className="w-full md:w-1/2 flex items-center justify-center md:justify-end gap-2">
+          <p className="text-sm text-text-secondary whitespace-nowrap">
+            Goal summary for
           </p>
-          <div className="md:w-[30%] pt-1">
+          <div className="w-36 md:w-[35%]">
             <Dropdown<MonthItem>
               selectedValue={selectedMonth}
               options={months}
@@ -159,37 +209,37 @@ function Goals() {
       </div>
 
       {!goals || goals.length === 0 ? (
-        <div className="flex flex-col justify-center items-center w-full h-fit mx-auto mt-10 md:w-1/2 lg:w-5/12 p-5 border-thin border-border-subtle rounded-md bg-bg-contrast shadow-card">
-          <div className="flex justify-center m-4">
-            <GoGoal className="size-10 text-blue-500" />
+        <div className="flex flex-col justify-center items-center w-full h-fit mx-auto mt-10 md:w-1/2 lg:w-5/12 p-6 border-thin border-border-subtle rounded-md bg-bg-surface shadow-card">
+          <div className="flex justify-center m-4 p-3 rounded-full bg-bg-muted">
+            <GoGoal className="size-9 text-text-secondary" />
           </div>
           {isCurrentMonth && (
-            <h3 className="text-xl font-semibold my-2 mx-auto text-center">
+            <h3 className="text-xl font-bold my-2 mx-auto text-center text-text-primary">
               A new month, a clearer financial picture.
             </h3>
           )}
 
-          <h3 className="py-2 text-center">
+          <h3 className="py-1.5 text-sm font-medium text-center text-text-secondary">
             No goals recorded for this month{" "}
             <span className={`${isCurrentMonth ? "inline" : "hidden"}`}>
               yet
-            </span>{" "}
+            </span>
             .
           </h3>
-          <h3 className="text-lg pt-4 text-center text-text-secondary">
-            Keep your goals on track by setting up financial objectives .
+          <h3 className="text-sm pt-3 text-center text-text-primary">
+            Keep your goals on track by setting up financial objectives.
           </h3>
-          <h3 className="text-lg pb-4 text-center text-text-secondary">
+          <h3 className="text-sm pb-4 text-center text-text-primary">
             <span className="text-text-primary font-bold font-serif">
-              Finance<span className="text-yellow-500">_</span>It
+              Finance<span className="text-text-secondary">_</span>It
             </span>{" "}
-            will help you monitor your financial tatgets as the month unfolds.
+            will help you monitor your financial targets as the month unfolds.
           </h3>
           {isCurrentMonth && (
-            <div className="my-3 p-3 bg-blue-500 text-gray-50 font-bold rounded-sm shadow-card cursor-pointer hover:bg-blue-600">
+            <div className="my-3 px-4 py-2.5 bg-btn-standard hover:bg-btn-standard-hover text-btn-standard-text font-bold rounded-sm shadow-card cursor-pointer">
               <button
                 onClick={() => navigate("/goal/new")}
-                className="flex items-center"
+                className="flex items-center cursor-pointer"
               >
                 <span className="text-lg mr-1">+</span>
                 Add a goal
@@ -197,24 +247,24 @@ function Goals() {
             </div>
           )}
 
-          <p className="text-sm text-text-muted mt-2">
+          <p className="text-xs text-text-muted mt-2">
             Small steps today. Better financial insights tomorrow.
           </p>
         </div>
       ) : (
-        <div>
+        <div className="p-4 rounded-md bg-bg-secondary/70 border-thin border-border-subtle">
           {goals?.map((g) => (
             <div
               key={g.id}
               className={`relative ${updateGoal === g.id ? "z-50" : "z-0"}`}
             >
               <ScrollReveal>
-                <div className="p-4 my-4 border-thin border-border-subtle rounded-md bg-bg-muted">
-                  <div className="w-full flex justify-end mb-5">
+                <div className="p-4 my-3 border-thin border-border-subtle rounded-md bg-bg-surface hover:bg-bg-contrast shadow-subtle">
+                  <div className="w-full flex justify-end mb-3">
                     {updateGoal === g.id ? (
                       <button
                         onClick={() => setUpdateGoal("")}
-                        className={`h-8 aspect-square justify-center items-center rounded-full p-1 hover:bg-bg-secondary cursor-pointer`}
+                        className="h-8 aspect-square flex justify-center items-center rounded-full p-1 text-text-primary hover:bg-bg-muted cursor-pointer"
                       >
                         <IoMdClose className="size-6" />
                       </button>
@@ -223,7 +273,7 @@ function Goals() {
                         {isCurrentMonth && (
                           <button
                             onClick={() => setGoalToDelete(g.id)}
-                            className="h-8 aspect-square flex justify-center items-center rounded-full p-1 mr-2 hover:bg-bg-secondary text-xl text-red-500 cursor-pointer"
+                            className="h-8 aspect-square flex justify-center items-center rounded-full p-1 mr-2 hover:bg-bg-muted text-xl text-red-500 cursor-pointer"
                           >
                             <RiDeleteBin6Line />
                           </button>
@@ -243,9 +293,7 @@ function Goals() {
                               },
                             });
                           }}
-                          className={
-                            "h-8 aspect-square flex justify-center items-center rounded-full p-1 hover:bg-bg-secondary cursor-pointer"
-                          }
+                          className="h-8 aspect-square flex justify-center items-center rounded-full p-1 text-text-secondary hover:bg-bg-muted cursor-pointer"
                         >
                           <CiEdit className="size-6" />
                         </button>
@@ -254,17 +302,25 @@ function Goals() {
                   </div>
 
                   {updateGoal !== g.id ? (
-                    <div className="w-full flex flex-col gap-y-5">
-                      <div className="flex justify-between ">
-                        <h3 className="font-bold">{g.title}</h3>
-                        <h3>{g.goalProgress.toFixed()}%</h3>
+                    <div className="w-full flex flex-col gap-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-bold text-text-primary">
+                          {g.title}
+                        </h3>
+                        <h3 className="font-semibold text-text-secondary">
+                          {(
+                            (g.goalProgress / g.targetAmount.amount) *
+                            100
+                          ).toFixed()}
+                          %
+                        </h3>
                       </div>
-                      <div className="flex justify-between">
-                        <h3 className="font-semibold">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-medium text-text-secondary">
                           {g.category?.name ?? g.targetType}
                         </h3>
-                        <h3>
-                          <span className="font-bold text-green-500 ">
+                        <h3 className="font-medium text-text-primary">
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400 mr-0.5">
                             {g.targetAmount.currency.symbol}
                           </span>
                           {g.targetAmount.amount.toFixed(2)}
@@ -276,24 +332,24 @@ function Goals() {
                       onSubmit={formik.handleSubmit}
                       className="w-full"
                     >
-                      <div className="w-full flex flex-col gap-y-5 mb-5">
-                        <div className="flex justify-between">
-                          <div className="w-48">
+                      <div className="w-full flex flex-col gap-y-4 mb-5">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                          <div className="w-full sm:w-56">
                             <input
                               type="text"
                               name="title"
                               value={formik.values.title}
                               onChange={formik.handleChange}
                               placeholder={g.title}
-                              className="w-full p-2 rounded-sm border border-width-thin border-input-border bg-bg-secondary [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                              className="w-full p-2 text-sm text-text-primary rounded-sm border-thin border-input-border bg-input-bg outline-0 focus:border-accent"
                             />
                           </div>
-                          <h3 className="font-semibold">
+                          <h3 className="text-sm font-semibold text-text-secondary">
                             {g.category?.name ?? g.targetType}
                           </h3>
                         </div>
-                        <div className="flex justify-between">
-                          <div className="w-28">
+                        <div className="flex justify-between items-center gap-4">
+                          <div className="w-32">
                             <input
                               type="number"
                               name="targetAmount.amount"
@@ -302,11 +358,11 @@ function Goals() {
                               value={formik.values.targetAmount!.amount}
                               onChange={formik.handleChange}
                               placeholder={g.targetAmount.amount.toString()}
-                              className="w-full p-2 rounded-sm border border-width-thin border-input-border bg-bg-secondary [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                              className="w-full p-2 text-sm text-text-primary rounded-sm border-thin border-input-border bg-input-bg outline-0 focus:border-accent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                             />
                           </div>
 
-                          <div className="w-28">
+                          <div className="w-32">
                             <CurrencyDropdown
                               currencyFieldValue={
                                 formik.values.targetAmount!.currency.code
@@ -323,7 +379,7 @@ function Goals() {
                         label={formik.isSubmitting ? "Updating..." : "Edit"}
                         background="bg-btn-standard"
                         hoverBg="hover:bg-btn-standard-hover"
-                        textColor="text-white"
+                        textColor="text-btn-standard-text"
                         disabled={
                           !formik.dirty ||
                           !formik.isValid ||
@@ -337,13 +393,13 @@ function Goals() {
             </div>
           ))}
           {isCurrentMonth && (
-            <div className="my-5">
+            <div className="mt-5">
               <Button
                 type="button"
                 label="add a goal"
                 background="bg-btn-standard"
                 hoverBg="hover:bg-btn-standard-hover"
-                textColor="text-white"
+                textColor="text-btn-standard-text"
                 handleClick={() => navigate("/goal/new")}
               />
             </div>
@@ -352,23 +408,26 @@ function Goals() {
       )}
 
       {goalToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-lg border border-border-subtle bg-bg-muted p-6 shadow-xl">
-            <h2 className="text-lg font-bold mb-3">Delete budget?</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-md border-thin border-border-subtle bg-bg-surface p-6 shadow-card">
+            <h2 className="text-lg font-bold text-text-primary mb-3">
+              Delete goal?
+            </h2>
 
             <p className="text-sm text-text-secondary mb-6">
               Are you sure you want to delete the{" "}
-              <span className="font-bold">
-                {goals?.find((g) => g.id === goalToDelete)?.category?.name ??
-                  "Global"}
+              <span className="font-bold text-text-primary">
+                {goals?.find((g) => g.id === goalToDelete)?.title ??
+                  goals?.find((g) => g.id === goalToDelete)?.category?.name ??
+                  "Goal"}
               </span>{" "}
-              budget? This action cannot be undone.
+              goal? This action cannot be undone.
             </p>
 
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setGoalToDelete(null)}
-                className="px-4 py-2 rounded-md bg-bg-secondary hover:opacity-80 cursor-pointer"
+                className="px-4 py-2 text-sm font-medium rounded-sm bg-bg-muted text-text-primary hover:bg-bg-secondary border-thin border-border-subtle cursor-pointer"
               >
                 Cancel
               </button>
@@ -378,7 +437,7 @@ function Goals() {
                   await handleDelete(goalToDelete);
                   setGoalToDelete(null);
                 }}
-                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 cursor-pointer"
+                className="px-4 py-2 text-sm font-semibold rounded-sm bg-btn-danger text-btn-danger-text hover:bg-btn-danger-hover cursor-pointer"
               >
                 Confirm
               </button>

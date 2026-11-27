@@ -22,7 +22,7 @@ function Dropdown<
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`w-full py-1 px-2 border-thin border-border-subtle bg-bg-muted hover:bg-bg-secondary cursor-pointer ${
+        className={`w-full py-1.5 px-3 text-sm font-medium text-text-primary border-thin border-border-subtle bg-bg-surface hover:bg-bg-muted shadow-subtle cursor-pointer ${
           isOpen ? "rounded-t-sm" : "rounded-sm"
         }`}
       >
@@ -30,7 +30,7 @@ function Dropdown<
       </button>
 
       {isOpen && (
-        <div className="absolute top-8 w-full flex flex-col z-50">
+        <div className="absolute top-full w-full flex flex-col z-50 bg-dropdown-bg shadow-card rounded-b-sm overflow-hidden">
           {options
             .filter((item) => item.shortLabel !== selectedValue.shortLabel)
             .map((item, index, arr) => (
@@ -41,7 +41,7 @@ function Dropdown<
                   onSelect(item);
                   setIsOpen(false);
                 }}
-                className={`py-1 px-2 bg-bg-muted hover:bg-bg-secondary border-x-thin border-x-border-subtle cursor-pointer ${
+                className={`py-1.5 px-3 text-sm text-text-primary bg-dropdown-bg hover:bg-bg-muted border-x-thin border-x-border-subtle cursor-pointer ${
                   index === arr.length - 1
                     ? "rounded-b-sm border-b-thin border-b-border-subtle"
                     : ""

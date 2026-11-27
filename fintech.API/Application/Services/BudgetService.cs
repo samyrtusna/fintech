@@ -47,7 +47,7 @@ namespace fintech.API.Application.Services
             }
             if(dto.Type == BudgetType.ByCategory)
             {
-                var monthBudgets = await budgetRepository.GetAllByMonthAsync(userId, dto.Period);
+                var monthBudgets = await budgetRepository.GetAllByMonthAsync(userId, month);
                 var categoryBudgetExists = monthBudgets.Any(b => b.Type == BudgetType.ByCategory);
                 var globalBudget = monthBudgets.FirstOrDefault(b => b.Type == BudgetType.Global);
 
@@ -126,7 +126,7 @@ namespace fintech.API.Application.Services
             var startDate = new DateOnly(month.Year, month.Month, 1);
             var endDate = startDate.AddMonths(1).AddDays(-1);
             var period = new Period(startDate, endDate);
-            var fetchedBudgets = await budgetRepository.GetAllByMonthAsync(userId, period);
+            var fetchedBudgets = await budgetRepository.GetAllByMonthAsync(userId, month);
             
             var budgets = new List<BudgetResponseDto>();
             foreach (var budget in fetchedBudgets)
@@ -199,7 +199,8 @@ namespace fintech.API.Application.Services
             {
                 throw new BadRequestException($"Budget with ID {id} is not active.");
             }
-            var monthBudgets = await budgetRepository.GetAllByMonthAsync(userId, budget.Period);
+            var month = new DateTime(budget.Period.StartDate.Year, budget.Period.StartDate.Month, 1);
+            var monthBudgets = await budgetRepository.GetAllByMonthAsync(userId, month);
             var categoryBudgetExists = monthBudgets.Any(b => b.Type == BudgetType.ByCategory);
             if(budget.Type == BudgetType.Global && categoryBudgetExists)
             {
@@ -242,7 +243,8 @@ namespace fintech.API.Application.Services
             {
                 throw new UnauthorizedException($"Budget with ID {id} has already been deleted.");
             }
-            var monthBudgets = await budgetRepository.GetAllByMonthAsync(userId, budget.Period);
+            var month = new DateTime(budget.Period.StartDate.Year, budget.Period.StartDate.Month, 1);
+            var monthBudgets = await budgetRepository.GetAllByMonthAsync(userId, month);
             var budgetsByCategory = monthBudgets.Where(b => b.Type == BudgetType.ByCategory).ToList();
             if (budget.Type == BudgetType.Global && budgetsByCategory.Count > 0) 
             {

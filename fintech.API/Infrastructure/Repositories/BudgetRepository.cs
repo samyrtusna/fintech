@@ -14,9 +14,9 @@ namespace fintech.API.Infrastructure.Repositories
             return await context.Budgets.Where(b => b.UserId == userId && b.CategoryId == categoryId  && b.Period.StartDate == period.StartDate && b.Period.EndDate == period.EndDate && !b.IsDeleted && b.IsActive).FirstOrDefaultAsync();
         }
 
-        public async Task<List<Budget>> GetAllByMonthAsync(Guid userId, Period period)
+        public async Task<List<Budget>> GetAllByMonthAsync(Guid userId, DateTime date)
         {
-            return await context.Budgets.Where(b => b.UserId == userId && !b.IsDeleted && b.IsActive && b.Period.StartDate == period.StartDate && b.Period.EndDate == period.EndDate).Include(b => b.Category).ToListAsync();
+            return await context.Budgets.Where(b => b.UserId == userId && !b.IsDeleted && b.IsActive && b.Period.StartDate.Year == date.Year && b.Period.StartDate.Month == date.Month).Include(b => b.Category).ToListAsync();
         }
 
         public async Task<Budget?> GetBudgetByIdAsync(Guid id) 
@@ -31,7 +31,7 @@ namespace fintech.API.Infrastructure.Repositories
 
         public async Task<Budget?> GetGlobalBudgetByMonthAsync(Guid userId, Period period)
         {
-            return await context.Budgets.Where(b => b.UserId == userId && b.Type == BudgetType.Global && !b.IsDeleted && b.IsActive && b.Period.StartDate == period.StartDate && b.Period.EndDate == period.EndDate).FirstOrDefaultAsync();
+            return await context.Budgets.FirstOrDefaultAsync(b => b.UserId == userId && b.Type == BudgetType.Global && !b.IsDeleted && b.IsActive && b.Period.StartDate == period.StartDate && b.Period.EndDate == period.EndDate);
         }
     }
 }
