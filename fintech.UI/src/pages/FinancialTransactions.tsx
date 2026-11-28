@@ -178,11 +178,9 @@ function FinancialTransactions() {
   const [description, setDescription] = useState("");
   const [isEssential, setIsEssential] = useState(false);
 
-  useEffect(() => {
-    if (months.length > 0 && !selectedMonth) {
-      setSelectedMonth(months[0]);
-    }
-  }, [months, selectedMonth]);
+  if (months.length > 0 && !selectedMonth) {
+    setSelectedMonth(months[0]);
+  }
 
   const symbol = userInformations?.userCurrencies.find(
     (c) => c.isDefault === true,

@@ -65,11 +65,9 @@ function Goals() {
   const [updateGoal, setUpdateGoal] = useState("");
   const [goalToDelete, setGoalToDelete] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (months.length > 0 && !selectedMonth) {
-      setSelectedMonth(months[0]);
-    }
-  }, [months, selectedMonth]);
+  if (months.length > 0 && !selectedMonth) {
+    setSelectedMonth(months[0]);
+  }
 
   const isCurrentMonth =
     selectedMonth?.value.getFullYear() === new Date().getFullYear() &&

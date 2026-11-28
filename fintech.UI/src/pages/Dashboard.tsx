@@ -70,11 +70,9 @@ const Dashboard = () => {
     undefined,
   );
 
-  useEffect(() => {
-    if (months.length > 0 && !selectedMonth) {
-      setSelectedMonth(months[0]);
-    }
-  }, [months, selectedMonth]);
+  if (months.length > 0 && !selectedMonth) {
+    setSelectedMonth(months[0]);
+  }
 
   const fetchMonthData = useCallback(
     async (monthItem: MonthItem) => {
