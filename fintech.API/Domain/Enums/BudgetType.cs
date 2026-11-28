@@ -3,6 +3,7 @@
     public enum BudgetType
     {
         Global = 1,
-        ByCategory
+        ByCategory,
+        GlobalBudget
     }
 }

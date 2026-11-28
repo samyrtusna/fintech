@@ -36,34 +36,34 @@ export default function Calendar(props: PropsType) {
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
   return (
-    <div className="w-xs mx-auto p-6 bg-bg-muted rounded-2xl shadow-xl border border-gray-100">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-800">
+    <div className="w-xs mx-auto p-5 bg-bg-surface text-text-primary rounded-md shadow-card border-thin border-border-subtle">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-base font-bold text-text-primary">
           {format(currentMonth, "MMMM yyyy")}
         </h2>
-        <div className="flex space-x-2">
+        <div className="flex space-x-1">
           <button
             type="button"
             onClick={prevMonth}
-            className="p-2 hover:bg-gray-100 rounded-full transition"
+            className="p-1.5 text-text-secondary hover:bg-bg-muted rounded-sm transition cursor-pointer"
           >
-            <IoChevronBack className="w-5 h-5 text-gray-600" />
+            <IoChevronBack className="w-4 h-4" />
           </button>
           <button
             type="button"
             onClick={nextMonth}
-            className="p-2 hover:bg-gray-100 rounded-full transition"
+            className="p-1.5 text-text-secondary hover:bg-bg-muted rounded-sm transition cursor-pointer"
           >
-            <IoChevronForward className="w-5 h-5 text-gray-600" />
+            <IoChevronForward className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-0.5 text-center font-semibold text-xs text-gray-500 mb-2">
+      <div className="grid grid-cols-7 gap-0.5 text-center font-semibold text-xs text-text-muted mb-2">
         {weekDays.map((d) => (
           <div
             key={d}
-            className="py-2"
+            className="py-1.5"
           >
             {d}
           </div>
@@ -82,10 +82,10 @@ export default function Calendar(props: PropsType) {
               key={idx}
               onClick={() => handledate(day)}
               className={`
-                h-8 w-8 mx-auto flex items-center justify-center text-sm rounded-full transition-all duration-200
-                ${!isCurrentMonth ? "text-gray-300" : "text-gray-700"}
-                ${isCurrentDay && !isSelected ? "border border-indigo-600 font-bold text-indigo-600" : ""}
-                ${isSelected ? "bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-200" : "hover:bg-gray-100"}
+                h-8 w-8 mx-auto flex items-center justify-center text-sm rounded-full transition-all duration-200 cursor-pointer
+                ${!isCurrentMonth ? "text-text-muted/40" : "text-text-primary"}
+                ${isCurrentDay && !isSelected ? "border border-accent font-bold text-text-secondary" : ""}
+                ${isSelected ? "bg-btn-standard text-btn-standard-text font-semibold shadow-subtle" : "hover:bg-bg-muted"}
               `}
             >
               <time dateTime={format(day, "yyyy-MM-dd")}>

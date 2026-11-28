@@ -13,8 +13,8 @@ namespace fintech.API.Application.Interfaces.Repositories
         Task<List<FinancialTransaction>> GetByMonthAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default);
         Task<List<FinancialTransaction>> GetByYearAsync(Guid userId, DateTime date, CancellationToken cancellationToken = default);
         Task<List<FinancialTransaction>> GetByTypeByMonthAsync(Guid userId, FinancialType type, DateTime date, CancellationToken cancellationToken = default);
-        Task<List<AggregateByPeriodDto>> GetByCategoryByMonthAsync(Guid userId, string categoryName, CancellationToken cancellationToken = default);
-        Task<List<FinancialTransaction>> GetTotalCategoryByMonthAsync(Guid userId, string categoryName, DateTime date, CancellationToken cancellationToken = default);
+        Task<List<AggregateByPeriodDto>> GetByCategoryIdByMonthAsync(Guid userId, Guid categoryId, CancellationToken cancellationToken = default);
+        Task<List<FinancialTransaction>> GetTotalCategoryByMonthAsync(Guid userId, Guid categoryId, DateTime date, CancellationToken cancellationToken = default);
     }  
 } 
     

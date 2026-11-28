@@ -19,7 +19,9 @@ namespace fintech.API.Application.Services
         IUserCategorySettingRepository categorySettingRepository,
         IExchangeRateApiService exchangeRateApiService,
         IUserCurrenciesRepositoy userCurrenciesRepositoy,
-        IFinancialAggregatesService financialAggregatesService) : IFinancialTransactionService 
+        IFinancialAggregatesService financialAggregatesService,
+        IBudgetRepository budgetRepository,
+        IGoalRepository goalRepository) : IFinancialTransactionService 
     {
         public async Task<FinancialTransactionResponseDto> CreateFinancialTransactionAsync(FinancialTransactionRequestDto dto, Guid userId)
         {
@@ -55,6 +57,8 @@ namespace fintech.API.Application.Services
             newTransaction.IsEssential = dto.IsEssential ?? categorySetting?.IsEssential ?? false;
 
             var globalAggregates = await financialAggregatesService.GetGlobalAggregatesAsync(userId, DateTime.UtcNow, CancellationToken.None);
+            var budgets = await budgetRepository.GetAllByMonthAsync(userId,dto.TransactionDate ?? DateTime.UtcNow);
+            var goals = await goalRepository.GetAllByMonthAsync(userId,dto.TransactionDate ?? DateTime.UtcNow);
 
 
             if(newTransaction.Type != FinancialType.Income && newTransaction.Type != FinancialType.ContractedLoan && amount > globalAggregates.FirstOrDefault(ag => ag.Name == AggregateName.GlobalNetCashFlow.ToString())!.Amount.Amount)
@@ -63,6 +67,28 @@ namespace fintech.API.Application.Services
             }
             
             await transactionRepository.AddAsync(newTransaction);
+
+            var budget = budgets.FirstOrDefault(b => b.CategoryId == newTransaction.CategoryId);
+            var globalBudget = budgets.FirstOrDefault(b => b.Type == BudgetType.GlobalBudget || b.Type == BudgetType.Global);
+            if (budget != null)
+            {
+                budget.BudgetConsumption += newTransaction.BaseAmount.Amount;
+                budgetRepository.Update(budget);
+            }
+            if(globalBudget != null)
+            {
+                globalBudget.BudgetConsumption += newTransaction.BaseAmount.Amount;
+                budgetRepository.Update(globalBudget);
+            }
+
+            var goal = goals.FirstOrDefault(g => g.CategoryId == newTransaction.CategoryId);
+            if(goal != null)
+            {
+                goal.GoalProgress += newTransaction.BaseAmount.Amount;
+                goalRepository.Update(goal);
+            }
+
+
             await transactionRepository.SaveChangesAsync();
 
             return newTransaction.MapToResponseDto();  
@@ -176,7 +202,31 @@ namespace fintech.API.Application.Services
                 throw new BadRequestException("You cannot delete transactions from previous years.");
             }
             transaction.IsDeleted = true;
-
+            var today = DateTime.UtcNow;
+            if(transaction.TransactionDate.Year == today.Year && transaction.TransactionDate.Month == today.Month)
+            {
+                var budgets = await budgetRepository.GetAllByMonthAsync(userId, today);
+                var goals = await goalRepository.GetAllByMonthAsync(userId, today);
+                var budget = budgets.FirstOrDefault(b => b.CategoryId == transaction.CategoryId);
+                var globalBudget = budgets.FirstOrDefault(b => b.Type == BudgetType.GlobalBudget || b.Type == BudgetType.Global);
+                var goal = goals.FirstOrDefault(g => g.CategoryId == transaction.CategoryId);
+                if(budget != null)
+                {
+                    budget.BudgetConsumption -= transaction.BaseAmount.Amount;
+                    budgetRepository.Update(budget);
+                }
+                if(globalBudget != null)
+                {
+                    globalBudget!.BudgetConsumption -= transaction.BaseAmount.Amount;
+                    budgetRepository.Update(globalBudget);
+                }
+                if(goal != null)
+                {
+                    goal.GoalProgress -= transaction.BaseAmount.Amount;
+                    goalRepository.Update(goal);
+                }
+            }
+           
             await transactionRepository.SaveChangesAsync();
 
             return new ConfirmationResponseDto

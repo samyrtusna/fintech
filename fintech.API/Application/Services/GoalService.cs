@@ -1,15 +1,17 @@
 ﻿using fintech.API.Application.DTOs.ApiResponsesDtos;
 using fintech.API.Application.DTOs.GoalDtos;
 using fintech.API.Application.Exceptions;
+using fintech.API.Application.Helpers;
 using fintech.API.Application.Interfaces.Repositories;
 using fintech.API.Application.Interfaces.Services;
 using fintech.API.Application.Mappings;
+using fintech.API.Domain.Entities;
 using fintech.API.Domain.Enums;
 using fintech.API.Domain.ValueObjects;
 
 namespace fintech.API.Application.Services
 {
-    public class GoalService(ICategoryRepository categoryRepository, IGoalRepository goalRepository) : IGoalService
+    public class GoalService(ICategoryRepository categoryRepository, IGoalRepository goalRepository, ICurrencyConversions currencyConversions, IFinancialTransactionRepository transactionRepository) : IGoalService
     {
         public async Task<GoalResponseDto> CreateGoalsAsync(Guid userId, GoalRequestDto dto )
         {
@@ -18,7 +20,9 @@ namespace fintech.API.Application.Services
             {
                 throw new ArgumentException("User ID cannot be empty.", nameof(userId));
             }
-            var goals = await goalRepository.GetAllByMonthAsync(userId, dto.Period);
+            var month = new DateTime(dto.Period.StartDate.Year, dto.Period.StartDate.Month, 1);
+            var goals = await goalRepository.GetAllByMonthAsync(userId, month);
+            List<FinancialTransaction> financialTransactions = []; 
             if (dto.CategoryId.HasValue && dto.CategoryId.Value != Guid.Empty)
             {
                 var category = await categoryRepository.GetAsync((Guid)dto.CategoryId) ?? throw new NotFoundException($"Category with ID {dto.CategoryId} not found.");
@@ -39,6 +43,7 @@ namespace fintech.API.Application.Services
                 {
                     throw new BadRequestException($"The target type must match the category type. Expected: {category.Type}, but got: {dto.TargetType.Value}.");
                 }
+                financialTransactions = await transactionRepository.GetTotalCategoryByMonthAsync(userId,(Guid)dto.CategoryId, month);
             }
             else if (dto.TargetType.HasValue)
             {
@@ -51,8 +56,15 @@ namespace fintech.API.Application.Services
                 {
                     throw new BadRequestException("Goals can only be created for investment or savings target types.");
                 }
+                financialTransactions = await transactionRepository.GetByTypeByMonthAsync(userId, (FinancialType)dto.TargetType, month);
             }
+
+            var convertedTransactions = await currencyConversions.ConvertTransactionBaseCurrencyAsync(userId, financialTransactions);
+            var convertedAmount = await currencyConversions.ConvertToBaseCurrencyAsync(userId, dto.TargetAmount);
+            dto.TargetAmount = convertedAmount;
+
             var goal = dto.ToEntity(userId);
+            goal.GoalProgress = convertedTransactions.Sum(t => t.Amount.Amount);
             await goalRepository.AddAsync(goal);
             await goalRepository.SaveChangesAsync();
 
@@ -68,7 +80,7 @@ namespace fintech.API.Application.Services
             var startDate = new DateOnly(month.Year, month.Month, 1);
             var endDate = startDate.AddMonths(1).AddDays(-1);
             var period = new Period(startDate, endDate);
-            var goals = await goalRepository.GetAllByMonthAsync(userId, period);
+            var goals = await goalRepository.GetAllByMonthAsync(userId, month);
             return [..goals.Select(g => g.ToDto())];
         }
 
@@ -114,8 +126,15 @@ namespace fintech.API.Application.Services
             {
                 throw new BadRequestException($"Goal with ID {goalId} is not active.");
             }
+            if(dto.TargetAmount != null)
+            {
+                var convertedAmount = await currencyConversions.ConvertToBaseCurrencyAsync(userId, dto.TargetAmount);
+                dto.TargetAmount = convertedAmount;
+                goal.TargetAmount = convertedAmount;
+            }
+            
             goal.Title = dto.Title ?? goal.Title;
-            goal.TargetAmount = dto.TargetAmount ?? goal.TargetAmount;
+           
 
             goalRepository.Update(goal);
             await goalRepository.SaveChangesAsync();

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import generateMonths from "../helpers/generateMonths";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -27,6 +27,8 @@ import PieCharts from "../components/PieChart";
 import PeriodicAggregateCard from "../components/PeriodicAggregateCard";
 import ScrollReveal from "../components/ScrollReveal";
 import SwitchButton from "../components/SwitchButton";
+import userService from "../API/Services/userService";
+import { setUserInformations } from "../state/slices/authSlice";
 
 function FinancialTransactions() {
   const dispatch = useAppDispatch();
@@ -115,6 +117,22 @@ function FinancialTransactions() {
     { name: "Savings", value: savings, color: "#8108f3" },
   ];
 
+  const fetchUserInformations = useCallback(async () => {
+    if (userInformations !== null) {
+      return;
+    }
+    try {
+      const fetchedUserInformations = await userService.getUserAsync();
+      dispatch(setUserInformations(fetchedUserInformations));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch user informations",
+      );
+    }
+  }, [dispatch, userInformations]);
+
   const fetchGlobalAggregates = useCallback(async () => {
     if (globalAggregates !== null) {
       return;
@@ -133,12 +151,19 @@ function FinancialTransactions() {
   }, [dispatch, globalAggregates]);
 
   useEffect(() => {
+    fetchUserInformations();
     fetchGlobalAggregates();
-  }, [fetchGlobalAggregates]);
+  }, [fetchGlobalAggregates, fetchUserInformations]);
 
-  const months = generateMonths(userInformations!.createdAt);
+  const createdAt = userInformations?.createdAt;
 
-  const [selectedMonth, setSelectedMonth] = useState<MonthItem>(months[0]);
+  const months: MonthItem[] = useMemo(() => {
+    return createdAt ? generateMonths(createdAt) : [];
+  }, [createdAt]);
+
+  const [selectedMonth, setSelectedMonth] = useState<MonthItem | undefined>(
+    undefined,
+  );
   const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [refreshTransactions, setRefreshTransactions] = useState(0);
   const [dateDropdown, setDateDropdown] = useState(false);
@@ -147,9 +172,16 @@ function FinancialTransactions() {
   const [transactionDetails, setTransactionDetails] = useState("");
   const [updateTransaction, setUpdateTransaction] = useState("");
   const [showDate, setShowDate] = useState(false);
+  const [editingTransaction, setEditingTransaction] =
+    useState<GetTransactionResponse | null>(null);
 
   const [description, setDescription] = useState("");
   const [isEssential, setIsEssential] = useState(false);
+
+  if (months.length > 0 && !selectedMonth) {
+    setSelectedMonth(months[0]);
+  }
+
   const symbol = userInformations?.userCurrencies.find(
     (c) => c.isDefault === true,
   )?.currency.symbol;
@@ -170,20 +202,18 @@ function FinancialTransactions() {
     [dispatch],
   );
 
-  let selectedTransaction;
-
   const startUpdateTransaction = (id: string) => {
-    selectedTransaction = transactionsState.transactions?.items.find(
+    const found = transactionsState.transactions?.items.find(
       (t) => t.id === id,
     );
-
-    if (!selectedTransaction) {
+    if (!found) {
       return;
     }
 
+    setEditingTransaction(found);
     setUpdateTransaction(id);
-    setDescription(selectedTransaction.description ?? "");
-    setIsEssential(selectedTransaction.isEssential ?? false);
+    setDescription(found.description ?? "");
+    setIsEssential(found.isEssential ?? false);
   };
 
   const pageSize = 10;
@@ -193,24 +223,30 @@ function FinancialTransactions() {
   );
 
   const handleUpdate = async () => {
+    if (!editingTransaction) {
+      return;
+    }
+
     const requestBody = {
       description:
-        description!.length > 1 &&
-        description !== selectedTransaction!.description
+        description.trim().length > 0 &&
+        description !== editingTransaction.description
           ? description
           : undefined,
       isEssential:
-        isEssential !== selectedTransaction!.isEssential
+        isEssential !== editingTransaction.isEssential
           ? isEssential
           : undefined,
     };
+
     try {
       await financialTrascationService.updateAsync(
-        selectedTransaction!.id,
+        editingTransaction.id,
         requestBody,
       );
       setRefreshTransactions((prev) => prev + 1);
       setUpdateTransaction("");
+      setEditingTransaction(null);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to update transaction",
@@ -242,6 +278,9 @@ function FinancialTransactions() {
         );
 
   useEffect(() => {
+    if (!selectedMonth) {
+      return;
+    }
     const filter: TransactionsFilter = {
       date: selectedMonth!.value,
       page,
@@ -288,9 +327,17 @@ function FinancialTransactions() {
     setUpdateTransaction("");
   };
 
+  if (!userInformations || !selectedMonth) {
+    return (
+      <div className="flex min-h-dvh w-full justify-center items-center">
+        <Spinner />
+      </div>
+    );
+  }
+
   return (
-    <div className="relative min-h-dvh h-full min-w-dvw ">
-      <div className="flex justify-around w-full my-12 px-6">
+    <div className="relative min-h-dvh h-full min-w-dvw text-text-primary">
+      <div className="flex justify-around w-full my-10 px-6">
         <GlobalAggregates
           debtValue={globalDebt}
           investmentValue={globalInvestment}
@@ -300,10 +347,16 @@ function FinancialTransactions() {
         />
       </div>
 
-      <div className="flex w-full justify-center">
+      <div className="flex w-full md:w-1/2 lg:w-5/12 md:mx-auto justify-between items-center mb-4 p-4 md:p-0">
+        <div className={`${updateTransaction === "" ? "flex" : "hidden"}`}>
+          <SwitchButton
+            handleClick={() => setShowDate((prev) => !prev)}
+            showDate={showDate}
+          />
+        </div>
         <div
           ref={monthRef}
-          className="relative w-1/3 md:w-1/6"
+          className={`${updateTransaction === "" ? "flex" : "hidden"} w-1/3`}
         >
           <Dropdown<MonthItem>
             selectedValue={selectedMonth}
@@ -311,10 +364,24 @@ function FinancialTransactions() {
             onSelect={(selected) => handleMonthClick(selected)}
           />
         </div>
+        <div
+          className={`h-8 aspect-square group bg-btn-standard hover:bg-btn-standard-hover rounded-sm ${updateTransaction === "" ? "flex" : "hidden"}`}
+        >
+          <Link
+            to="new"
+            className="flex w-full h-full justify-center items-center rounded-sm shadow-card"
+          >
+            <IoMdAdd className="size-7 text-btn-standard-text" />
+          </Link>
+          <span className="absolute opacity-0 md:group-hover:opacity-100 -top-6 -right-40 px-2.5 py-1 text-xs font-medium text-text-primary bg-bg-surface border-thin border-border-subtle rounded-sm shadow-subtle">
+            Add new Transaction
+          </span>
+        </div>
       </div>
+
       <div className="relative w-full px-2 flex justify-around">
         <div
-          className={`hidden  w-[20%] h-full items-between  mt-10  ${updateTransaction !== "" ? "md:hidden" : "md:flex md:flex-col"}`}
+          className={`hidden w-[20%] h-full items-between mt-10 ${updateTransaction !== "" ? "md:hidden" : "md:flex md:flex-col"}`}
         >
           <PeriodicAggregateCard
             title="Monthly Income"
@@ -340,7 +407,7 @@ function FinancialTransactions() {
         ) : transactionsState.transactions !== null &&
           transactionsState.transactions.items?.length > 0 ? (
           <div
-            className={`p-4 ${updateTransaction !== "" ? "w-full md:w-2/3" : "w-full  md:w-1/2 lg:w-5/12"}`}
+            className={`p-4 bg-bg-secondary/70 border-thin border-border-subtle rounded-md shadow-subtle ${updateTransaction !== "" ? "w-full md:w-2/3" : "w-full md:w-1/2 lg:w-5/12"}`}
           >
             {transactionsState.transactions?.items.map((t, index, arr) => (
               <div
@@ -350,7 +417,7 @@ function FinancialTransactions() {
                 {showDate && (
                   <div
                     className={`
-                    ${t.transactionDate === arr[index - 1]?.transactionDate || updateTransaction !== "" ? "hidden" : "block"} text-sm`}
+                    ${t.transactionDate === arr[index - 1]?.transactionDate || updateTransaction !== "" ? "hidden" : "block"} text-xs font-semibold uppercase tracking-wider text-text-secondary mt-3 mb-1 px-1`}
                   >
                     {t.transactionDate.toString()}
                   </div>
@@ -372,87 +439,65 @@ function FinancialTransactions() {
                   setUpdateTransaction={setUpdateTransaction}
                 />
               </div>
-
-              // TODO: user can handle category importance
             ))}
+
             <div
-              className={`${pageChange && updateTransaction === "" ? "flex justify-center gap-2" : "hidden"}`}
+              className={`${pageChange && updateTransaction === "" ? "flex justify-center items-center gap-2 mt-4" : "hidden"}`}
             >
               <button
                 disabled={page === 1}
                 onClick={() => setPage((prev) => prev - 1)}
-                className="px-2 py-1 mr-1 rounded-md disabled:opacity-0 cursor-pointer hover:bg-bg-muted "
+                className="px-2.5 py-1.5 mr-1 rounded-md border-thin border-border-subtle bg-bg-surface disabled:opacity-30 cursor-pointer hover:bg-bg-muted"
               >
                 <IoChevronBack className="stroke-text-primary" />
               </button>
 
-              <span className="px-2 pt-1 rounded-md">
+              <span className="px-2.5 py-1 text-sm font-medium text-text-secondary rounded-md">
                 {page} / {totalPages}
               </span>
 
               <button
                 disabled={page === totalPages}
                 onClick={() => setPage((prev) => prev + 1)}
-                className="px-2 py-1 ml-1 rounded-md disabled:opacity-0 cursor-pointer hover:bg-bg-muted "
+                className="px-2.5 py-1.5 ml-1 rounded-md border-thin border-border-subtle bg-bg-surface disabled:opacity-30 cursor-pointer hover:bg-bg-muted"
               >
                 <IoChevronForward className="stroke-text-primary" />
               </button>
             </div>
-            <div
-              className={` h-10 aspect-square group bg-blue-500 hover:bg-blue-600 rounded-sm ${updateTransaction === "" ? "absolute -top-8 right-6 md:right-[27%] lg:right-[30%]" : "hidden"}`}
-            >
-              <Link
-                to="new"
-                className="flex w-full h-full justify-center items-center rounded-sm shadow-card"
-              >
-                <IoMdAdd className="size-10 text-bg-contrast" />
-              </Link>
-              <span className="absolute opacity-0 md:group-hover:opacity-100 -top-5 -right-40 px-2 py-1 bg-bg-muted border-thin border-border-subtle rounded-sm">
-                Add new Transaction
-              </span>
-            </div>
-            <div
-              className={`flex ${updateTransaction === "" ? "absolute -top-8 left-6 md:left-[27%] lg:left-[30%]" : "hidden"}`}
-            >
-              <SwitchButton
-                handleClick={() => setShowDate((prev) => !prev)}
-                showDate={showDate}
-              />
-            </div>
           </div>
         ) : (
-          <div className="flex flex-col justify-center items-center w-full h-fit mx-auto mt-10 md:w-1/2 lg:w-5/12 p-5 border-thin border-border-subtle rounded-md">
-            <div className="flex justify-center m-4">
-              <AiOutlineTransaction className="size-10 text-green-500" />
+          <div className="flex flex-col justify-center items-center w-full h-fit mx-auto mt-10 md:w-1/2 lg:w-5/12 p-6 bg-bg-surface border-thin border-border-subtle rounded-md shadow-card text-center">
+            <div className="flex justify-center m-4 p-3 rounded-full bg-bg-muted">
+              <AiOutlineTransaction className="size-9 text-text-secondary" />
             </div>
-            <h3 className="text-xl font-semibold my-2 mx-auto">
+            <h3 className="text-xl font-bold my-2 mx-auto text-text-primary">
               A new month, a clearer financial picture.
             </h3>
-            <h3 className="py-2">
+            <h3 className="py-1.5 text-sm font-medium text-text-secondary">
               No transactions recorded for this month yet.
             </h3>
-            <h3 className="text-lg pt-4">
+            <h3 className="text-sm pt-3 text-text-primary">
               Keep your finances on track by recording your income, expenses,
               savings, investments, and debts.
             </h3>
-            <h3 className="text-lg pb-4">
-              {" "}
+            <h3 className="text-sm pb-4 text-text-primary">
               Finance_It will help you understand your cash flow and monitor
               your financial health as the month unfolds.
             </h3>
-            <div className="my-3 p-3 bg-green-500 text-gray-50 font-bold rounded-sm shadow-card">
+            <div className="my-3 px-4 py-2.5 bg-btn-standard hover:bg-btn-standard-hover text-btn-standard-text font-bold rounded-sm shadow-card">
               <Link to="newFinancialTransaction">
                 <span className="text-lg mr-1">+</span>
                 Add a transaction
               </Link>
             </div>
-            <p className="text-sm">
+            <p className="text-xs text-text-muted mt-2">
               Small steps today. Better financial insights tomorrow.
             </p>
           </div>
         )}
+
         <div
-          className={`hidden  w-[20%] h-full mt-10 justify-between  ${updateTransaction !== "" ? "md:hidden" : "md:flex md:flex-col"}`}
+          className={`hidden w-[20%] h-full mt-10 justify-between ${updateTransaction !== "" ? "md:hidden" : "md:flex md:flex-col"}`}
         >
           <PeriodicAggregateCard
             title="Monthly Expense"
@@ -474,6 +519,7 @@ function FinancialTransactions() {
           />
         </div>
       </div>
+
       <div className="flex flex-col justify-center md:hidden px-6">
         <PeriodicAggregateCard
           title="Monthly Income"
@@ -511,12 +557,13 @@ function FinancialTransactions() {
           isAnActif={false}
         />
       </div>
+
       <ScrollReveal>
         <div
-          className={`w-full h-fit my-5 px-6 md:px-12  ${updateTransaction !== "" || totalIncome === 0 ? "md:hidden" : "md:block"}`}
+          className={`w-full h-fit my-6 px-6 md:px-12 ${updateTransaction !== "" || totalIncome === 0 ? "md:hidden" : "md:block"}`}
         >
-          <div className="w-full h-fit px-10 border-thin border-border-subtle rounded-md bg-bg-contrast shadow-card ">
-            <h3 className="text-xl font-bold mt-5 text-center">
+          <div className="w-full h-fit px-10 py-6 border-thin border-border-subtle rounded-md bg-bg-surface shadow-card">
+            <h3 className="text-xl font-bold mt-2 mb-4 text-center text-text-primary">
               Outflow Breakdown
             </h3>
             <div className="w-full flex flex-col md:flex-row justify-between items-center">
@@ -524,7 +571,7 @@ function FinancialTransactions() {
                 <PieCharts data={pieChartData} />
               </div>
 
-              <div className="w-full md:w-1/4 mt-4 text-sm space-y-1">
+              <div className="w-full md:w-1/4 mt-4 p-4 rounded-md bg-bg-secondary border-thin border-border-subtle text-sm space-y-2">
                 {pieChartData.map((pie) => (
                   <div
                     key={pie.name}
@@ -536,7 +583,7 @@ function FinancialTransactions() {
                     >
                       ● {pie.name}
                     </span>
-                    <span className="text-text-muted">
+                    <span className="font-medium text-text-secondary">
                       {symbol}
                       {pie.value.toFixed(2)}
                     </span>
@@ -552,5 +599,3 @@ function FinancialTransactions() {
 }
 
 export default FinancialTransactions;
-// TODO:add an interface to allow a user to set it's currencies
-// TODO:add a div at the bottom to give advices

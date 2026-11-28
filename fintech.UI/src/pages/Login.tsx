@@ -66,25 +66,27 @@ function Login() {
   }
 
   return (
-    <div className="flex flex-col items-center bg-bg-primary h-dvh md:justify-center">
-      <div className="w-full h-fit max-h-dvh py-3 px-2 bg-form-bg rounded-sm md:w-1/2  md:shadow-card xl:w-1/3">
+    <div className="flex flex-col items-center min-h-dvh px-4 py-6 md:justify-center text-text-primary">
+      <div className="w-full h-fit py-5 px-4 sm:px-6 bg-form-bg border-thin border-border-subtle rounded-md md:w-1/2 shadow-card xl:w-1/3">
         <Link
           to="/"
-          className="flex justify-center items-center h-10 aspect-square mx-2 rounded-full bg-input-bg hover:bg-bg-muted"
+          className="flex justify-center items-center h-9 w-9 rounded-full bg-bg-surface hover:bg-bg-muted border-thin border-border-subtle shadow-subtle"
         >
           <IconComponent icon={IoChevronBack} />
         </Link>
-        <div className="flex flex-col items-center mt-10">
-          <div className="h-24 my-5 flex items-center justify-center">
-            <Logo className="text-6xl font-bold ml-2" />
+        <div className="flex flex-col items-center mt-4">
+          <div className="h-20 my-2 flex items-center justify-center">
+            <Logo className="text-5xl sm:text-6xl font-bold ml-2" />
           </div>
-          <div className="flex flex-col items-center w-full py-5">
-            <h1 className="text-3xl font-bold">Welcome back!</h1>
-            <h2 className="my-3 px-3 text-xl text-center ">
+          <div className="flex flex-col items-center w-full py-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
+              Welcome back!
+            </h1>
+            <h2 className="mt-2 px-3 text-sm sm:text-base text-text-secondary text-center">
               Please enter your credentials.
             </h2>
           </div>
-          <div className="flex flex-col w-full mt-10">
+          <div className="flex flex-col w-full mt-4 space-y-4">
             <Formik
               initialValues={initialValues}
               validationSchema={LoginSchema}
@@ -94,7 +96,7 @@ function Login() {
               {(formik) => {
                 return (
                   <div className="w-full">
-                    <Form className="w-full">
+                    <Form className="w-full space-y-1">
                       <InputField
                         ref={emailInputRef}
                         id="email"
@@ -111,11 +113,10 @@ function Login() {
                           component="div"
                           placeholder="Enter your password"
                         />
-                        {/* button color is hardcoded */}
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/3 -translate-y-1/2 text-text-primary hover:text-text-surface cursor-pointer"
+                          className="absolute right-3 top-2.5 text-text-muted hover:text-text-secondary cursor-pointer"
                           aria-label={
                             showPassword ? "Hide password" : "Show password"
                           }
@@ -127,26 +128,27 @@ function Login() {
                           )}
                         </button>
                       </div>
-                      <Button
-                        label="Log In"
-                        type="submit"
-                        background="bg-btn-standard"
-                        hoverBg="hover:bg-btn-standard-hover"
-                        textColor="text-btn-standard-text"
-                        disabled={
-                          !formik.dirty ||
-                          !formik.isValid ||
-                          formik.isSubmitting
-                        }
-                      />
+                      <div className="pt-2">
+                        <Button
+                          label="Log In"
+                          type="submit"
+                          background="bg-btn-standard"
+                          hoverBg="hover:bg-btn-standard-hover"
+                          textColor="text-btn-standard-text"
+                          disabled={
+                            !formik.dirty ||
+                            !formik.isValid ||
+                            formik.isSubmitting
+                          }
+                        />
+                      </div>
                     </Form>
 
-                    <div className="flex justify-center text-xs px-2">
-                      <p>Dont have an account?</p>
-                      {/* Link color is hardcoded */}
+                    <div className="flex justify-center items-center gap-2 text-xs text-text-secondary mt-5 px-2">
+                      <p>Don&apos;t have an account?</p>
                       <Link
                         to="/register"
-                        className="text-text-secondary hover:text-text-surface pl-4"
+                        className="font-semibold text-text-secondary hover:underline"
                       >
                         Register here
                       </Link>

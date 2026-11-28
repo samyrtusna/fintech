@@ -12,9 +12,9 @@ namespace fintech.API.Infrastructure.Repositories
         {
             return await context.Goals.Where(g => g.UserId == userId && g.CategoryId == categoryId && g.Period.StartDate == period.StartDate && g.Period.EndDate == period.EndDate && !g.IsDeleted && g.IsActive).FirstOrDefaultAsync();
         }
-        public async Task<List<Goals>> GetAllByMonthAsync(Guid userId, Period period)
+        public async Task<List<Goals>> GetAllByMonthAsync(Guid userId, DateTime date)
         {
-            return await context.Goals.Where(g => g.UserId == userId && !g.IsDeleted && g.IsActive && g.Period.StartDate == period.StartDate && g.Period.EndDate == period.EndDate).Include(g => g.Category).ToListAsync();
+            return await context.Goals.Where(g => g.UserId == userId && !g.IsDeleted && g.IsActive && g.Period.StartDate.Year == date.Year && g.Period.StartDate.Month == date.Month).Include(g => g.Category).ToListAsync();
         }
         public async Task<Goals?> GetGoalByIdAsync(Guid id)
         {

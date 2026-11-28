@@ -166,64 +166,77 @@ function NewFinancialTransaction() {
   }
 
   return (
-    <div className="w-dvw flex justify-center md:p-5">
-      <div className="w-full lg:w-10/12 xl:w-7/12 p-5 bg-bg-muted border-thin border-border-subtle rounded-sm shadow-card ">
-        <div className="flex mb-5 justify-between items-center">
+    <div className="w-dvw flex justify-center p-4 md:p-6 text-text-primary">
+      <div className="w-full lg:w-10/12 xl:w-7/12 p-5 md:p-6 bg-form-bg border-thin border-border-subtle rounded-md shadow-card">
+        <div className="flex mb-6 pb-4 border-b-thin border-border-subtle justify-between items-center">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex justify-center items-center h-10 aspect-square md:mx-2 rounded-full bg-bg-primary hover:bg-navbar-bg"
+            className="flex justify-center items-center h-9 aspect-square md:mx-2 rounded-full bg-bg-surface hover:bg-bg-muted border-thin border-border-subtle shadow-subtle cursor-pointer"
           >
-            <IoChevronBack className="stroke-text-surface" />
+            <IoChevronBack className="text-text-primary" />
           </button>
-          <h1>New Financial Transaction</h1>
-          <FaRegMoneyBillAlt className="stroke-blue-500" />
+          <h1 className="text-lg md:text-xl font-bold text-text-primary">
+            New Financial Transaction
+          </h1>
+          <div className="p-2 rounded-sm bg-bg-muted text-text-secondary">
+            <FaRegMoneyBillAlt className="size-4" />
+          </div>
         </div>
 
-        <form onSubmit={formik.handleSubmit}>
-          <div className="w-full  md:p-5 md:flex md:justify-between">
-            <div className="relative mb-6 md:mb-0">
-              <h2>Type</h2>
+        <form
+          onSubmit={formik.handleSubmit}
+          className="space-y-4"
+        >
+          <div className="w-full p-4 md:px-5 rounded-md bg-bg-secondary/70 border-thin border-border-subtle md:flex md:justify-between md:gap-4">
+            <div className="relative mb-5 md:mb-0 flex-1">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Type
+              </h2>
               <select
                 name="type"
                 value={selectedType}
                 onChange={(e) =>
                   setSelectedType(e.target.value as FinancialTypes)
                 }
-                className="w-full md:w-45 appearance-none text-center p-2 bg-bg-surface border-thin border-border-subtle rounded-sm shadow-card cursor-pointer outline-0"
+                className="w-full appearance-none text-center py-2 px-3 text-sm font-medium text-text-primary bg-input-bg hover:bg-bg-muted border-thin border-input-border rounded-sm shadow-subtle cursor-pointer outline-0 focus:border-accent"
               >
                 {types.map((t, index, arr) => (
                   <option
                     key={t}
                     value={t}
-                    className={`w-full p-2 hover:bg-bg-secondary  ${index === arr.length - 1 ? "rounded-b-sm" : "rounded-none"}`}
+                    className={`w-full p-2 bg-dropdown-bg text-text-primary ${index === arr.length - 1 ? "rounded-b-sm" : "rounded-none"}`}
                   >
                     {t}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="relative mb-6 md:mb-0">
-              <h2>Category</h2>
+            <div className="relative mb-5 md:mb-0 flex-1">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Category
+              </h2>
               <select
                 name="categoryId"
                 value={formik.values.categoryId}
                 onChange={formik.handleChange}
-                className="w-full md:w-45 appearance-none text-center p-2  bg-bg-surface rounded-sm border-thin border-border-subtle shadow-card cursor-pointer outline-0"
+                className="w-full appearance-none text-center py-2 px-3 text-sm font-medium text-text-primary bg-input-bg hover:bg-bg-muted rounded-sm border-thin border-input-border shadow-subtle cursor-pointer outline-0 focus:border-accent"
               >
                 {filteredCategories.map((c, index, arr) => (
                   <option
                     key={c.id}
                     value={c.id}
-                    className={`w-full p-2 ${index === arr.length - 1 && "rounded-b-sm"}`}
+                    className={`w-full p-2 bg-dropdown-bg text-text-primary ${index === arr.length - 1 && "rounded-b-sm"}`}
                   >
                     {c.name}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="relative mb-6 md:mb-0">
-              <h2>Is Essential</h2>
+            <div className="relative flex-1">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Is Essential
+              </h2>
               <button
                 type="button"
                 onClick={() =>
@@ -232,15 +245,18 @@ function NewFinancialTransaction() {
                     !formik.values.isEssential,
                   )
                 }
-                className="w-full md:w-45 p-2 bg-bg-surface rounded-sm border-thin border-border-subtle shadow-card"
+                className="w-full py-2 px-3 text-sm font-medium text-text-primary bg-bg-surface hover:bg-bg-muted rounded-sm border-thin border-border-subtle shadow-subtle cursor-pointer"
               >
                 {formik.values.isEssential ? "Essential" : "Not Essential"}
               </button>
             </div>
           </div>
-          <div className="w-full md:p-5 md:flex md:justify-between">
-            <div className="mb-6 md:mb-0">
-              <h2>Amount</h2>
+
+          <div className="w-full p-4 md:px-5 rounded-md bg-bg-secondary/70 border-thin border-border-subtle md:flex md:justify-between md:gap-4">
+            <div className="mb-5 md:mb-0 flex-1">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Amount
+              </h2>
               <input
                 type="number"
                 name="amount.amount"
@@ -248,22 +264,27 @@ function NewFinancialTransaction() {
                 step="0.01"
                 value={formik.values.amount.amount}
                 onChange={formik.handleChange}
-                className="w-full md:w-45  p-2 bg-bg-surface border-thin border-border-subtle shadow-card rounded-sm outline-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                className="w-full py-2 px-3 text-sm font-semibold text-text-primary bg-input-bg border-thin border-input-border shadow-subtle rounded-sm outline-0 focus:border-accent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
               />
             </div>
-            <div className="relative mb-6 md:mb-0">
-              <h2>Currency</h2>
+            <div className="relative mb-5 md:mb-0 flex-1">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Currency
+              </h2>
               <CurrencyDropdown
                 currencyFieldValue={formik.values.amount.currency.code}
                 handleOptionButtonClick={handleCurrencyChange}
+                className="w-full"
               />
             </div>
-            <div className="relative">
-              <h2>Transaction date</h2>
+            <div className="relative flex-1">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Transaction date
+              </h2>
               <button
                 type="button"
                 onClick={toggleShowCalendar}
-                className="w-full md:w-45 p-2  bg-bg-surface rounded-sm border-thin border-border-subtle shadow-card cursor-pointer"
+                className="w-full py-2 px-3 text-sm font-medium text-text-primary bg-bg-surface hover:bg-bg-muted rounded-sm border-thin border-border-subtle shadow-subtle cursor-pointer"
               >
                 {format(formik.values.transactionDate!, "dd-MM-yyyy")}
               </button>
@@ -281,18 +302,22 @@ function NewFinancialTransaction() {
               )}
             </div>
           </div>
-          <div className="flex w-full  py-5 md:px-5 justify-between">
+
+          <div className="flex w-full p-4 md:px-5 rounded-md bg-bg-secondary/70 border-thin border-border-subtle justify-between">
             <div className="w-full">
-              <h2>Description</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1.5">
+                Description
+              </h2>
               <textarea
                 name="description"
                 value={formik.values.description}
                 onChange={formik.handleChange}
-                className="w-full p-2 bg-bg-surface border-thin border-border-subtle shadow-card rounded-sm outline-0"
+                className="w-full p-2.5 text-sm text-text-primary placeholder:text-text-muted bg-input-bg border-thin border-input-border shadow-subtle rounded-sm outline-0 focus:border-accent"
               />
             </div>
           </div>
-          <div className="md:px-5">
+
+          <div className="pt-2 md:px-1">
             <Button
               label={formik.isSubmitting ? "Saving..." : "Submit"}
               type="submit"

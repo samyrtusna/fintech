@@ -5,9 +5,24 @@ import { MdAccountBalanceWallet, MdPieChart } from "react-icons/md";
 import { useAppSelector } from "../state/stateHooks";
 import { GoGoal } from "react-icons/go";
 import ScrollReveal from "../components/ScrollReveal";
+import { useCallback, useEffect } from "react";
+import financialAggregatesService from "../API/Services/financialAggregatesService";
+import budgetService from "../API/Services/budgetService";
+import goalService from "../API/Services/goalService";
+import { useDispatch } from "react-redux";
+import {
+  setGlobalAggregates,
+  setMonthAggregates,
+} from "../state/slices/financialAggregatesSlice";
+import { setBudget } from "../state/slices/budgetSlice";
+import { setGoal } from "../state/slices/goalSlice";
+import { toast } from "sonner";
 
 function LandingPage() {
   const user = useAppSelector((state) => state.authUser.userInformations);
+
+  const dispatch = useDispatch();
+
   const symbol =
     user?.userCurrencies.find((c) => c.isDefault)?.currency.symbol ?? "";
 
@@ -49,20 +64,49 @@ function LandingPage() {
     activeGoalsCount > 0
       ? goals!.reduce((acc, g) => acc + g.goalProgress, 0) / activeGoalsCount
       : 0;
+
+  const fetchData = useCallback(async () => {
+    try {
+      const date = new Date();
+      const globalAggregates =
+        await financialAggregatesService.getGlobalAggregates();
+      const monthlyAggregates =
+        await financialAggregatesService.getByMonth(date);
+      const budgets = await budgetService.getByMonthAsync({
+        month: date.toISOString(),
+      });
+      const goals = await goalService.getByMonthAsync({
+        month: date.toISOString(),
+      });
+      dispatch(setGlobalAggregates(globalAggregates));
+      dispatch(setMonthAggregates(monthlyAggregates));
+      dispatch(setBudget(budgets));
+      dispatch(setGoal(goals));
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to fetch data",
+      );
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   return (
     <>
       {!user ? (
-        <div className="relative min-h-dvh w-full bg-bg-primary text-text-primary flex flex-col items-center">
+        <div className="relative min-h-dvh w-full text-text-primary flex flex-col items-center">
           <ScrollReveal>
-            <section className="w-full max-w-5xl px-6 py-20 flex flex-col items-center text-center mt-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full bg-bg-muted border border-border-subtle text-xs font-semibold">
-                <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+            <section className="w-full max-w-5xl px-6 py-20 flex flex-col items-center text-center mt-8">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-6 rounded-full bg-bg-surface border-thin border-border-subtle shadow-subtle text-xs font-semibold text-text-secondary">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 Your Personal Finances Dashboard
               </div>
 
-              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight max-w-3xl leading-tight">
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight max-w-3xl leading-tight text-text-primary">
                 A new month,{" "}
-                <span className="text-blue-500">
+                <span className="text-text-secondary">
                   a clearer financial picture.
                 </span>
               </h1>
@@ -75,13 +119,13 @@ function LandingPage() {
               <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full justify-center">
                 <Link
                   to="/register"
-                  className="px-8 py-3 rounded-sm bg-blue-500 hover:bg-blue-600 text-bg-contrast font-bold shadow-card transition-colors"
+                  className="px-8 py-3 rounded-sm bg-btn-standard hover:bg-btn-standard-hover text-btn-standard-text font-bold shadow-card transition-colors"
                 >
                   Get Started Free
                 </Link>
                 <Link
                   to="/login"
-                  className="px-8 py-3 rounded-sm bg-form-bg border border-border-subtle hover:bg-bg-muted font-bold shadow-card transition-colors"
+                  className="px-8 py-3 rounded-sm bg-bg-surface border-thin border-border-subtle hover:bg-bg-muted text-text-primary font-bold shadow-card transition-colors"
                 >
                   Log In
                 </Link>
@@ -92,11 +136,11 @@ function LandingPage() {
           <ScrollReveal>
             <section className="w-full max-w-6xl px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Card 1 */}
-              <div className="p-6 bg-form-bg border border-border-subtle rounded-md shadow-card flex flex-col items-start">
-                <div className="p-3 bg-blue-500/10 rounded-sm mb-4">
-                  <MdAccountBalanceWallet className="size-6 text-blue-500" />
+              <div className="p-6 bg-bg-surface border-thin border-border-subtle rounded-md shadow-card flex flex-col items-start">
+                <div className="p-3 bg-bg-muted border-thin border-border-subtle rounded-sm mb-4">
+                  <MdAccountBalanceWallet className="size-6 text-text-secondary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">
+                <h3 className="text-xl font-bold text-text-primary mb-2">
                   Global & Monthly Aggregates
                 </h3>
                 <p className="text-sm text-text-secondary">
@@ -106,11 +150,11 @@ function LandingPage() {
               </div>
 
               {/* Card 2 */}
-              <div className="p-6 bg-form-bg border border-border-subtle rounded-md shadow-card flex flex-col items-start">
-                <div className="p-3 bg-green-500/10 rounded-sm mb-4">
-                  <AiOutlineTransaction className="size-6 text-green-500" />
+              <div className="p-6 bg-bg-surface border-thin border-border-subtle rounded-md shadow-card flex flex-col items-start">
+                <div className="p-3 bg-bg-muted border-thin border-border-subtle rounded-sm mb-4">
+                  <AiOutlineTransaction className="size-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">
+                <h3 className="text-xl font-bold text-text-primary mb-2">
                   Smart Transactions
                 </h3>
                 <p className="text-sm text-text-secondary">
@@ -120,11 +164,11 @@ function LandingPage() {
               </div>
 
               {/* Card 3 */}
-              <div className="p-6 bg-form-bg border border-border-subtle rounded-md shadow-card flex flex-col items-start">
-                <div className="p-3 bg-yellow-500/10 rounded-sm mb-4">
-                  <MdPieChart className="size-6 text-yellow-500" />
+              <div className="p-6 bg-bg-surface border-thin border-border-subtle rounded-md shadow-card flex flex-col items-start">
+                <div className="p-3 bg-bg-muted border-thin border-border-subtle rounded-sm mb-4">
+                  <MdPieChart className="size-6 text-amber-500" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">
+                <h3 className="text-xl font-bold text-text-primary mb-2">
                   Visual Breakdowns
                 </h3>
                 <p className="text-sm text-text-secondary">
@@ -136,10 +180,10 @@ function LandingPage() {
           </ScrollReveal>
 
           <ScrollReveal>
-            <section className="w-full max-w-5xl px-6 my-16">
-              <div className="p-8 md:p-12 bg-form-bg border border-border-subtle rounded-lg shadow-card flex flex-col md:flex-row items-center justify-between gap-8">
+            <section className="w-full max-w-5xl px-6 my-14">
+              <div className="p-8 md:p-12 bg-bg-secondary border-thin border-border-subtle rounded-md shadow-card flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="space-y-3 text-center md:text-left">
-                  <h2 className="text-2xl md:text-3xl font-bold">
+                  <h2 className="text-2xl md:text-3xl font-bold text-text-primary">
                     Ready to take control?
                   </h2>
                   <p className="text-text-secondary text-sm md:text-base">
@@ -148,7 +192,7 @@ function LandingPage() {
                 </div>
                 <Link
                   to="/register"
-                  className="px-6 py-3 bg-green-500 text-gray-50 font-bold rounded-sm shadow-card hover:bg-green-600 transition-colors whitespace-nowrap flex items-center gap-2"
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow-card transition-colors whitespace-nowrap flex items-center gap-2"
                 >
                   <IoMdAdd className="size-5" />
                   Create Your Account
@@ -158,15 +202,15 @@ function LandingPage() {
           </ScrollReveal>
         </div>
       ) : (
-        <div className="w-full max-w-6xl mx-auto p-4 md:p-6 space-y-6 bg-bg-primary text-text-primary">
+        <div className="w-full max-w-6xl mx-auto p-4 md:p-6 space-y-6 text-text-primary">
           <ScrollReveal>
-            <section className="p-6 bg-form-bg border border-border-subtle rounded-md shadow-card flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <section className="p-6 bg-form-bg border-thin border-border-subtle rounded-md shadow-card flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 mb-2 rounded-full bg-bg-muted border border-border-subtle text-xs font-semibold">
-                  <span className="h-2 w-2 rounded-full bg-green-500" />
+                <div className="inline-flex items-center gap-2 px-3 py-1 mb-2 rounded-full bg-bg-muted border-thin border-border-subtle text-xs font-semibold text-text-secondary">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
                   Active Workspace
                 </div>
-                <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-text-primary">
                   Welcome back{user?.username ? `, ${user.username}` : ""}
                 </h1>
                 <p className="text-sm text-text-secondary mt-1">
@@ -175,19 +219,19 @@ function LandingPage() {
                 </p>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <Link
                   to="/financialTransactions/new"
-                  className="inline-flex items-center gap-1.5 px-1 sm:px-4 py-2.5 rounded-sm bg-blue-500 hover:bg-blue-600 text-bg-contrast text-xs sm:text-sm font-bold shadow-card transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-sm bg-btn-standard hover:bg-btn-standard-hover text-btn-standard-text text-xs sm:text-sm font-bold shadow-card transition-colors"
                 >
                   <IoMdAdd className="size-5" />
                   Log Transaction
                 </Link>
                 <Link
                   to="/dashboard"
-                  className="inline-flex items-center gap-1.5 px-1 sm:px-4 py-2.5 rounded-sm bg-bg-secondary border border-border-subtle hover:bg-bg-muted text-xs sm:text-sm font-semibold transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-sm bg-bg-surface border-thin border-border-subtle hover:bg-bg-muted text-text-primary text-xs sm:text-sm font-semibold shadow-subtle transition-colors"
                 >
-                  <MdPieChart className="size-4 text-yellow-500" />
+                  <MdPieChart className="size-4 text-amber-500" />
                   Full Analytics
                 </Link>
               </div>
@@ -196,11 +240,11 @@ function LandingPage() {
 
           <ScrollReveal>
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 bg-bg-secondary border border-border-subtle rounded-md shadow-card">
-                <span className="text-xs text-text-secondary">
+              <div className="p-4 bg-bg-surface border-thin border-border-subtle rounded-md shadow-card">
+                <span className="text-xs font-medium text-text-secondary">
                   Global Net Cash Flow
                 </span>
-                <div className="text-xl font-bold mt-1">
+                <div className="text-xl font-bold mt-1 text-text-primary">
                   {symbol}
                   {globalCashFlow.toFixed(2)}
                 </div>
@@ -210,11 +254,11 @@ function LandingPage() {
                 </span>
               </div>
 
-              <div className="p-4 bg-bg-secondary border border-border-subtle rounded-md shadow-card">
-                <span className="text-xs text-text-secondary">
+              <div className="p-4 bg-bg-surface border-thin border-border-subtle rounded-md shadow-card">
+                <span className="text-xs font-medium text-text-secondary">
                   Total Savings
                 </span>
-                <div className="text-xl font-bold mt-1 text-green-500">
+                <div className="text-xl font-bold mt-1 text-emerald-600 dark:text-emerald-400">
                   {symbol}
                   {globalSavings.toFixed(2)}
                 </div>
@@ -223,11 +267,11 @@ function LandingPage() {
                 </span>
               </div>
 
-              <div className="p-4 bg-bg-secondary border border-border-subtle rounded-md shadow-card">
-                <span className="text-xs text-text-secondary">
+              <div className="p-4 bg-bg-surface border-thin border-border-subtle rounded-md shadow-card">
+                <span className="text-xs font-medium text-text-secondary">
                   Total Investments
                 </span>
-                <div className="text-xl font-bold mt-1 text-blue-500">
+                <div className="text-xl font-bold mt-1 text-text-secondary">
                   {symbol}
                   {globalInvestment.toFixed(2)}
                 </div>
@@ -236,8 +280,10 @@ function LandingPage() {
                 </span>
               </div>
 
-              <div className="p-4 bg-bg-secondary border border-border-subtle rounded-md shadow-card">
-                <span className="text-xs text-text-secondary">Active Debt</span>
+              <div className="p-4 bg-bg-surface border-thin border-border-subtle rounded-md shadow-card">
+                <span className="text-xs font-medium text-text-secondary">
+                  Active Debt
+                </span>
                 <div className="text-xl font-bold mt-1 text-orange-500">
                   {symbol}
                   {globalDebt.toFixed(2)}
@@ -252,18 +298,20 @@ function LandingPage() {
 
           <ScrollReveal>
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="p-6 bg-form-bg border border-border-subtle rounded-md shadow-card flex flex-col justify-between">
+              <div className="p-6 bg-bg-surface border-thin border-border-subtle rounded-md shadow-card flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="p-2 bg-blue-50 rounded-sm">
-                        <MdAccountBalanceWallet className="size-3 sm:size-5 text-blue-500" />
+                      <div className="p-2 bg-bg-muted border-thin border-border-subtle rounded-sm">
+                        <MdAccountBalanceWallet className="size-4 sm:size-5 text-text-secondary" />
                       </div>
-                      <h2 className="sm:text-lg font-bold">Monthly Budget</h2>
+                      <h2 className="text-base sm:text-lg font-bold text-text-primary">
+                        Monthly Budget
+                      </h2>
                     </div>
                     <Link
                       to="/budget"
-                      className="text-xs font-semibold text-blue-900 hover:underline"
+                      className="text-xs font-semibold text-text-secondary hover:underline"
                     >
                       Manage
                     </Link>
@@ -273,13 +321,13 @@ function LandingPage() {
                     <div className="space-y-3">
                       <div className="flex justify-between text-sm">
                         <span className="text-text-secondary">Used</span>
-                        <span className="font-bold">
+                        <span className="font-bold text-text-primary">
                           {globalBudget.budgetConsumptionPercentage.toFixed(0)}%
                         </span>
                       </div>
                       <div className="w-full bg-bg-muted h-2 rounded-full overflow-hidden">
                         <div
-                          className={` h-full rounded-full ${globalBudget.budgetConsumptionPercentage < 50 ? "bg-green-500" : globalBudget.budgetConsumptionPercentage < 70 ? "bg-amber-500" : "bg-red-500"}`}
+                          className={`h-full rounded-full ${globalBudget.budgetConsumptionPercentage < 50 ? "bg-emerald-500" : globalBudget.budgetConsumptionPercentage < 80 ? "bg-amber-500" : "bg-red-500"}`}
                           style={{
                             width: `${Math.min(globalBudget.budgetConsumptionPercentage, 100)}%`,
                           }}
@@ -301,24 +349,26 @@ function LandingPage() {
 
                 <Link
                   to={globalBudget ? "/budget" : "/budget/new"}
-                  className="mt-5 inline-block text-center py-2 px-4 rounded-sm bg-bg-secondary border border-border-subtle hover:bg-bg-muted text-sm font-semibold transition-colors"
+                  className="mt-5 inline-block text-center py-2 px-4 rounded-sm bg-bg-secondary border-thin border-border-subtle hover:bg-bg-muted text-text-primary text-sm font-semibold transition-colors"
                 >
                   {globalBudget ? "View Budget Breakdown" : "+ Add a Budget"}
                 </Link>
               </div>
 
-              <div className="p-6 bg-form-bg border border-border-subtle rounded-md shadow-card flex flex-col justify-between">
+              <div className="p-6 bg-bg-surface border-thin border-border-subtle rounded-md shadow-card flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="p-2 bg-green-50 rounded-sm">
-                        <GoGoal className="size-3 sm:size-5 text-green-500" />
+                      <div className="p-2 bg-bg-muted border-thin border-border-subtle rounded-sm">
+                        <GoGoal className="size-4 sm:size-5 text-emerald-600 dark:text-emerald-400" />
                       </div>
-                      <h2 className="sm:text-lg font-bold">Monthly Goals</h2>
+                      <h2 className="text-base sm:text-lg font-bold text-text-primary">
+                        Monthly Goals
+                      </h2>
                     </div>
                     <Link
                       to="/goal"
-                      className="text-xs font-semibold text-blue-900 hover:underline"
+                      className="text-xs font-semibold text-text-secondary hover:underline"
                     >
                       All Goals
                     </Link>
@@ -331,7 +381,7 @@ function LandingPage() {
                           {activeGoalsCount} active{" "}
                           {activeGoalsCount === 1 ? "goal" : "goals"}
                         </span>
-                        <span className="font-bold text-green-900">
+                        <span className="font-bold text-emerald-600 dark:text-emerald-400">
                           {avgGoalProgress.toFixed(0)}% avg
                         </span>
                       </div>
@@ -339,12 +389,12 @@ function LandingPage() {
                         {goals!.slice(0, 2).map((g) => (
                           <li
                             key={g.id}
-                            className="flex justify-between items-center text-sm p-2 rounded-sm bg-bg-muted"
+                            className="flex justify-between items-center text-sm p-2.5 rounded-sm bg-bg-secondary border-thin border-border-subtle"
                           >
-                            <span className="truncate font-medium">
+                            <span className="truncate font-medium text-text-primary">
                               {g.title}
                             </span>
-                            <span className="text-xs font-semibold ml-2">
+                            <span className="text-xs font-semibold text-text-secondary ml-2">
                               {g.goalProgress.toFixed(0)}%
                             </span>
                           </li>
@@ -361,27 +411,27 @@ function LandingPage() {
 
                 <Link
                   to={activeGoalsCount > 0 ? "/goal" : "/goal/new"}
-                  className="mt-5 inline-block text-center py-2 px-4 rounded-sm bg-bg-secondary border border-border-subtle hover:bg-bg-muted text-sm font-semibold transition-colors"
+                  className="mt-5 inline-block text-center py-2 px-4 rounded-sm bg-bg-secondary border-thin border-border-subtle hover:bg-bg-muted text-text-primary text-sm font-semibold transition-colors"
                 >
                   {activeGoalsCount > 0 ? "Track Goals" : "+ Add a Goal"}
                 </Link>
               </div>
 
               {/* Recent Transactions Card */}
-              <div className="p-6 bg-form-bg border border-border-subtle rounded-md shadow-card flex flex-col justify-between">
+              <div className="p-6 bg-bg-surface border-thin border-border-subtle rounded-md shadow-card flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="p-2 bg-yellow-50 rounded-sm">
-                        <AiOutlineTransaction className="size-3 sm:size-5 text-yellow-500" />
+                      <div className="p-2 bg-bg-muted border-thin border-border-subtle rounded-sm">
+                        <AiOutlineTransaction className="size-4 sm:size-5 text-amber-500" />
                       </div>
-                      <h2 className="sm:text-lg font-bold">
+                      <h2 className="text-base sm:text-lg font-bold text-text-primary">
                         Recent Transactions
                       </h2>
                     </div>
                     <Link
                       to="/financialTransactions"
-                      className="text-xs font-semibold text-blue-900 hover:underline"
+                      className="text-xs font-semibold text-text-secondary hover:underline"
                     >
                       See All
                     </Link>
@@ -392,12 +442,12 @@ function LandingPage() {
                       {recentTransactions.map((t) => (
                         <li
                           key={t.id}
-                          className="flex justify-between items-center text-sm p-2 rounded-sm bg-bg-muted"
+                          className="flex justify-between items-center text-sm p-2.5 rounded-sm bg-bg-secondary border-thin border-border-subtle"
                         >
-                          <span className="truncate">
+                          <span className="truncate text-text-primary">
                             {t.description || t.categoryName || "Transaction"}
                           </span>
-                          <span className="font-semibold ml-2 whitespace-nowrap">
+                          <span className="font-semibold text-text-secondary ml-2 whitespace-nowrap">
                             {t.amount?.currency?.symbol ?? symbol}
                             {Number(t.amount?.amount ?? 0).toFixed(2)}
                           </span>
@@ -414,7 +464,7 @@ function LandingPage() {
 
                 <Link
                   to="/financialTransactions"
-                  className="mt-5 inline-block text-center py-2 px-4 rounded-sm bg-bg-secondary border border-border-subtle hover:bg-bg-muted text-sm font-semibold transition-colors"
+                  className="mt-5 inline-block text-center py-2 px-4 rounded-sm bg-bg-secondary border-thin border-border-subtle hover:bg-bg-muted text-text-primary text-sm font-semibold transition-colors"
                 >
                   Open Transactions Ledger
                 </Link>

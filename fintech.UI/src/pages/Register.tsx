@@ -69,25 +69,27 @@ function Register() {
     );
   }
   return (
-    <div className="flex h-dvh  md:justify-center md:items-center">
-      <div className="w-full h-fit max-h-dvh py-2 px-2 bg-bg-surface rounded-sm md:w-1/2  md:shadow-card lg:w-1/3">
+    <div className="flex min-h-dvh px-4 py-6 md:justify-center md:items-center text-text-primary">
+      <div className="w-full h-fit py-5 px-4 sm:px-6 bg-form-bg border-thin border-border-subtle rounded-md md:w-1/2 shadow-card lg:w-1/3">
         <Link
           to="/"
-          className="flex justify-center items-center h-10 aspect-square mx-2 rounded-full hover:bg-bg-muted"
+          className="flex justify-center items-center h-9 w-9 rounded-full bg-bg-surface hover:bg-bg-muted border-thin border-border-subtle shadow-subtle"
         >
           <IconComponent icon={IoChevronBack} />
         </Link>
-        <div className="flex flex-col items-center">
-          <div className="h-25 py-5 my-5 ">
-            <Logo className="text-6xl font-bold ml-2" />
+        <div className="flex flex-col items-center mt-2">
+          <div className="h-20 my-2 flex items-center justify-center">
+            <Logo className="text-5xl sm:text-6xl font-bold ml-2" />
           </div>
           <div className="flex flex-col items-center w-full py-2">
-            <h1 className="text-3xl font-bold">Let's start!</h1>
-            <h2 className="my-3 px-3 text-xl text-center">
+            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
+              Let&apos;s start!
+            </h1>
+            <h2 className="mt-2 px-3 text-sm sm:text-base text-text-secondary text-center">
               Create your account and start transforming your finances
             </h2>
           </div>
-          <div className="flex flex-col w-full">
+          <div className="flex flex-col w-full mt-3">
             <Formik
               initialValues={initialValues}
               validationSchema={registerSchema}
@@ -96,8 +98,8 @@ function Register() {
             >
               {(formik) => {
                 return (
-                  <div className=" w-full h-full">
-                    <Form className="flex flex-col justify-end w-full">
+                  <div className="w-full h-full">
+                    <Form className="flex flex-col justify-end w-full space-y-1">
                       <InputField
                         ref={usernameInputRef}
                         id="username"
@@ -123,7 +125,7 @@ function Register() {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/3 -translate-y-1/2 text-text-secondary hover:text-gray-700 cursor-pointer"
+                          className="absolute right-3 top-2.5 text-text-muted hover:text-text-secondary cursor-pointer"
                           aria-label={
                             showPassword ? "Hide password" : "Show password"
                           }
@@ -148,7 +150,7 @@ function Register() {
                           onClick={() =>
                             setShowConfirmPassword(!showConfirmPassword)
                           }
-                          className="absolute right-3 top-1/3 -translate-y-1/2 text-text-secondary hover:text-gray-700 cursor-pointer"
+                          className="absolute right-3 top-2.5 text-text-muted hover:text-text-secondary cursor-pointer"
                           aria-label={
                             showConfirmPassword
                               ? "Hide password"
@@ -163,25 +165,26 @@ function Register() {
                         </button>
                       </div>
 
-                      <Button
-                        label="Sign Up"
-                        type="submit"
-                        background="bg-btn-standard"
-                        hoverBg="hover:bg-btn-standard-hover"
-                        textColor="text-btn-standard-text"
-                        disabled={
-                          !formik.dirty ||
-                          !formik.isValid ||
-                          formik.isSubmitting
-                        }
-                      />
+                      <div className="pt-2">
+                        <Button
+                          label="Sign Up"
+                          type="submit"
+                          background="bg-btn-standard"
+                          hoverBg="hover:bg-btn-standard-hover"
+                          textColor="text-btn-standard-text"
+                          disabled={
+                            !formik.dirty ||
+                            !formik.isValid ||
+                            formik.isSubmitting
+                          }
+                        />
+                      </div>
                     </Form>
-                    <div className="flex justify-center items-start text-xs">
+                    <div className="flex justify-center items-center gap-2 text-xs text-text-secondary mt-5">
                       <p>Already a Member?</p>
-                      {/* Link color is hardcoded */}
                       <Link
                         to="/login"
-                        className="text-blue-700 pl-4"
+                        className="font-semibold text-text-secondary hover:underline"
                       >
                         Sign In here
                       </Link>
